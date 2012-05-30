@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>framework</artifactId>
+    <groupId>org.jboss.bqt</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jboss.bqt</groupId>
+	<artifactId>bqt-jdk-16-support</artifactId>
+	<name>BQT 1.6 Support</name>
+	<description>These are enhancements for 1.6 features</description>
+
+	<properties>
+	</properties>
+	
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.jboss.bqt</groupId>
+			<artifactId>bqt-core</artifactId>
+		</dependency>	
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.bqt</groupId>
+			<artifactId>bqt-framework</artifactId>
+		</dependency>
+			
+
+	</dependencies>	
+
+</project>

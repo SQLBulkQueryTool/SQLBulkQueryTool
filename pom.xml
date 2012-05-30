@@ -1,0 +1,174 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.jboss.bqt</groupId>
+  <artifactId>framework</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>BQT JDBC Query Execution Kit</name>
+  <url>${site.url}</url>
+  
+  	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl.html</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>  
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  	<modules>
+		<module>bqt-core</module>
+		<module>bqt-framework</module>
+		<module>bqt-client</module>
+	</modules>
+
+  <dependencies>
+
+  
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>2.0</version>
+    </dependency>
+					
+
+  </dependencies>
+  
+	<dependencyManagement>
+		<dependencies>
+		
+			<dependency>
+				<groupId>org.jboss.bqt</groupId>
+				<artifactId>bqt-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.jboss.bqt</groupId>
+				<artifactId>bqt-framework</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.jboss.bqt</groupId>
+				<artifactId>bqt-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.jboss.bqt</groupId>
+				<artifactId>bqt-jdk-16-support</artifactId>
+				<version>${project.version}</version>
+			</dependency>																						
+		
+	
+      <!--
+      Declare all dependency versions and default scopes here, but not optional.
+      Each module should declare it's direct dependency and possibily overwrite scope/optional.
+      -->
+ 	
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.4</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>javax</groupId>
+				<artifactId>javaee-api</artifactId>
+				<version>6.0</version>
+			</dependency>
+
+			
+			<dependency>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
+				<version>1.2.14</version>
+			</dependency>		
+
+			<dependency>
+				<groupId>jdom</groupId>
+				<artifactId>jdom</artifactId>
+				<version>1.0</version>
+			</dependency>
+    
+	</dependencies>
+</dependencyManagement>  
+
+
+	<profiles>
+		<profile>
+			<id>jdk16</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<jdk>jdk16</jdk>
+			</properties>
+			<modules>
+				<module>bqt-jdk-16-support</module>
+				<module>bqt-distro</module>
+			</modules>
+			
+				<build>
+				<plugins>
+			  <!-- Specify the compiler options and settings -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.6</source>
+							<target>1.6</target>
+							<showDeprecation>false</showDeprecation>
+							<showWarnings>false</showWarnings>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+
+		</profile>	
+	
+		<profile>
+			<!--
+				The jdk15 profile will build everything using the jdk source and target of 1.5
+			
+				This profile is activated manually, as in "mvn ... -P 15 ..."
+			-->
+			<id>jdk15</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<jdk>jdk15</jdk>
+			</properties>
+			<modules>
+				<module>bqt-distro</module>
+			</modules>
+			<build>
+				<plugins>
+			  <!-- Specify the compiler options and settings -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.5</source>
+							<target>1.5</target>
+							<showDeprecation>false</showDeprecation>
+							<showWarnings>false</showWarnings>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>			
+
+		</profile>	
+	
+
+	</profiles>
+</project>
