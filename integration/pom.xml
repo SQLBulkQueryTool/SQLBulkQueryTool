@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>org.jboss.bqt</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jboss.bqt</groupId>
+	<artifactId>integration</artifactId>
+	<name>Integration Testing</name>
+	<description>Test the distribution kit works</description>
+
+	<properties>
+		<apache.ant.version>1.7.0</apache.ant.version>
+
+	</properties>
+	
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.jboss.bqt</groupId>
+			<artifactId>distro</artifactId>
+			<version>${version}</version>
+		</dependency>	
+
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>${apache.ant.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant-launcher</artifactId>
+			<version>${apache.ant.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ant-contrib</groupId>
+			<artifactId>ant-contrib</artifactId>
+			<version>1.0b3</version>
+			<exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+    		</exclusions>
+
+		</dependency>
+
+		<dependency>
+			<groupId>ant-contrib</groupId>
+			<artifactId>cpptasks</artifactId>
+			<version>1.0b3</version>
+			<exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+    		</exclusions>
+		</dependency>
+
+		
+	</dependencies>				
+	<build>
+		<plugins>
+          <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.bqt</groupId>
+                        <artifactId>distro</artifactId>
+                        <version>${version}</version>
+                        <type>zip</type>
+                    </dependency>
+                 </dependencies>
+               <executions>
+                    <execution>
+                        <id>unpack-zips</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                     <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.bqt</groupId>
+                                    <artifactId>distro</artifactId>
+                                    <version>${version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/work</outputDirectory>
+                                    <excludes>META-INF/**</excludes>
+                                </artifactItem>
+                     		 </artifactItems>
+                    	</configuration>
+                    </execution>
+                </executions>
+			
+			
+			</plugin>
+		</plugins>
+	</build>
+	 <!-- 
+		<profile>
+          <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+	        <dependencies>
+				<dependency>
+					<groupId>hsqldb</groupId>
+					<artifactId>hsqldb</artifactId>
+					<version>${jdbc.hsqldb.version}</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+			<properties>
+				<database>hsqldb</database>
+				<jpaSource.dialect>org.hibernate.dialect.HSQLDialect</jpaSource.dialect>
+				<jpaSource.driverClassName>org.hsqldb.jdbcDriver</jpaSource.driverClassName>
+				<jpaSource.url>jdbc:hsqldb:mem:bqt</jpaSource.url>
+				<jpaSource.username>sa</jpaSource.username>
+				<jpaSource.password />
+			</properties>
+	</profile>
+
+	</profiles>
+	-->
+</project>
