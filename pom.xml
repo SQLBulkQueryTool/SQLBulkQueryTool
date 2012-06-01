@@ -3,34 +3,89 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jboss.bqt</groupId>
-  <artifactId>framework</artifactId>
+  <artifactId>parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>BQT JDBC Query Execution Kit</name>
+  <name>BQT JDBC Query Execution Framework</name>
+  <description>The BQT framework enables JDBC query testing and results validation</description>
   <url>${site.url}</url>
+  <inceptionYear>2003</inceptionYear>
+  
+  	<organization>
+		<name>JBoss, a division of Red Hat</name>
+		<url>http://www.jboss.org</url>
+	</organization>
   
   	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/licenses/lgpl.html</url>
+			<url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+			<!--url>http://www.gnu.org/licenses/lgpl.html</url-->
 			<distribution>repo</distribution>
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>  
 
+  <scm>
+    <connection>scm:git:git://github.com/vhalbert/SQLBulkQueryTool.git</connection>
+    <developerConnection>scm:git:git@github.com:vhalbert/SQLBulkQueryTool.git</developerConnection>
+    <!-- url>http://github.com/ModeShape/modeshape</url-->
+  </scm>
+  
+  	<developers>
+		<developer>
+			<name>Van Halbert</name>
+			<id>vhalbert@redhat.com</id>
+			<email>vhalbert@redhat.com</email>
+			<organization>JBoss, a division of Red Hat</organization>
+			<roles>
+				<role>Project Lead</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+	</developers>
+
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!--
+			These are properties used in the database profiles. Must initialize
+			them to be empty so that Maven applies them via filtering to the
+			resources. If a project needs files filtered, however, make sure to
+			include a 'testResources' fragment in the 'build' section of the
+			child project POM to say which files need to be filtered. See the
+			"modeshape-integration" or "extensions/modeshape-connector-store-jpa"
+			project POMs for examples.
+		-->
+		<jpaSource.dialect />
+		<jpaSource.driverClassName />
+		<jpaSource.url />
+		<jpaSource.username />
+		<jpaSource.password /> 
+		
+		<jdbc.hsqldb.version>1.8.0.2</jdbc.hsqldb.version> 
+  
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
-    <slf4j.api.version>1.6.1</slf4j.api.version>
-	<slf4j.log4j.version>1.6.1</slf4j.log4j.version>
-    <log4j.version>1.2.16</log4j.version>
+    	<slf4j.api.version>1.6.1</slf4j.api.version>
+		<slf4j.log4j.version>1.6.1</slf4j.log4j.version>
+    	<log4j.version>1.2.16</log4j.version>
+    	
+    	<apache.ant.version>1.7</apache.ant.version>
+    	
+   		<maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
+    	<maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
+		<maven.source.plugin.version>2.1.2</maven.source.plugin.version>
+		<maven.resources.plugin.version>2.4.3</maven.resources.plugin.version>
+		<maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
+		<maven.surefire.plugin.version>2.8</maven.surefire.plugin.version>
   </properties>
   
   	<modules>
-		<module>bqt-core</module>
-		<module>bqt-framework</module>
-		<module>bqt-client</module>
+		<module>core</module>
+		<module>framework</module>
+		<module>client</module>
+        <module>distro</module>
 	</modules>
 
   <dependencies>
@@ -50,25 +105,25 @@
 		
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
-				<artifactId>bqt-core</artifactId>
+				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
-				<artifactId>bqt-framework</artifactId>
+				<artifactId>framework</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
-				<artifactId>bqt-client</artifactId>
+				<artifactId>client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
-				<artifactId>bqt-jdk-16-support</artifactId>
+				<artifactId>jdk-16-support</artifactId>
 				<version>${project.version}</version>
 			</dependency>																						
 		
@@ -128,8 +183,8 @@
 				<jdk>jdk16</jdk>
 			</properties>
 			<modules>
-				<module>bqt-jdk-16-support</module>
-				<module>bqt-distro</module>
+				<module>jdk-16-support</module>
+				<module>distro</module>
 			</modules>
 			
 				<build>
@@ -138,6 +193,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-compiler-plugin</artifactId>
+						<version>${maven.compiler.plugin.version}</version>
 						<configuration>
 							<source>1.6</source>
 							<target>1.6</target>
@@ -150,40 +206,31 @@
 
 		</profile>	
 	
-		<profile>
-			<!--
-				The jdk15 profile will build everything using the jdk source and target of 1.5
-			
-				This profile is activated manually, as in "mvn ... -P 15 ..."
-			-->
-			<id>jdk15</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<properties>
-				<jdk>jdk15</jdk>
-			</properties>
-			<modules>
-				<module>bqt-distro</module>
-			</modules>
-			<build>
-				<plugins>
-			  <!-- Specify the compiler options and settings -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<configuration>
-							<source>1.5</source>
-							<target>1.5</target>
-							<showDeprecation>false</showDeprecation>
-							<showWarnings>false</showWarnings>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>			
-
-		</profile>	
-	
+	<profile>
+		<id>test</id>
+		<activation>
+		  <activeByDefault>false</activeByDefault>
+			<property>
+				<name>!database</name>
+			</property>
+		</activation>
+		<dependencies>
+			<dependency>
+				<groupId>hsqldb</groupId>
+				<artifactId>hsqldb</artifactId>
+				<version>${jdbc.hsqldb.version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+		<properties>
+			<database>hsqldb</database>
+			<jpaSource.dialect>org.hibernate.dialect.HSQLDialect</jpaSource.dialect>
+			<jpaSource.driverClassName>org.hsqldb.jdbcDriver</jpaSource.driverClassName>
+			<jpaSource.url>jdbc:hsqldb:mem:modeshape</jpaSource.url>
+			<jpaSource.username>sa</jpaSource.username>
+			<jpaSource.password />
+		</properties>
+	</profile>
 
 	</profiles>
 </project>
