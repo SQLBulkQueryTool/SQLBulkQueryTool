@@ -1,0 +1,26 @@
+# ignore Maven generated target folders
+target
+
+# ignore eclipse files and folders
+.project
+.classpath
+.settings
+.metadata
+.scala_dependencies
+.externalToolBuilders
+/.metadata
+/RemoteSystemsTempFiles
+
+# ignore IDEA files
+*.iml
+*.ipr
+*.iws
+.idea
+atlassian-ide-plugin.xml
+
+# log files
+*.log
+
+# Compiled python files
+*.pyc
+
