@@ -22,7 +22,7 @@
 package org.jboss.bqt.core.exception;
 
 /**
- * The TransactionRuntimeException is thrown outside of running a test. When
+ * The TransactionRuntimeException is thrown due to a transaction related exception. When
  * this is thrown, the testing process should stop.
  * 
  * 

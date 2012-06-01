@@ -54,8 +54,10 @@ public final class PropertiesUtils {
 	public static class InvalidPropertyException extends
 			FrameworkRuntimeException {
 
-		public InvalidPropertyException(String propertyName, String value,
-				Class<?> expectedType, Throwable cause) {
+		private static final long serialVersionUID = 6735376009584626216L;
+
+		public InvalidPropertyException(final String propertyName, final String value,
+				final Class<?> expectedType, final Throwable cause) {
 			super(
 					cause,
 					CorePlugin.Util

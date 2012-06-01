@@ -29,7 +29,18 @@
 			<artifactId>log4j</artifactId>
 			<scope>provided</scope>
 		</dependency>		
-		
+		<!--
+			Logging (require SLF4J API for compiling, but use Log4J and its SLF4J
+			binding for testing)
+		-->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>		
 		
 		<dependency>
 			<groupId>jdom</groupId>

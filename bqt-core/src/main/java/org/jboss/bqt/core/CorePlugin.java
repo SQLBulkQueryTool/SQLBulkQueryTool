@@ -24,13 +24,19 @@ package org.jboss.bqt.core;
 
 import java.util.ResourceBundle;
 
+import org.jboss.bqt.core.util.Logger;
+
 /**
  * CorePlugin
  */
 public class CorePlugin {
+	// Example:  					CorePlugin.Util.getString("ClassName.message", args...)); 
+
 	//
 	// Class Constants:
 	//
+	public static final Logger LOGGER = Logger.getLogger("org.jboss.bqt.core");
+	
 	/**
 	 * The plug-in identifier of this plugin
 	 */

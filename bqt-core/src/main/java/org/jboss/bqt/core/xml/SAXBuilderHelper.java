@@ -30,7 +30,7 @@ import org.jdom.input.SAXBuilder;
 public class SAXBuilderHelper {
 
 	/** System property name used to get parser class */
-	public static final String PARSER_PROPERTY_NAME = "metamatrix.xmlparser.class"; //$NON-NLS-1$
+	public static final String PARSER_PROPERTY_NAME = "bqt.xmlparser.class"; //$NON-NLS-1$
 
 	private static String PARSER_NAME;
 

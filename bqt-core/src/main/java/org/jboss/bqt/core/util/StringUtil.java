@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.bqt.core.CorePlugin;
@@ -38,7 +39,7 @@ import org.jboss.bqt.core.exception.FrameworkRuntimeException;
  */
 public final class StringUtil {
 
-	public interface Constants {
+	public static interface Constants {
 		char CARRIAGE_RETURN_CHAR = '\r';
 		char LINE_FEED_CHAR = '\n';
 		char NEW_LINE_CHAR = LINE_FEED_CHAR;
@@ -61,6 +62,7 @@ public final class StringUtil {
 		final Pattern PATTERN_BACK_SLASH = Pattern.compile("\\\\"); //$NON-NLS-1$
 		final Pattern PATTERN_QUESTION = Pattern.compile("\\?"); //$NON-NLS-1$
 		final Pattern PATTERN_STAR = Pattern.compile("\\*"); //$NON-NLS-1$
+		final Pattern PARAMETER_COUNT_PATTERN = Pattern.compile("\\{(\\d+)\\}");
 	}
 
 	/**
@@ -705,6 +707,64 @@ public final class StringUtil {
 		}
 		return result;
 	}
+	
+    /**
+     * Create a string by substituting the parameters into all key occurrences in the supplied format. The pattern consists of
+     * zero or more keys of the form <code>{n}</code>, where <code>n</code> is an integer starting at 1. Therefore, the first
+     * parameter replaces all occurrences of "{1}", the second parameter replaces all occurrences of "{2}", etc.
+     * <p>
+     * If any parameter is null, the corresponding key is replaced with the string "null". Therefore, consider using an empty
+     * string when keys are to be removed altogether.
+     * </p>
+     * <p>
+     * If there are no parameters, this method does nothing and returns the supplied pattern as is.
+     * </p>
+     * 
+     * @param pattern the pattern
+     * @param parameters the parameters used to replace keys
+     * @return the string with all keys replaced (or removed)
+     */
+    public static String createString( String pattern,
+                                       Object... parameters ) {
+        ArgCheck.isNotNull(pattern, "pattern");
+        if (parameters == null) parameters = Constants.EMPTY_STRING_ARRAY;
+        Matcher matcher = Constants.PARAMETER_COUNT_PATTERN.matcher(pattern);
+        StringBuffer text = new StringBuffer();
+        int requiredParameterCount = 0;
+        boolean err = false;
+        while (matcher.find()) {
+            int ndx = Integer.valueOf(matcher.group(1));
+            if (requiredParameterCount <= ndx) {
+                requiredParameterCount = ndx + 1;
+            }
+            if (ndx >= parameters.length) {
+                err = true;
+                matcher.appendReplacement(text, matcher.group());
+            } else {
+                Object parameter = parameters[ndx];
+
+                // Automatically pretty-print arrays
+                if (parameter != null && parameter.getClass().isArray()) {
+                    parameter = Arrays.asList((Object[])parameter);
+                }
+
+                matcher.appendReplacement(text, Matcher.quoteReplacement(parameter == null ? "null" : parameter.toString()));
+            }
+        }
+        if (err || requiredParameterCount < parameters.length) {
+            throw new IllegalArgumentException(
+					CorePlugin.Util
+					.getString("StringUtil.requiredToSuppliedParameterMismatch",parameters.length,
+                                                                                                   parameters.length == 1 ? "" : "s",
+                                                                                                   requiredParameterCount,
+                                                                                                   requiredParameterCount == 1 ? "" : "s",
+                                                                                                   pattern,
+                                                                                                   text.toString()));
+        }
+        matcher.appendTail(text);
+
+        return text.toString();
+    }	
 
 	public static String getStackTrace(final Throwable t) {
 		final ByteArrayOutputStream bas = new ByteArrayOutputStream();
