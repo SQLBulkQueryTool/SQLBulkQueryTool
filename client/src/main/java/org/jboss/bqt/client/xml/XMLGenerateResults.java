@@ -27,20 +27,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Properties;
 
-import org.jboss.bqt.client.ResultsGenerator;
+import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.TestResult;
+import org.jboss.bqt.client.api.ResultsGenerator;
+import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.StringUtil;
-import org.jboss.bqt.core.util.TestResultSetUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
@@ -50,19 +50,19 @@ import org.jdom.JDOMException;
 import org.jdom.output.XMLOutputter;
 
 public class XMLGenerateResults implements ResultsGenerator {
-	private static final int MAX_COL_WIDTH = 65;
+//	private static final int MAX_COL_WIDTH = 65;
 
 	private String outputDir = "";
 	private String generateDir = "";
 
 	public XMLGenerateResults(String testname, Properties props) {
 
-		outputDir = props.getProperty(TestProperties.PROP_OUTPUT_DIR, ".");
+		outputDir = props.getProperty(TestProperties.PROP_OUTPUT_DIR);
+		if (outputDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_OUTPUT_DIR);
+		}
 
-		ArgCheck.isNotNull(outputDir, "Property "
-				+ TestProperties.PROP_OUTPUT_DIR + " was not specified");
-
-		outputDir = outputDir + "/" + testname;
+		outputDir = outputDir + File.separator + testname;
 
 		File d = new File(this.outputDir);
 		this.outputDir = d.getAbsolutePath();
@@ -75,13 +75,13 @@ public class XMLGenerateResults implements ResultsGenerator {
 			d.mkdirs();
 		}
 
-		generateDir = props.getProperty(PROP_GENERATE_DIR, ".");
+		generateDir = props.getProperty(TestProperties.PROP_GENERATE_DIR);
+		if (generateDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_GENERATE_DIR);
+		}
 
-		ArgCheck.isNotNull(this.generateDir, "Property " + PROP_GENERATE_DIR
-				+ " was not specified");
-
-		d = new File(generateDir, testname);
-		generateDir = d.getAbsolutePath();
+//		d = new File(generateDir, testname);
+//		generateDir = d.getAbsolutePath();
 		d = new File(generateDir);
 		if (d.exists()) {
 			FileUtils.removeDirectoryAndChildren(d);
@@ -90,28 +90,22 @@ public class XMLGenerateResults implements ResultsGenerator {
 			d.mkdirs();
 		}
 
+		ClientPlugin.LOGGER.info("XMLGenerateResults: creating expected results here " + generateDir);
 	}
 
 	@Override
 	public String getGenerateDir() {
-		// TODO Auto-generated method stub
 		return this.generateDir;
 	}
 
 	@Override
 	public String getOutputDir() {
-		// TODO Auto-generated method stub
 		return outputDir;
 	}
-	
-	
-	
-	
 
 	@Override
 	public void generateQueryResultFile(TestResult testResult,
-			ResultSet resultSet) throws QueryTestFailedException {
-		// TODO Auto-generated method stub
+			ResultSet resultSet) throws FrameworkRuntimeException {
 		generateQueryResultFile(testResult.getQuerySetID(), testResult.getQueryID(),
 				testResult.getQuery(),
 				resultSet,
@@ -131,11 +125,11 @@ public class XMLGenerateResults implements ResultsGenerator {
 	 * @param ex 
 	 * @param testStatus 
 	 * 
-	 * @throws QueryTestFailedException
+	 * @throws FrameworkRuntimeException
 	 */
 	void generateQueryResultFile(String querySetID, String queryID,
 			String query, ResultSet result, Throwable ex, int testStatus)
-			throws QueryTestFailedException {
+			throws FrameworkRuntimeException {
 
 		generateQueryResultFile(querySetID, queryID, query, result, ex, testStatus, null);
 	}
@@ -143,7 +137,7 @@ public class XMLGenerateResults implements ResultsGenerator {
 
 	private void generateQueryResultFile(String querySetID, String queryID,
 			String query, ResultSet result, Throwable ex, int testStatus, TestResult testResult)
-			throws QueryTestFailedException {
+			throws FrameworkRuntimeException {
 
 		try {
 			if (result != null)
@@ -158,7 +152,7 @@ public class XMLGenerateResults implements ResultsGenerator {
 			FileOutputStream fos = new FileOutputStream(resultsFile);
 			outputStream = new BufferedOutputStream(fos);
 		} catch (IOException e) {
-			throw new QueryTestFailedException(
+			throw new FrameworkRuntimeException(
 					"Failed to open new results file: " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
@@ -226,16 +220,16 @@ public class XMLGenerateResults implements ResultsGenerator {
 			outputter.output(new Document(rootElement), outputStream);
 
 		} catch (SQLException e) {
-			throw new QueryTestFailedException(
+			throw new FrameworkRuntimeException(
 					"Failed to convert results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 		} catch (JDOMException e) {
-			throw new QueryTestFailedException(
+			throw new FrameworkRuntimeException(
 					"Failed to convert results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 		} catch (IOException e) {
-			throw new QueryTestFailedException(
+			throw new FrameworkRuntimeException(
 					"Failed to output new results to " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (Throwable e) {
-			throw new QueryTestFailedException(
+			throw new FrameworkRuntimeException(
 					"Failed to convert results to JDOM: " + StringUtil.getStackTrace(e)); //$NON-NLS-1$
 		} finally {
 			try {
@@ -246,9 +240,9 @@ public class XMLGenerateResults implements ResultsGenerator {
 	}
 
 
-
+	@Override
 	public String generateErrorFile(TestResult testResult, ResultSet resultSet,
-			Object results) throws QueryTestFailedException {
+			Object results) throws FrameworkRuntimeException {
 		return generateErrorFile(testResult.getQuerySetID(),
 				testResult.getQueryID(), testResult.getQuery(), resultSet,
 				testResult.getException(), results);
@@ -258,7 +252,7 @@ public class XMLGenerateResults implements ResultsGenerator {
 	 String generateErrorFile(final String querySetID,
 			final String queryID, final String sql, final ResultSet resultSet,
 			final Throwable queryError, final Object expectedResultsFile)
-			throws QueryTestFailedException {
+			throws FrameworkRuntimeException {
 
 		String errorFileName = null;
 		try {
@@ -275,9 +269,10 @@ public class XMLGenerateResults implements ResultsGenerator {
 			generateErrorResults(querySetID, queryID, sql, errorFile,
 					resultSet, (File) expectedResultsFile, queryError);
 
+		} catch (FrameworkRuntimeException fre) {
+			throw fre;
 		} catch (Throwable e) {
-			throw new QueryTestFailedException(e.getMessage());
-			//           CombinedTestClient.logError("Error writing error file \"" + outputDir + "\"/" + errorFileName + ": " + e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			throw new FrameworkRuntimeException(e.getMessage());
 		}
 		return errorFileName;
 	}
@@ -286,11 +281,12 @@ public class XMLGenerateResults implements ResultsGenerator {
 			String genDir) {
 		String resultFileName = queryID + ".xml"; //$NON-NLS-1$
 
-		String targetDirname = genDir + File.separator + "expected_results" + File.separator + querySetID; //$NON-NLS-1$
-		File targetDir = new File(targetDirname);
-		targetDir.mkdirs();
+//		String targetDirname = genDir + File.separator + "expected_results" + File.separator + querySetID; //$NON-NLS-1$
+//		String targetDirname = genDir + File.separator + querySetID; //$NON-NLS-1$
+//		File targetDir = new File(genDir, targetDirname);
+//		targetDir.mkdirs();
 
-		return new File(targetDir, resultFileName);
+		return new File(genDir, resultFileName);
 	}
 
 
@@ -346,7 +342,7 @@ public class XMLGenerateResults implements ResultsGenerator {
 					queryID));
 			// set the querySQLAttr on the exception element
 			resultElement.setAttribute(new Attribute(TagNames.Attributes.VALUE,
-					sql));
+					(sql != null ? sql : "NULL")));
 
 			// ---------------------
 			// Actual Exception

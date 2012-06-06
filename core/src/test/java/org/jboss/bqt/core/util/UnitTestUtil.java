@@ -94,6 +94,9 @@ public final class UnitTestUtil {
 	private static final String DEFAULT_TESTDATA_PATH = "src/test/resources"; //$NON-NLS-1$
 	
 	private static final String DEFAULT_TEMP_DIR = "target/scratch"; //$NON-NLS-1$
+
+	private static final String DEFAULT_OUTPUT_DIR = "target"; //$NON-NLS-1$
+
 	
     //============================================================================================================================
     // Static Methods
@@ -402,6 +405,16 @@ public final class UnitTestUtil {
         String path = UnitTestUtil.getTestScratchPath();
         File file = new File(path, fileName);
         return file;
+	}
+	
+	/**
+	 * Obtain the file path to the root of the directory
+	 * used for all output, include {@link #getTestScratchPath() scratchPath}
+	 * 
+	 * @return File path, never null
+	 */
+	public static final String getTestOutputPath() {
+        return DEFAULT_OUTPUT_DIR;   
 	}
 
 	/**

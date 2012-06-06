@@ -23,6 +23,7 @@ package org.jboss.bqt.framework;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.core.exception.QueryTestFailedException;
@@ -43,8 +44,8 @@ import org.jboss.bqt.framework.connection.ConnectionStrategyFactory;
  * <br>
  * 
  */
-public abstract class AbstractQueryTransactionTest extends
-		AbstractQueryTest implements TransactionQueryTestCase {
+public abstract class AbstractQueryTransaction extends
+		AbstractQuery implements TransactionQueryTestCase {
 
 	protected String testname = "NA";
 	protected int fetchSize = -1;
@@ -58,28 +59,31 @@ public abstract class AbstractQueryTransactionTest extends
 	// unintentional errors from the driver or ctc client test code.
 	private Throwable applicationException = null;
 
-	public AbstractQueryTransactionTest() {
+	public AbstractQueryTransaction() {
 		super();
 
 		this.connStrategy = ConnectionStrategyFactory
 				.createConnectionStrategy();
 	}
 
-	public AbstractQueryTransactionTest(String testname) {
+	public AbstractQueryTransaction(String testname) {
 		this();
 		this.testname = testname;
 	}
 
+	@Override
 	public String getTestName() {
 		return this.testname;
 
 	}
 
+	@Override
 	public ConnectionStrategy getConnectionStrategy() {
 		// TODO Auto-generated method stub
 		return this.connStrategy;
 	}
 
+	@Override
 	protected void assignExecutionProperties(Statement stmt) {
 		// if (stmt instanceof org.jboss.bqt.jdbc.TeiidStatement) {
 		// org.jboss.bqt.jdbc.TeiidStatement statement =
@@ -87,33 +91,36 @@ public abstract class AbstractQueryTransactionTest extends
 
 		Properties executionProperties = this.connStrategy.getEnvironment();
 		if (executionProperties != null) {
-			String txnautowrap = executionProperties
-					.getProperty(CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP);
-			if (txnautowrap != null) {
-				Properties props = new Properties();
-				props.setProperty("ExecutionProperty", txnautowrap);
-
-				PropertiesUtils.setBeanProperties(stmt, props, null);
-			}
+			
+			List foop = PropertiesUtils.filter("statement.*", executionProperties);
+			
+//			String txnautowrap = executionProperties
+//					.getProperty(CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP);
+//			if (txnautowrap != null) {
+//				Properties props = new Properties();
+//				props.setProperty("ExecutionProperty", txnautowrap);
+//
+//				PropertiesUtils.setBeanProperties(stmt, props, null);
+//			}
 
 			// statement.setExecutionProperty(
 			// CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
 			// txnautowrap);
 			// }
 
-			String fetchSizeStr = executionProperties
-					.getProperty(CONNECTION_STRATEGY_PROPS.FETCH_SIZE);
-			if (fetchSizeStr != null) {
-				try {
-					fetchSize = Integer.parseInt(fetchSizeStr);
-
-					FrameworkPlugin.LOGGER.info("FetchSize = " + fetchSize, null);
-				} catch (NumberFormatException e) {
-					fetchSize = -1;
-					// this.print("Invalid fetch size value: " + fetchSizeStr
-					// + ", ignoring");
-				}
-			}
+//			String fetchSizeStr = executionProperties
+//					.getProperty(CONNECTION_STRATEGY_PROPS.FETCH_SIZE);
+//			if (fetchSizeStr != null) {
+//				try {
+//					fetchSize = Integer.parseInt(fetchSizeStr);
+//
+//					FrameworkPlugin.LOGGER.info("FetchSize = " + fetchSize, null);
+//				} catch (NumberFormatException e) {
+//					fetchSize = -1;
+//					// this.print("Invalid fetch size value: " + fetchSizeStr
+//					// + ", ignoring");
+//				}
+//			}
 
 		}
 
@@ -121,7 +128,7 @@ public abstract class AbstractQueryTransactionTest extends
 			try {
 				stmt.setFetchSize(this.fetchSize);
 			} catch (SQLException e) {
-				FrameworkPlugin.LOGGER.info(e.getMessage(), null);
+				FrameworkPlugin.LOGGER.info(e.getMessage());
 			}
 		}
 
@@ -129,7 +136,7 @@ public abstract class AbstractQueryTransactionTest extends
 			try {
 				stmt.setQueryTimeout(this.queryTimeout);
 			} catch (SQLException e) {
-				FrameworkPlugin.LOGGER.info(e.getMessage(), null);
+				FrameworkPlugin.LOGGER.info(e.getMessage());
 			}
 		}
 
@@ -144,6 +151,7 @@ public abstract class AbstractQueryTransactionTest extends
 	 * 
 	 * @since
 	 */
+	@Override
 	public void setup() throws QueryTestFailedException {
 
 		this.applicationException = null;
@@ -192,6 +200,7 @@ public abstract class AbstractQueryTransactionTest extends
 	 * 
 	 * @since
 	 */
+	@Override
 	public boolean rollbackAllways() {
 		return false;
 	}
@@ -203,6 +212,7 @@ public abstract class AbstractQueryTransactionTest extends
 	 * 
 	 * @since
 	 */
+	@Override
 	public void before() {
 	}
 
@@ -213,6 +223,7 @@ public abstract class AbstractQueryTransactionTest extends
 	 * 
 	 * @since
 	 */
+	@Override
 	public void after() {
 		super.after();
 	}
@@ -224,6 +235,7 @@ public abstract class AbstractQueryTransactionTest extends
 	 * {@link TransactionContainer#runTransaction(TransactionQueryTestCase)} at
 	 * the end of the test.
 	 */
+	@Override
 	public void cleanup() {
 		
 
@@ -235,17 +247,20 @@ public abstract class AbstractQueryTransactionTest extends
 //
 //	}
 
+	@Override
 	public void setApplicationException(Throwable t) {
 		this.applicationException = t;
 
 	}
 
+	@Override
 	public boolean exceptionOccurred() {
 		return (super.exceptionOccurred() ? super.exceptionOccurred()
 				: this.applicationException != null);
 
 	}
 
+	@Override
 	public SQLException getLastException() {
 		if (super.getLastException() != null) {
 			return super.getLastException();
@@ -264,6 +279,7 @@ public abstract class AbstractQueryTransactionTest extends
 		return null;
 	}
 
+	@Override
 	public Throwable getApplicationException() {
 		// TODO Auto-generated method stub
 		return this.applicationException;

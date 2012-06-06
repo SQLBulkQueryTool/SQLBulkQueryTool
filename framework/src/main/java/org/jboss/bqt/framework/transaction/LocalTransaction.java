@@ -38,10 +38,11 @@ public class LocalTransaction extends TransactionContainer {
 		super();
 	}
 
+	@Override
 	protected void before(TransactionQueryTestCase test) {
-		test.getConnectionStrategy().setEnvironmentProperty(
-				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
+//		test.getConnectionStrategy().setEnvironmentProperty(
+//				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
+//				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
 
 		try {
 			debug("Autocommit: " + test.getConnectionStrategy().getAutocommit());
@@ -52,6 +53,7 @@ public class LocalTransaction extends TransactionContainer {
 		}
 	}
 
+	@Override
 	protected void after(TransactionQueryTestCase test) {
 		boolean exception = false;
 		try {

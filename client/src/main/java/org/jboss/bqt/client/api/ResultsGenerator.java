@@ -20,14 +20,16 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client;
+package org.jboss.bqt.client.api;
 
 import java.sql.ResultSet;
 
+import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 /**
- * The ResultsGenerator represents how a new set of results will be written for
+ * The ResultsGenerator represents how a new set of expected results will be written for
  * a given <code>querySetID</code> and <code>queryIdentifier</code>. The
  * implementor should write out one result file for each call that is made to
  * {@link #generateQueryResultFile(TestResult, ResultSet)  }
@@ -38,15 +40,11 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * 
  */
 public interface ResultsGenerator {
-	/**
-	 * The {@link #PROP_GENERATE_DIR} property indicates where newly generated
-	 * results files should be written to. The newly generated files should be
-	 * written to a different location than the existing expected results.
-	 */
-	public static final String PROP_GENERATE_DIR = "generatedir"; //$NON-NLS-1$
 
 	/**
-	 * Return the location that output files are written to.
+	 * Return the location that report files are written to.
+	 * In the case of generating results, the output files
+	 * will be error files indicating which queries were failures.
 	 * 
 	 * @return String directory location of the output files
 	 * 
@@ -71,11 +69,11 @@ public interface ResultsGenerator {
 	 * 
 	 * @param testResult 
 	 * @param resultSet 
-	 * @throws QueryTestFailedException
+	 * @throws FrameworkRuntimeException is thrown to stop processing
 	 */
 	
 	void generateQueryResultFile(final TestResult testResult,
-			final ResultSet resultSet) throws QueryTestFailedException;	
+			final ResultSet resultSet) throws FrameworkRuntimeException;	
 	
 
 	/**
@@ -85,12 +83,12 @@ public interface ResultsGenerator {
 	 * @param resultSet 
 	 * @param results 
 	 * @return String name for the error file
-	 * @throws QueryTestFailedException
+	 * @throws FrameworkRuntimeException
 	 */
 	
 	String generateErrorFile(final TestResult testResult,
 			final ResultSet resultSet, 
-			final Object results) throws QueryTestFailedException;	
+			final Object results) throws FrameworkRuntimeException;	
 	
 	
 

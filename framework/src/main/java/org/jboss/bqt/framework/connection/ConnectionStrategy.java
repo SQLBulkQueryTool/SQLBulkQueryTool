@@ -71,10 +71,14 @@ public abstract class ConnectionStrategy {
 		return null;
 	}
 
-	private boolean autoCommit;
+	private boolean autoCommit = true;
 
 	public boolean getAutocommit() {
 		return autoCommit;
+	}
+	
+	public void setAutocommit(boolean autocommit) {
+		this.autoCommit = autocommit;
 	}
 
 	/**
@@ -99,75 +103,4 @@ public abstract class ConnectionStrategy {
 	void configure() throws QueryTestFailedException {
 
 	}
-
-//	public synchronized Connection createDriverConnection(String identifier)
-//			throws QueryTestFailedException {
-//
-//		DataSource ds = null;
-//		if (identifier != null) {
-//			ds = DataSourceMgr.getInstance().getDataSource(identifier);
-//		}
-//		if (ds == null) {
-//			throw new FrameworkRuntimeException(
-//					"Program Error: DataSource is not mapped to Identifier "
-//							+ identifier);
-//		}
-//
-//		Connection conn = ds.getConnection();
-//
-//		if (conn != null)
-//			return conn;
-//
-//		ConnectionStrategy cs = null;
-//		if (identifier == null) {
-//			cs = new DriverConnection(ds.getProperties());
-//
-//		} else {
-//			cs = new DriverConnection(ds.getProperties());
-//		}
-//
-//		// conn = cs.getConnection();
-//		//
-//		// conn = (Connection) Proxy.newProxyInstance(Thread.currentThread()
-//		// .getContextClassLoader(),
-//		// new Class[] { java.sql.Connection.class },
-//		// new CloseInterceptor(conn));
-//
-//		ds.setConnection(cs.getConnection());
-//
-//		return ds.getConnection();
-//
-//	}
-
-//	public synchronized XAConnection createDataSourceConnection(
-//			String identifier) throws QueryTestFailedException {
-//
-//		DataSource ds = null;
-//		if (identifier != null) {
-//			ds = DataSourceMgr.getInstance().getDataSource(identifier);
-//		}
-//		if (ds == null) {
-//			throw new FrameworkRuntimeException(
-//					"Program Error: DataSource is not mapped to Identifier "
-//							+ identifier);
-//		}
-//
-//		XAConnection conn = ds.getXAConnection();
-//
-//		if (conn != null)
-//			return conn;
-//
-//		ConnectionStrategy cs = null;
-//		if (identifier == null) {
-//			cs = new DataSourceConnection(ds.getProperties());
-//		} else {
-//			cs = new DataSourceConnection(ds.getProperties());
-//		}
-//
-//		ds.setXAConnection(cs.getXAConnection());
-//
-//		return ds.getXAConnection();
-//
-//	}
-
 }

@@ -57,21 +57,27 @@
 			"modeshape-integration" or "extensions/modeshape-connector-store-jpa"
 			project POMs for examples.
 		-->
-		<jpaSource.dialect />
-		<jpaSource.driverClassName />
-		<jpaSource.url />
-		<jpaSource.username />
-		<jpaSource.password /> 
+		
+        <int.database />
+        <int.driver />
+        <int.url />
+        <int.username />
+        <int.password />
+        <int.scriptfile />
+        <int.rdbms_type />
+        <int.delim />
+		
 		
 		<jdbc.hsqldb.version>1.8.0.2</jdbc.hsqldb.version> 
-  
+        <jdbc.h2.version>1.2.124</jdbc.h2.version>
+
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
     	<slf4j.api.version>1.6.1</slf4j.api.version>
 		<slf4j.log4j.version>1.6.1</slf4j.log4j.version>
     	<log4j.version>1.2.16</log4j.version>
     	
-    	<apache.ant.version>1.7</apache.ant.version>
+    	<apache.ant.version>1.7.0</apache.ant.version>
     	
    		<maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
     	<maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
@@ -79,6 +85,9 @@
 		<maven.resources.plugin.version>2.4.3</maven.resources.plugin.version>
 		<maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
 		<maven.surefire.plugin.version>2.8</maven.surefire.plugin.version>
+		
+        <rootDir>${project.basedir}</rootDir>
+
   </properties>
   
   	<modules>
@@ -120,14 +129,7 @@
 				<artifactId>client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
-			<dependency>
-				<groupId>org.jboss.bqt</groupId>
-				<artifactId>jdk-16-support</artifactId>
-				<version>${project.version}</version>
-			</dependency>																						
-		
-	
+
       <!--
       Declare all dependency versions and default scopes here, but not optional.
       Each module should declare it's direct dependency and possibily overwrite scope/optional.
@@ -168,69 +170,87 @@
 				<artifactId>jdom</artifactId>
 				<version>1.0</version>
 			</dependency>
-    
+			
+            <dependency>
+	            <groupId>org.apache.ant</groupId>
+	            <artifactId>ant</artifactId>
+	            <version>${apache.ant.version}</version>
+            </dependency>
+
+            <dependency>
+	            <groupId>org.apache.ant</groupId>
+	            <artifactId>ant-launcher</artifactId>
+	            <version>${apache.ant.version}</version>
+	        </dependency>
+	        
+            <dependency>
+                <groupId>hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>${jdbc.hsqldb.version}</version>
+                <scope>test</scope>
+            </dependency>	 
+          
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${jdbc.h2.version}</version>
+                <scope>test</scope>
+            </dependency>                 
 	</dependencies>
 </dependencyManagement>  
 
+<build>
+    <plugins>
+    <!-- Specify the compiler options and settings -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven.compiler.plugin.version}</version>
+            <configuration>
+                <source>1.6</source>
+                <target>1.6</target>
+                <showDeprecation>false</showDeprecation>
+                <showWarnings>false</showWarnings>
+            </configuration>
+      </plugin>
+    </plugins>
+</build>
 
 	<profiles>
-		<profile>
-			<id>jdk16</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<jdk>jdk16</jdk>
-			</properties>
-			<modules>
-				<module>jdk-16-support</module>
-				<module>distro</module>
-			</modules>
-			
-				<build>
-				<plugins>
-			  <!-- Specify the compiler options and settings -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<version>${maven.compiler.plugin.version}</version>
-						<configuration>
-							<source>1.6</source>
-							<target>1.6</target>
-							<showDeprecation>false</showDeprecation>
-							<showWarnings>false</showWarnings>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-
-		</profile>	
-	
-	<profile>
-		<id>test</id>
-		<activation>
-		  <activeByDefault>false</activeByDefault>
-			<property>
-				<name>!database</name>
-			</property>
-		</activation>
-		<dependencies>
-			<dependency>
-				<groupId>hsqldb</groupId>
-				<artifactId>hsqldb</artifactId>
-				<version>${jdbc.hsqldb.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-		<properties>
-			<database>hsqldb</database>
-			<jpaSource.dialect>org.hibernate.dialect.HSQLDialect</jpaSource.dialect>
-			<jpaSource.driverClassName>org.hsqldb.jdbcDriver</jpaSource.driverClassName>
-			<jpaSource.url>jdbc:hsqldb:mem:modeshape</jpaSource.url>
-			<jpaSource.username>sa</jpaSource.username>
-			<jpaSource.password />
-		</properties>
-	</profile>
-
+	   <profile>
+            <id>integration_hsql</id>
+            <properties>
+                <int.database>hsqldb</int.database>
+                <int.driver>org.hsqldb.jdbcDriver</int.driver>
+                <int.url>jdbc:hsqldb:file:./target/db:modeshape</int.url>
+                <int.username>sa</int.username>
+                <int.password />
+                <int.scriptfile>src/test/resources/customer-schema.sql</int.scriptfile>
+                <int.rdbms_type>hsql</int.rdbms_type>
+                <int.delim>;</int.delim>
+            </properties>
+            <modules>
+                <module>integration</module>
+            </modules>
+    </profile>
+       <profile>
+            <!--
+                This profile is activated manually, as in "mvn ... -P integration ..."
+            -->
+            <id>integration_h2</id>
+            <properties>
+                <int.database>h2</int.database>
+                <int.driver>org.h2.Driver</int.driver>
+                <int.url>jdbc:h2:file:${project.basedir}/target/db</int.url>
+                <int.username></int.username>
+                <int.password />
+                <int.scriptfile>src/test/resources/customer-schema.sql</int.scriptfile>
+                <int.rdbms_type>h2</int.rdbms_type>
+                <int.delim>;</int.delim>
+            </properties>
+            <modules>
+                <module>integration</module>
+            </modules>
+    </profile>
 	</profiles>
 </project>

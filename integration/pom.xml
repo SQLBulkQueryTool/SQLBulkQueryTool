@@ -14,32 +14,48 @@
 	<name>Integration Testing</name>
 	<description>Test the distribution kit works</description>
 
-	<properties>
-		<apache.ant.version>1.7.0</apache.ant.version>
-
-	</properties>
-	
 	<dependencies>
-	
-		<dependency>
-			<groupId>org.jboss.bqt</groupId>
-			<artifactId>distro</artifactId>
-			<version>${version}</version>
-		</dependency>	
+		
+        <dependency>
+            <groupId>org.jboss.bqt</groupId>
+            <artifactId>core</artifactId>
+        </dependency>   
+     
+        <dependency>
+            <groupId>org.jboss.bqt</groupId>
+            <artifactId>core</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+        </dependency>   
+              
+        <dependency>
+            <groupId>org.jboss.bqt</groupId>
+            <artifactId>framework</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.bqt</groupId>
+            <artifactId>client</artifactId>
+        </dependency>
 
-		<dependency>
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>   
+		
+
+		<!-- dependency>
 			<groupId>org.apache.ant</groupId>
 			<artifactId>ant</artifactId>
-			<version>${apache.ant.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.ant</groupId>
 			<artifactId>ant-launcher</artifactId>
-			<version>${apache.ant.version}</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>ant-contrib</groupId>
+			<groupId>ant-conrib</groupId>
 			<artifactId>ant-contrib</artifactId>
 			<version>1.0b3</version>
 			<exclusions>
@@ -61,74 +77,120 @@
                                 <artifactId>ant</artifactId>
                             </exclusion>
     		</exclusions>
-		</dependency>
+		</dependency-->
 
-		
-	</dependencies>				
-	<build>
-		<plugins>
-          <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss.bqt</groupId>
-                        <artifactId>distro</artifactId>
-                        <version>${version}</version>
-                        <type>zip</type>
-                    </dependency>
-                 </dependencies>
-               <executions>
-                    <execution>
-                        <id>unpack-zips</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                     <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.jboss.bqt</groupId>
-                                    <artifactId>distro</artifactId>
-                                    <version>${version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/work</outputDirectory>
-                                    <excludes>META-INF/**</excludes>
-                                </artifactItem>
-                     		 </artifactItems>
-                    	</configuration>
-                    </execution>
-                </executions>
-			
-			
-			</plugin>
-		</plugins>
-	</build>
-	 <!-- 
-		<profile>
+	
+
+        <dependency>
+           <groupId>com.h2database</groupId>
+           <artifactId>h2</artifactId>
+          <version>${jdbc.h2.version}</version>
+        </dependency>   
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${jdbc.hsqldb.version}</version>
+       </dependency>          
+                
+        <!--
+            Logging (require SLF4J API for compiling, but use Log4J and its SLF4J
+            binding for testing)
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>provided</scope>
+        </dependency>                  
+                        
+	</dependencies>	
+	
+     <profiles>
+        <profile>
           <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-	        <dependencies>
-				<dependency>
-					<groupId>hsqldb</groupId>
-					<artifactId>hsqldb</artifactId>
-					<version>${jdbc.hsqldb.version}</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-			<properties>
-				<database>hsqldb</database>
-				<jpaSource.dialect>org.hibernate.dialect.HSQLDialect</jpaSource.dialect>
-				<jpaSource.driverClassName>org.hsqldb.jdbcDriver</jpaSource.driverClassName>
-				<jpaSource.url>jdbc:hsqldb:mem:bqt</jpaSource.url>
-				<jpaSource.username>sa</jpaSource.username>
-				<jpaSource.password />
-			</properties>
-	</profile>
+	<build>
+	  <!-- testResources>
+	    <testResource>
+	      <directory>src/test/resources</directory>
+	      <includes>
+	        <include>log4j.xml</include>
+	      </includes>
+	    </testResource>
+	  </testResources-->
+	  <plugins>
+	  
+          <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                 <dependencies>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant</artifactId>
+                        <version>1.7.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>hsqldb</groupId>
+                        <artifactId>hsqldb</artifactId>
+                        <version>${jdbc.hsqldb.version}</version>
+                   </dependency>  
+                    <dependency>
+                       <groupId>com.h2database</groupId>
+                       <artifactId>h2</artifactId>
+                      <version>${jdbc.h2.version}</version>
+                    </dependency>                               
+                 </dependencies>
+                <executions>
+                <execution>
+                    <id>load-database-schema</id>
+                    <phase>generate-sources</phase>
+                    <configuration>
+                        <tasks>
+         
+            <available file="${int.scriptfile}" property="script.file.exist"/>
+            <fail unless="script.file.exist" message="DDL ${int.scriptfile} does not exist" />
 
-	</profiles>
-	-->
+            <echo>Loading schema for ${int.url}</echo>
+<!-- 
+rdbms="${rdbms.type}"
+-->
+             <sql     driver="${int.driver}"
+                            url="${int.url}"
+                            userid="${int.username}"
+                            password="${int.password}"
+                            src="${int.scriptfile}"
+                         
+                delimiter="${int.delim}"
+                delimitertype="normal"
+                autocommit="true"
+                onerror="stop" >
+                <classpath>
+                    <pathelement path="${maven.runtime.classpath}"/>
+                </classpath>
+             
+
+             </sql> 
+
+                        </tasks>
+                    </configuration>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                </execution>
+              </executions>
+            </plugin>  
+            
+            
+         </plugins>     	  
+	</build>	
+	</profile>
+	
+  </profiles>		
+
 </project>

@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.jboss.bqt.client.TestResult;
+import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.core.util.ExceptionUtil;
 
 /**

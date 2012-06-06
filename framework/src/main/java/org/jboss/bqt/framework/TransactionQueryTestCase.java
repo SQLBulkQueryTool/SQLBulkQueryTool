@@ -54,7 +54,7 @@ import org.jboss.bqt.framework.connection.ConnectionStrategy;
  * (i.e., global) setup. Example would be data source setup.
  * <li>{@link #setConnection(Connection)} - called to set the client driver
  * (i.e., Teiid) connection that will be used to execute queries against
- * <li>{@link AbstractQueryTest#assignExecutionProperties(Statement)} is called
+ * <li>{@link AbstractQuery#assignExecutionProperties(Statement)} is called
  * prior to sql execution. (Example: set fetch size, batch time, or timeout)</li>
  * <br>
  * <p>
@@ -88,7 +88,7 @@ import org.jboss.bqt.framework.connection.ConnectionStrategy;
  * <b>Other Notes:</b> <br>
  * <br>
  * 
- * The following methods were exposed from {@link AbstractQueryTest}:
+ * The following methods were exposed from {@link AbstractQuery}:
  * 
  * <li>{@link #exceptionExpected()} - when an exception is expected to occur,
  * the underlying logic will treat the execution as if it succeeded.</li>

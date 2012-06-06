@@ -35,13 +35,15 @@ public class OffWrapTransaction extends TransactionContainer {
 		super();
 	}
 
+	@Override
 	public void before(TransactionQueryTestCase test) {
-		test.getConnectionStrategy().setEnvironmentProperty(
-				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
+//		test.getConnectionStrategy().setEnvironmentProperty(
+//				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
+//				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
 
 	}
-
+	
+	@Override
 	public void after(TransactionQueryTestCase test) {
 
 	}

@@ -45,6 +45,8 @@ public abstract class StringLineReader extends Reader {
      * @see java.io.Reader#close()
      * @since 4.3
      */
+    @SuppressWarnings("unused")
+	@Override
     public void close() throws IOException {
         closed = true;
     }
@@ -53,6 +55,7 @@ public abstract class StringLineReader extends Reader {
      * @see java.io.Reader#read(char[], int, int)
      * @since 4.3
      */
+    @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
         if (closed) {
             throw new IllegalStateException("Reader already closed"); //$NON-NLS-1$

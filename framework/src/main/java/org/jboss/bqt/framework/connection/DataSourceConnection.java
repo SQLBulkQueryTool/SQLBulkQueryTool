@@ -66,8 +66,7 @@ public class DataSourceConnection extends ConnectionStrategy {
 
 	private XAConnection xaConnection;
 
-	public DataSourceConnection(Properties props)
-			throws QueryTestFailedException {
+	public DataSourceConnection(Properties props){
 		super(props);
 	}
 
@@ -113,6 +112,7 @@ public class DataSourceConnection extends ConnectionStrategy {
 
 	}
 
+	@Override
 	public Connection getConnection() throws QueryTestFailedException {
 		try {
 			return getXAConnection().getConnection();
@@ -124,6 +124,7 @@ public class DataSourceConnection extends ConnectionStrategy {
 		}
 	}
 
+	@Override
 	public synchronized XAConnection getXAConnection()
 			throws QueryTestFailedException {
 		if (xaConnection == null) {
@@ -177,11 +178,15 @@ public class DataSourceConnection extends ConnectionStrategy {
 			props.setProperty(DS_USER, this.username);
 			props.setProperty(DS_PASSWORD, this.pwd);
 		}
+		if (this.applName != null) {
+			props.setProperty(DS_APPLICATION_NAME, applName);
+		}
 
 		PropertiesUtils.setBeanProperties(ds, props, null);
 		return ((XADataSource) ds).getXAConnection();
 	}
-
+	
+	@Override
 	public void shutdown() {
 		super.shutdown();
 		try {

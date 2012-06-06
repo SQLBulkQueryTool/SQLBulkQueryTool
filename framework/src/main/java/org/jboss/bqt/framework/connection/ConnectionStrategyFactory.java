@@ -66,15 +66,17 @@ public class ConnectionStrategyFactory {
 			}
 
 			if (strategy == null) {
-				new FrameworkRuntimeException("Invalid property value for "
+				throw new FrameworkRuntimeException("Invalid property value for "
 						+ ConfigPropertyNames.CONNECTION_TYPE + " is " + type);
-			}
+			} 
+			
 			// call configure here because this is creating the connection to
 			// Teiid
 			// direct connections to the datasource use the static call directly
 			// to create strategy and don't need to configure
 			strategy.configure();
 			return strategy;
+
 		} catch (Exception e) {
 			throw new FrameworkRuntimeException(e);
 		}

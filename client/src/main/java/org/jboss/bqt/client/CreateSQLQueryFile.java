@@ -26,27 +26,28 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.framework.AbstractQueryTransactionTest;
+import org.jboss.bqt.framework.AbstractQueryTransaction;
 import org.jboss.bqt.framework.DatabaseMetaDataReader;
 
 /**
  * TestCreateSQLQueryFile is used to create sql queries based on the database metadata.
  * 
  */
-public class TestCreateSQLQueryFile extends AbstractQueryTransactionTest {
+public class CreateSQLQueryFile extends AbstractQueryTransaction {
 
-	private QueryScenario querySet = null;
+	private QueryScenario queryScenario = null;
 	private QueryTest queries = null;
 
-	public TestCreateSQLQueryFile(QueryScenario querySet) {
+	public CreateSQLQueryFile(QueryScenario querySet) {
 		super(querySet.getQueryScenarioIdentifier());
-		this.querySet = querySet;
+		this.queryScenario = querySet;
 	}
 
 	@Override
 	public String getTestName() {
-		return querySet.getQueryScenarioIdentifier();
+		return queryScenario.getQueryScenarioIdentifier();
 	}
 
 	@Override
@@ -70,7 +71,17 @@ public class TestCreateSQLQueryFile extends AbstractQueryTransactionTest {
 			
 			List<String> querystrings = reader.getQueries();
 			
-			ClientPlugin.LOGGER.debug("# Query Strings " + querystrings.size());
+			if (querystrings == null || querystrings.isEmpty()) {
+				final String msg = ClientPlugin.Util.getString(
+						"CreateSQLFile.noQueriesBuiltFromDatabase", this.getConnection().getMetaData().getDriverName()); //$NON-NLS-1$            
+
+				ClientPlugin.LOGGER.error(msg);
+				
+				throw new FrameworkRuntimeException(msg);
+
+			}
+			
+			ClientPlugin.LOGGER.info("# Query files to be created: " + querystrings.size());
 			
 			QuerySQL[] querysqls = new QuerySQL[querystrings.size()];
 			
@@ -82,12 +93,12 @@ public class TestCreateSQLQueryFile extends AbstractQueryTransactionTest {
 				
 			}
 			
-			this.queries = new QueryTest(querySet.getQueryScenarioIdentifier(),"sql", querySet.getQuerySetName(), querysqls,false);
+			this.queries = new QueryTest(queryScenario.getQueryScenarioIdentifier(),"sql", queryScenario.getQuerySetName(), querysqls,false);
 			
-			ClientPlugin.LOGGER.debug("Write query tests ");
+			this.queryScenario.writeQueryTests(this.queries);
 
-			this.querySet.writeQueryTests(this.queries);
-
+		} catch (FrameworkRuntimeException fre) {
+			throw fre;
 		} catch (Throwable t) {
 			this.setApplicationException(t);
 

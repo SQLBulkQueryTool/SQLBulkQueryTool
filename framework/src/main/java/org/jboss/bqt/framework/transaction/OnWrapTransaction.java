@@ -36,10 +36,11 @@ public class OnWrapTransaction extends TransactionContainer {
 		super();
 	}
 
+	@Override
 	public void before(TransactionQueryTestCase test) {
-		test.getConnectionStrategy().setEnvironmentProperty(
-				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_ON);
+//		test.getConnectionStrategy().setEnvironmentProperty(
+//				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
+//				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_ON);
         
         try {
 			debug("Autocommit: " + test.getConnectionStrategy().getAutocommit());
@@ -51,6 +52,7 @@ public class OnWrapTransaction extends TransactionContainer {
 
 	}
 
+	@Override
 	protected void after(TransactionQueryTestCase test) {
 		boolean exception = false;
         System.out.println("OnWrapTransaction:  After");
