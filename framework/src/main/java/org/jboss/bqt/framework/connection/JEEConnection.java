@@ -41,10 +41,11 @@ public class JEEConnection extends ConnectionStrategy {
 
 	private String jndi_name = null;
 
-	public JEEConnection(Properties props) throws QueryTestFailedException {
+	public JEEConnection(Properties props) {
 		super(props);
 	}
 
+	@Override
 	public Connection getConnection() throws QueryTestFailedException {
 		validate();
 		try {
@@ -66,6 +67,7 @@ public class JEEConnection extends ConnectionStrategy {
 		}
 	}
 
+	@Override
 	public void shutdown() {
 		super.shutdown();
 		// no connection management here; app server takes care of these..

@@ -44,7 +44,7 @@ public class DatabaseMetaDataReader {
 			rs = dbmd.getTables("%", "%", "%", new String[] {"TABLE","VIEW"});
 			queries = loadQueries(rs, dbmd);
 
-			FrameworkPlugin.LOGGER.info("DatabaseMetadata:  completed loading queries");
+			FrameworkPlugin.LOGGER.debug("DatabaseMetadataReader:  processed loading queries " + queries.size());
 		} catch (SQLException e) {
 			// SQLException has child exceptions/ navigate the children
 			FrameworkPlugin.LOGGER.error(e, "Error reading DatabaseMetadata when trying to build queries");			

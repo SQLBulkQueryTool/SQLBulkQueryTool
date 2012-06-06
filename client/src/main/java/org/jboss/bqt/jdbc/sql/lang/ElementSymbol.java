@@ -42,7 +42,8 @@ public class ElementSymbol extends SingleElementSymbol {
     
     private GroupSymbol groupSymbol;
     private Object metadataID;
-	private Class<?> type;
+//	private Class<?> type;
+	private String classType;
     private boolean isExternalReference = false;
         
     private DisplayMode displayMode = DisplayMode.OUTPUT_NAME;
@@ -158,17 +159,25 @@ public class ElementSymbol extends SingleElementSymbol {
 	 * Get the type of the symbol
 	 * @return Type of the symbol, may be null before resolution
 	 */
-	public Class getType() {
-		return this.type;
-	}	
-	
-	/**
-	 * Set the type of the symbol
-	 * @param type New type
-	 */
-	public void setType(Class type) {
-		this.type = type;
-	}	
+//	public Class getType() {
+//		return this.type;
+//	}	
+//	
+//	/**
+//	 * Set the type of the symbol
+//	 * @param type New type
+//	 */
+//	public void setType(Class type) {
+//		this.type = type;
+//	}	
+    
+    public String getType() {
+    	return this.classType;
+    }
+    
+    public void setType(String className) {
+    	this.classType = className;
+    }
 
 //    public void acceptVisitor(LanguageVisitor visitor) {
 //        visitor.visit(this);
@@ -179,14 +188,16 @@ public class ElementSymbol extends SingleElementSymbol {
      * else return false
      * @return boolean if metadataID is null or not
      */
+    @Override
     public boolean isResolved() {
-        return(this.metadataID != null && this.type != null);
+        return(this.metadataID != null && this.classType != null);
     }
 	
 	/**
 	 * Return a deep copy of this object.
 	 * @return Deep copy of this object
 	 */
+    @Override
 	public Object clone() {
 		ElementSymbol copy = new ElementSymbol(getName(), getCanonical());
 		if(getGroupSymbol() != null) { 

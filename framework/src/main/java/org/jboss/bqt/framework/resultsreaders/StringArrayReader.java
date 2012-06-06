@@ -36,6 +36,8 @@ public class StringArrayReader extends StringLineReader {
         this.source = src;
     }
 
+    @SuppressWarnings("unused")
+	@Override
     protected String nextLine() throws IOException {
         if (index < this.source.length) {
             return this.source[index++]+"\n"; //$NON-NLS-1$

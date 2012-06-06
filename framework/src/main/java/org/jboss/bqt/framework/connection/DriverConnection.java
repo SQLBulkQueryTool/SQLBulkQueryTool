@@ -58,7 +58,7 @@ public class DriverConnection extends ConnectionStrategy {
 
 	private Connection connection;
 
-	public DriverConnection(Properties props) throws QueryTestFailedException {
+	public DriverConnection(Properties props)  {
 		super(props);
 		validate();
 	}
@@ -104,6 +104,7 @@ public class DriverConnection extends ConnectionStrategy {
 
 	}
 
+	@Override
 	public synchronized Connection getConnection()
 			throws QueryTestFailedException {
 		if (this.connection != null) {
@@ -144,6 +145,7 @@ public class DriverConnection extends ConnectionStrategy {
 
 	}
 
+	@Override
 	public void shutdown() {
 		super.shutdown();
 		if (this.connection != null) {

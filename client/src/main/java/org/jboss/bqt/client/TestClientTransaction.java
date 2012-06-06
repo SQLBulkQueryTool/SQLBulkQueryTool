@@ -26,17 +26,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
-import org.jboss.bqt.framework.AbstractQueryTransactionTest;
+import org.jboss.bqt.framework.AbstractQueryTransaction;
 
 /**
  * TestClientTransaction
  * 
  */
-public class TestClientTransaction extends AbstractQueryTransactionTest {
+public class TestClientTransaction extends AbstractQueryTransaction {
 
 	private QueryScenario querySet = null;
 	private ExpectedResults expectedResults = null;
@@ -92,25 +95,15 @@ public class TestClientTransaction extends AbstractQueryTransactionTest {
 
 	@Override
 	public void before() {
-		// TODO Auto-generated method stub
 		super.before();
 
-		try {
 			this.errorExpected = expectedResults.isExceptionExpected(query
 					.getQueryID());
-		} catch (QueryTestFailedException e) {
-			// TODO Auto-generated catch block
-			throw new TransactionRuntimeException("ProgramError: "
-					+ e.getMessage());
-		}
-
 	}
 
 	@Override
 	public void testCase() throws FrameworkRuntimeException {
 		ClientPlugin.LOGGER.debug("expected error: " + this.errorExpected);
-		ClientPlugin.LOGGER.info("ID: " + query.geQuerySetID() + "  -  "
-				+ query.getQueryID() );
 
 		int l = queries.length;
 
@@ -129,7 +122,10 @@ public class TestClientTransaction extends AbstractQueryTransactionTest {
 
 				}
 				
-				ClientPlugin.LOGGER.info("ResultMode: " + this.resultMode + ", numtimes: " + qsql.getRunTimes() + " rowcount: "  + qsql.getRowCnt() + " updatecnt: " + qsql.getUpdateCnt());
+				ClientPlugin.LOGGER.debug("ID: " + query.geQuerySetID() + "  -  "
+						+ query.getQueryID() + "ResultMode: " + this.resultMode + ", numtimes: " +
+						qsql.getRunTimes() + " rowcount: "  + qsql.getRowCnt() + " updatecnt: " + 
+						qsql.getUpdateCnt());
 
 				
 				for (int r = 0; r < qsql.getRunTimes(); r++) {
@@ -171,18 +167,14 @@ public class TestClientTransaction extends AbstractQueryTransactionTest {
 			}
 
 		} catch (Throwable t) {
+			t.printStackTrace();
 			this.setApplicationException(t);
 		} 
 	}
 
 	@Override
 	public void after() {
-		// TODO Auto-generated method stub
-		TestResult rs = null;
-
-		Throwable resultException = null;
-
-		resultException = (this.getLastException() != null ? this
+		final Throwable resultException = (this.getLastException() != null ? this
 				.getLastException() : this.getApplicationException());
 
 		if (resultException != null) {
@@ -194,7 +186,7 @@ public class TestClientTransaction extends AbstractQueryTransactionTest {
 
 		}
 
-		rs = new TestResultStat(query.geQuerySetID(), query.getQueryID(), sql,
+		final TestResult rs = new TestResultStat(query.geQuerySetID(), query.getQueryID(), sql,
 				testStatus, beginTS, endTS, resultException, null);
 		rs.setResultMode(this.resultMode);
 		rs.setUpdateCount(this.updateCount);

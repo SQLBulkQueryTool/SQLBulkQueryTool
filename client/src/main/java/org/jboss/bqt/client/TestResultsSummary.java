@@ -42,6 +42,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 
@@ -49,7 +52,6 @@ public class TestResultsSummary {
 
 	private static final String OVERALL_SUMMARY_FILE = "Summary_totals.txt";
 	private static final String OVERALL_SUMMARY_ERROR_FILE = "Summary_errors.txt";
-	private static final String PROP_SUMMARY_PRT_DIR = "summarydir";
 	private static final SimpleDateFormat FILE_NAME_DATE_FORMATER = new SimpleDateFormat(
 			"yyyyMMdd_HHmmss"); //$NON-NLS-1$
 
@@ -134,10 +136,14 @@ public class TestResultsSummary {
 		}
 
 		File summaryFile = new File(outputDir, summaryName);
-		if (summaryFile.exists() && !overwrite) {
-			throw new IOException(
+		if (summaryFile.exists()) {
+			if ( !overwrite) {
+				throw new IOException(
 					"Summary file already exists: " + summaryFile.getName()); //$NON-NLS-1$
+			}
+			summaryFile.delete();
 		}
+		
 		try {
 			summaryFile.createNewFile();
 		} catch (IOException ioe) {
@@ -520,10 +526,16 @@ public class TestResultsSummary {
 		String querysetname = scenario.getQuerySetName();
 
 		String summarydir = ConfigPropertyLoader.getInstance().getProperty(
-				PROP_SUMMARY_PRT_DIR);
+				TestProperties.PROP_SUMMARY_PRT_DIR);
 		// if (summarydir != null) {
 		// outputDir = summarydir;
 		// }
+		
+		File s = new File(summarydir);
+		if (!s.exists()) {
+			s.mkdirs();
+		}
+
 
 		PrintStream outputStream = null;
 		Writer overallsummary = null;

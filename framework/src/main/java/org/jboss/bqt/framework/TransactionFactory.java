@@ -55,8 +55,7 @@ public class TransactionFactory {
 	private TransactionFactory() {
 	}
 
-	public static TransactionContainer create(ConfigPropertyLoader config)
-			throws QueryTestFailedException {
+	public static TransactionContainer create(ConfigPropertyLoader config)  {
 		TransactionContainer transacton = null;
 
 		String type = config.getProperty(TRANSACTION_TYPE);

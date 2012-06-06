@@ -21,8 +21,6 @@
  */
 package org.jboss.bqt.framework;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.bqt.core.util.PropertiesUtils;
@@ -39,6 +37,7 @@ import org.jboss.bqt.core.util.PropertiesUtils;
  */
 
 public class ConfigPropertyLoader {
+	private static final String CONFIG_TEMPLATE_FILE_NAME = "config-template.properties";
 
 	/**
 	 * The default config file to use when #CONFIG_FILE system property isn't
@@ -55,7 +54,8 @@ public class ConfigPropertyLoader {
 	private Properties overrides = new Properties();
 
 	/**
-	 * Contains the properties loaded from the config file
+	 * Contains the properties loaded from, first the template,
+	 * and then the config file 
 	 */
 	private Properties props = null;
 
@@ -120,7 +120,11 @@ public class ConfigPropertyLoader {
 
 	private void initialize() {
 
-		props = PropertiesUtils.load(LAST_CONFIG_FILE, null);
+		Properties templateProps = PropertiesUtils.load(CONFIG_TEMPLATE_FILE_NAME, null);
+		Properties defaultProps = PropertiesUtils.load(LAST_CONFIG_FILE, null);
+		templateProps.putAll(defaultProps);
+		props = PropertiesUtils.resolveNestedProperties(templateProps, false);
+		
 	}
 
 	public String getProperty(String key) {
@@ -155,40 +159,6 @@ public class ConfigPropertyLoader {
 		}
 
 		return p;
-	}
-
-	public static void main(String[] args) {
-		System.setProperty("test", "value");
-
-		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
-		Properties p = _instance.getProperties();
-		if (p == null || p.isEmpty()) {
-			throw new RuntimeException("Failed to load config properties file");
-
-		}
-		if (!p.getProperty("test").equalsIgnoreCase("value")) {
-			throw new RuntimeException("Failed to pickup system property");
-		}
-
-		_instance.setProperty("override", "ovalue");
-
-		if (!_instance.getProperties().getProperty("override")
-				.equalsIgnoreCase("ovalue")) {
-			throw new RuntimeException("Override value wasnt found");
-		}
-
-		ConfigPropertyLoader.reset();
-		if (_instance.getProperties().getProperty("override") != null) {
-			throw new RuntimeException(
-					"Override value was found, should have been removed on reset");
-		}
-
-		if (!p.getProperty("test").equalsIgnoreCase("value")) {
-			throw new RuntimeException("Failed to pickup system property");
-		}
-
-		System.out.println("Loaded Config Properties " + p.toString());
-
 	}
 
 }

@@ -432,7 +432,10 @@ public class TestPropertiesUtils extends TestCase {
         p.setProperty("key4", "${key2}/value4"); //$NON-NLS-1$ //$NON-NLS-2$
         p.setProperty("key5", "${testdirectory}/testdata"); //$NON-NLS-1$ //$NON-NLS-2$
         p.setProperty("key7", "anotherdir/${testdirectory}/${key1}"); //$NON-NLS-1$ //$NON-NLS-2$
+        p.setProperty("key8", "${key8key}/value8/${key1}"); //$NON-NLS-1$ //$NON-NLS-2$
         int currentSize = p.size();
+        
+        System.setProperty("key8key", "bogusDirectory");
         
         Properties m = PropertiesUtils.resolveNestedProperties(p);
         assertEquals("value1/value2", m.getProperty("key2")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -440,6 +443,7 @@ public class TestPropertiesUtils extends TestCase {
         assertEquals("value1/value2/value4", m.getProperty("key4")); //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals("c:/metamatrix/testdirectory/testdata", m.getProperty("key5")); //$NON-NLS-1$ //$NON-NLS-2$
         assertEquals("anotherdir/c:/metamatrix/testdirectory/value1", m.getProperty("key7")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertEquals("bogusDirectory/value8/value1", m.getProperty("key8")); //$NON-NLS-1$ //$NON-NLS-2$
         assertTrue(p == m); // no cloning.
         assertTrue(currentSize == m.size());
         
@@ -450,6 +454,12 @@ public class TestPropertiesUtils extends TestCase {
         	fail("must have failed to resovle as {foo} does not exist"); //$NON-NLS-1$
         } catch(RuntimeException e) {
         	// pass
+        }
+        
+        try {
+        	m = PropertiesUtils.resolveNestedProperties(p, false);
+        } catch(RuntimeException e) {
+        	fail("shoul not have failed because failWhenNotResolved is false"); //$NON-NLS-1$
         }
         
         
@@ -480,6 +490,22 @@ public class TestPropertiesUtils extends TestCase {
         
         assertEquals(1, p1.size());
     }
+    
+    public void testFilterdProperties() {
+        Properties p = new Properties();
+        
+        p.setProperty("foo.bar1", "value1");  //$NON-NLS-1$ //$NON-NLS-2$
+        p.setProperty("foo.bar2", "value2"); //$NON-NLS-1$ //$NON-NLS-2$
+        p.setProperty("bar.foo1", "value3"); //$NON-NLS-1$ //$NON-NLS-2$
+        
+        List foop = PropertiesUtils.filter("foo.*", p);
+        
+        assertEquals(2,foop.size());
+        
+        List barp = PropertiesUtils.filter("bar.*", p);
+        
+        assertEquals(1, barp.size());
+    }    
     
     public void testGetInvalidInt() {
     	Properties p = new Properties();

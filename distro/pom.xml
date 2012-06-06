@@ -13,11 +13,6 @@
 	<artifactId>distro</artifactId>
 	<name>BQT Distribution</name>
 	<description>The building of the distribution</description>
-
-	<properties>
-		<apache.ant.version>1.7.0</apache.ant.version>
-
-	</properties>
 	
 	<dependencies>
 	
@@ -35,16 +30,10 @@
 			<groupId>org.jboss.bqt</groupId>
 			<artifactId>client</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>org.jboss.bqt</groupId>
-			<artifactId>jdk-16-support</artifactId>
-		</dependency>		
-		
+
 		<dependency>
 			<groupId>jdom</groupId>
 			<artifactId>jdom</artifactId>
-			<scope>provided</scope>
 		</dependency>	
 
 		
@@ -93,7 +82,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.5.6</version>
+			<version>${slf4j.api.version}</version>
 		</dependency>
 				
 		<dependency>
@@ -121,7 +110,7 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<version>${maven.assembly.plugin.version}</version>
 						<configuration>
-							<finalName>bqt-distro-jdk16-${project.version}</finalName>
+							<!-- finalName>bqt-distro-jdk16-${project.version}</finalName-->
 							<descriptors>
 								<descriptor>src/assembly/binaries_jdk16_support.xml</descriptor>
 							</descriptors>
@@ -140,7 +129,26 @@
 							</execution>
 						</executions>
 					</plugin>
-
+				    <plugin>
+				        <groupId>org.apache.maven.plugins</groupId>
+				        <artifactId>maven-install-plugin</artifactId>
+				        <executions>
+				            <execution>
+				                <id>install-zip</id>
+				                <phase>install</phase>
+				                <goals>
+				                    <goal>install-file</goal>
+				                </goals>
+				                <configuration>
+				                    <packaging>zip</packaging>
+				                    <artifactId>${project.artifactId}</artifactId>
+				                    <groupId>${project.groupId}</groupId>
+				                    <version>${project.version}</version>
+				                    <file>${project.build.directory}/distribution/distro-${project.version}-bqt-kit.zip</file>
+				                </configuration>
+				            </execution>
+				        </executions>
+				    </plugin>      
 				</plugins>
 			</build>	
 </project>

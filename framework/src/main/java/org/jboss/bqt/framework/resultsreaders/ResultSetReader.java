@@ -65,6 +65,7 @@ public class ResultSetReader extends StringLineReader {
      * @see java.io.Reader#close()
      * @since 4.3
      */
+    @Override
     public void close() throws IOException {
         try {
             source.close();
@@ -81,6 +82,7 @@ public class ResultSetReader extends StringLineReader {
      * @return next result line from result set.
      * @throws IOException 
      */
+    @Override
     protected String nextLine() throws IOException{        
         try {
             if (firstTime) {

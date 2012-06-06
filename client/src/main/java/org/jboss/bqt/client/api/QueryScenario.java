@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.client;
+package org.jboss.bqt.client.api;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -27,7 +27,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.bqt.client.ClassFactory;
+import org.jboss.bqt.client.ClientPlugin;
+import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.TestProperties.RESULT_MODES;
+import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 
@@ -53,46 +58,46 @@ public abstract class QueryScenario {
 	protected QueryReader reader = null;
 	protected ResultsGenerator resultsGen = null;
 
-	private String resultMode = TestProperties.RESULT_MODES.NONE;
-
 	private Properties props = null;
 	private String scenarioName;
 	private String querySetName;
 	
-	private RESULT_MODE mode = null;
+	private RESULT_MODE mode = RESULT_MODE.NONE;
 	
 	public QueryScenario(String scenarioName, Properties queryProperties) {
 		this.props = queryProperties;
 		this.scenarioName = scenarioName;
 
-		this.querySetName = props.getProperty(TestProperties.QUERY_SET_NAME,
-				"querysetnamenotdefined");
+		this.querySetName = props.getProperty(TestProperties.QUERY_SET_NAME);
+		
+		if (this.querySetName == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.QUERY_SET_NAME);
+		}
 
 		setUp();
 
 	}
 
 	protected void setUp() {
-		Collection<Object> args = new ArrayList<Object>(1);
+		validateResultsMode(this.props);
+		
+		Collection<Object> args = new ArrayList<Object>(2);
 		args.add(scenarioName);
 		args.add(props);
-
-		reader = ClassFactory.createQueryReader(args);
-
-		args = new ArrayList<Object>(2);
-		args.add(this.scenarioName);
-		args.add(this.props);
-
+		
+		if (!this.isSQL()) {			
+			reader = ClassFactory.createQueryReader(args);
+	
+			if (reader.getQuerySetIDs() == null
+					|| reader.getQuerySetIDs().isEmpty()) {
+				throw new FrameworkRuntimeException(
+						"The queryreader did not return any queryset ID's to process");
+			}
+		} 
+		
+		// resultsGenerator will be needed if an error occurs, because it needs
+		// to write out the error file
 		resultsGen = ClassFactory.createResultsGenerator(args);
-
-		if (reader.getQuerySetIDs() == null
-				|| reader.getQuerySetIDs().isEmpty()) {
-			throw new FrameworkRuntimeException(
-					"The queryreader did not return any queryset ID's to process");
-		}
-
-		validateResultsMode(this.props);
-
 	}
 	
 	public boolean isNone() {
@@ -139,7 +144,7 @@ public abstract class QueryScenario {
 		setResultMode( resultModeStr );
 		// otherwise use default of NONE
 
-		ClientPlugin.LOGGER.info("\nResults mode: " + resultMode); //$NON-NLS-1$
+		ClientPlugin.LOGGER.info("Results mode: " + mode); //$NON-NLS-1$
 
 	}
 
@@ -209,7 +214,22 @@ public abstract class QueryScenario {
 	 * @return String result mode
 	 */
 	public String getResultsMode() {
-		return this.resultMode;
+		
+		switch (mode) {
+		case COMPARE:
+			return TestProperties.RESULT_MODES.COMPARE;
+		case GENERATE:
+			return TestProperties.RESULT_MODES.GENERATE;
+		case SQL:
+			return TestProperties.RESULT_MODES.SQL;
+		case NONE:
+			return TestProperties.RESULT_MODES.NONE;
+			
+		default:
+			break;
+		}
+
+		return this.mode.toString();
 	}
 
 	/**
@@ -248,10 +268,24 @@ public abstract class QueryScenario {
 	public QueryReader getQueryReader() {
 		return this.reader;
 	}
+	
+	/**
+	 * Return the {@link QueryWriter} that is to be used to writer 
+	 * to process.
+	 * 
+	 * @return QueryWriter
+	 */
+	public QueryWriter getQueryWriter() {
+		final String msg = ClientPlugin.Util.getString(
+				"QueryScenario.unsupportedMethod", "QueryScenario.getQueryWriter"); //$NON-NLS-1$            
+		throw new FrameworkRuntimeException(msg);
+	}	
 
 	public abstract void handleTestResult(TestResult tr, ResultSet resultSet,
 			boolean resultFromQuery);
 	
-	public abstract void writeQueryTests(QueryTest queryTest) throws Exception;
-	
+	public void writeQueryTests(QueryTest queryTest) throws Exception {
+		getQueryWriter().writeQueryTest(queryTest);
+
+	}	
 }

@@ -41,16 +41,18 @@ public class TxnAutoTransaction extends TransactionContainer {
 		this.autocommittxn = autocommittxn;
 	}
 
+	@Override
 	public void before(TransactionQueryTestCase test) {
-		if (this.autocommittxn != null) {
-			test.getConnectionStrategy()
-					.setEnvironmentProperty(
-							CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-							this.autocommittxn);
-		}
+//		if (this.autocommittxn != null) {
+//			test.getConnectionStrategy()
+//					.setEnvironmentProperty(
+//							CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
+//							this.autocommittxn);
+//		}
 
 	}
 
+	@Override
 	public void after(TransactionQueryTestCase test) {
 
 	}

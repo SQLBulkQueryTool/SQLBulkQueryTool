@@ -539,6 +539,16 @@ public class QueryResults implements Externalizable {
 
 		private Object groupID; // fully qualified group name
 		private Object elementID; // short name
+		
+		public ColumnInfo(String name, String dataType) {
+			if (name == null) {
+				throw new IllegalArgumentException(
+						"QueryResults column cannot have name==null");
+			}
+			this.name = name;
+			this.dataType = dataType;
+			this.javaClass = java.lang.String.class;
+		}
 
 		public ColumnInfo(String name, String dataType, Class javaClass) {
 			if (name == null) {

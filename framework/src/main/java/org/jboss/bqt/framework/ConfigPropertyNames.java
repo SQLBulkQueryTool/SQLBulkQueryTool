@@ -77,12 +77,9 @@ public interface ConfigPropertyNames {
 	 */
 	public interface CONNECTION_STRATEGY_PROPS {
 
-		public static final String TXN_AUTO_WRAP = "autoCommitTxn";
-		public static final String AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
-		public static final String FETCH_SIZE = "fetchSize";
-		public static final String EXEC_IN_BATCH = "execute.in.batch"; //$NON-NLS-1$
-		public static final String CONNECTOR_BATCH = "connector-batch"; //$NON-NLS-1$
-		public static final String PROCESS_BATCH = "process-batch"; //$NON-NLS-1$
+//		public static final String TXN_AUTO_WRAP = "autoCommitTxn";
+//		public static final String AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
+//		public static final String FETCH_SIZE = "fetchSize";
 		public static final String JNDINAME_USERTXN = "usertxn-jndiname"; //$NON-NLS-1$  
 
 	}

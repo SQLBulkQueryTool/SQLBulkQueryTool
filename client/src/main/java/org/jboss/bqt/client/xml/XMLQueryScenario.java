@@ -23,56 +23,57 @@ package org.jboss.bqt.client.xml;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.jboss.bqt.client.ExpectedResults;
-import org.jboss.bqt.client.QueryScenario;
 import org.jboss.bqt.client.QueryTest;
-import org.jboss.bqt.client.QueryWriter;
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.TestResult;
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.api.QueryWriter;
+import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.exception.TransactionRuntimeException;
 
 /**
- * The CTCQueryScenario represents the tests that were created using the xml
+ * The XMLQueryScenario represents the tests that were created using the xml
  * file formats.
  * 
  * @author vanhalbert
  * 
  */
 public class XMLQueryScenario extends QueryScenario {
+	
+	private XMLQueryWriter writer = null;
 
 	public XMLQueryScenario(String scenarioName, Properties querySetProperties) {
 		super(scenarioName, querySetProperties);
 	}
 
-	protected void setUp() {
-		
-		validateResultsMode(this.getProperties());
+//	@Override
+//	protected void setUp() {
+//		
+//		validateResultsMode(this.getProperties());
+//
+//
+//		if (!this.isSQL()) {
+//			try {
+//				reader = new XMLQueryReader(this.getQueryScenarioIdentifier(),
+//						this.getProperties());
+//			} catch (QueryTestFailedException e1) {
+//				throw new TransactionRuntimeException(e1);
+//			}
+//	
+//			resultsGen = new XMLGenerateResults(this.getQueryScenarioIdentifier(),
+//					this.getProperties());
+//	
+//			if (reader.getQuerySetIDs() == null
+//					|| reader.getQuerySetIDs().isEmpty()) {
+//				throw new TransactionRuntimeException(
+//						"The queryreader did not return any queryset ID's to process");
+//			}
+//		}
+//	}
 
-
-		if (!this.isSQL()) {
-			try {
-				reader = new XMLQueryReader(this.getQueryScenarioIdentifier(),
-						this.getProperties());
-			} catch (QueryTestFailedException e1) {
-				throw new TransactionRuntimeException(e1);
-			}
-	
-			resultsGen = new XMLGenerateResults(this.getQueryScenarioIdentifier(),
-					this.getProperties());
-	
-			if (reader.getQuerySetIDs() == null
-					|| reader.getQuerySetIDs().isEmpty()) {
-				throw new TransactionRuntimeException(
-						"The queryreader did not return any queryset ID's to process");
-			}
-		}
-	}
-
-	@Override
-	public ExpectedResults getExpectedResults(String querySetID) {
-		return new XMLExpectedResults(querySetID, this.getProperties());
-	}
+//	@Override
+//	public ExpectedResults getExpectedResults(String querySetID) {
+//		return new XMLExpectedResults(querySetID, this.getProperties());
+//	}
 
 	/*
 	 * (non-Javadoc)
@@ -103,15 +104,7 @@ public class XMLQueryScenario extends QueryScenario {
 			}
 
 		} else if (tr.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.GENERATE)) { //$NON-NLS-1$
-
-			try {
-				
 				this.getResultsGenerator().generateQueryResultFile(tr, resultSet);
-
-			} catch (QueryTestFailedException qtfe) {
-				throw new TransactionRuntimeException(qtfe.getMessage());
-			}
-
 		} 
 		
 		// just create the error file for any failures
@@ -119,14 +112,9 @@ public class XMLQueryScenario extends QueryScenario {
 		// the processing of expected results (i.e, malformed xml file)
 
 		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+				this.getResultsGenerator().generateErrorFile(tr, resultSet,
+						this.getExpectedResults(tr.getQuerySetID()).getResultsFile(tr.getQueryID()));
 
-			try {
-				this.getResultsGenerator().generateErrorFile(tr, resultSet, this.getExpectedResults(tr.getQuerySetID())
-						.getResultsFile(tr.getQueryID()));
-
-			} catch (QueryTestFailedException qtfe) {
-				throw new TransactionRuntimeException(qtfe.getMessage());
-			}
 		}
 
 
@@ -141,13 +129,19 @@ public class XMLQueryScenario extends QueryScenario {
 
 	}
 	
+	@Override
 	public void writeQueryTests(QueryTest queryTest) throws Exception {
 		getQueryWriter().writeQueryTest(queryTest);
 
 	}
 	
-	public 	QueryWriter getQueryWriter()  {
-		return new XMLQueryWriter(this.getQueryScenarioIdentifier(), this.getProperties() );
+	@Override
+	public synchronized	QueryWriter getQueryWriter()  {
+		if (this.writer != null) return writer;
+		
+		this.writer = new XMLQueryWriter(this.getQueryScenarioIdentifier(), this.getProperties() );
+		
+		return writer;
 	}
 
 }

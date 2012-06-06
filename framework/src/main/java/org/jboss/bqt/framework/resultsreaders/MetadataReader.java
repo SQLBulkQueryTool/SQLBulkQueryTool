@@ -41,6 +41,7 @@ public class MetadataReader extends StringLineReader {
 		this.delimiter = delimiter;
 	}
 	
+	@Override
 	protected String nextLine() throws IOException {
 		if (firsttime) {
 			this.firsttime = false;

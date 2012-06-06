@@ -775,10 +775,35 @@ public final class PropertiesUtils {
 	 * 
 	 * @param original
 	 *            - Original properties to be resolved
+	 *            
 	 * @return resolved properties object.
 	 * @since 4.4
 	 */
 	public static Properties resolveNestedProperties(Properties original) {
+		return resolveNestedProperties(original, true);
+	}
+		
+
+	/**
+	 * The specialty of nested properties is, in a given property file there can
+	 * be values with pattern like "${...}" <code>
+	 *  key1=value1
+	 *  key2=${key1}/value2
+	 * </code> where the value of the <code>key2</code> should resolve to
+	 * <code>value1/value2</code> also if the property in the pattern
+	 * <code>${..}</code> is not found in the loaded properties, an exception is
+	 * thrown. Multiple nesting is OK, however recursive nested is not
+	 * supported.
+	 * 
+	 * @param original
+	 *            - Original properties to be resolved
+	 * @param failWhenNotFound
+	 * 			- pass <i>false</> when you don't want an exception thrown
+	 * 			  when a ${..} isn't resolved        
+	 * @return resolved properties object.
+	 * @since 4.4
+	 */
+	public static Properties resolveNestedProperties(Properties original, boolean failWhenNotFound) {
 
 		for (Enumeration e = original.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
@@ -790,49 +815,77 @@ public final class PropertiesUtils {
 			if (value == null) {
 				continue;
 			}
-
+			
 			boolean matched = true;
 			boolean modified = false;
 
+			int loc = 0;
+			
+			int start = value.indexOf("${", loc); //$NON-NLS-1$
+			if (start == -1) { 
+				continue;
+			}
 			while (matched) {
 				// now match the pattern, then extract and find the value
-				int start = value.indexOf("${"); //$NON-NLS-1$
 				int end = start;
 				if (start != -1) {
 					end = value.indexOf('}', start);
 				}
+				// only add 2 because if the "end" was used, and the
+				// value that replaces the variable is shorter than
+				// the variable (ex.  variable=${queries.loc} value=/tmp),
+				// then if there is a next variable
+				// in the string, it will be skipped
+				loc = start + 2;
 				matched = ((start != -1) && (end != -1));
-				if (matched) {
-					String nestedkey = value.substring(start + 2, end);
-					String nestedvalue = original.getProperty(nestedkey);
+				
+				if (!matched) continue;
+				
+				// there is a match pattern that needs replacing
+				String nestedkey = value.substring(start + 2, end);
+				String nestedvalue = original.getProperty(nestedkey);
+				
+				if (nestedvalue == null) {
+					nestedvalue = System.getProperty(nestedkey);
+				}
 
-					// in cases where the key and the nestedkey are the same,
-					// this has to be bypassed
-					// because it will cause an infinite loop, and because there
-					// will be no value
-					// for the nestedkey that doesnt contain ${..} in the value
-					if (key.equals(nestedkey)) {
-						matched = false;
+				// in cases where the key and the nestedkey are the same,
+				// this has to be bypassed
+				// because it will cause an infinite loop, and because there
+				// will be no value
+				// for the nestedkey that doesnt contain ${..} in the value
+				if (key.equals(nestedkey)) {
+					matched = false;
+					
+				} else {
 
-					} else {
-
-						// this will handle case where we did not resolve, mark
-						// it blank
-						if (nestedvalue == null) {
-							throw new FrameworkRuntimeException(
-									CorePlugin.Util
-											.getString(
-													"PropertiesUtils.failed_to_resolve_property", nestedkey)); //$NON-NLS-1$
-						}
+					// this will handle case where we did not resolve, mark
+					// it blank
+					if (nestedvalue == null && failWhenNotFound) {
+						throw new FrameworkRuntimeException(
+								CorePlugin.Util
+										.getString(
+												"PropertiesUtils.failed_to_resolve_property", nestedkey)); //$NON-NLS-1$
+					}
+					if (nestedvalue != null) {
 						value = value.substring(0, start) + nestedvalue
 								+ value.substring(end + 1);
 						modified = true;
+						
+						// check from the beginning because the substituted value could also
+						// have a variable
+						loc = 0;
 					}
 				}
+				
+				start = value.indexOf("${", loc); //$NON-NLS-1$
+
 			}
 			if (modified) {
 				original.setProperty(key, value);
 			}
+			
+
 		}
 		return original;
 	}

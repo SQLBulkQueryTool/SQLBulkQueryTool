@@ -21,6 +21,8 @@
  */
 package org.jboss.bqt.framework;
 
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.StringUtil;
 
@@ -84,25 +86,13 @@ public abstract class TransactionContainer {
 
 		debug("	test.before");
 
-		try {
-			test.before();
-			// run the test
-			debug("	test.testcase");
+		test.before();
+		// run the test
+		debug("	test.testcase");
 
-			test.testCase();
+		test.testCase();
 
-			debug("	test.after");
-
-		} catch (Throwable bt) {
-			// this catches the non-SQLExceptions that the AbstractQueryTest
-			// catches.
-			// And therefore, the exception needs to be set as an application
-			// exception,
-			// considered outside the bounds of the normal sqlexceptions.
-
-			test.setApplicationException(bt);
-
-		}
+		debug("	test.after");
 
 		test.after();
 		debug("	after(test)");
