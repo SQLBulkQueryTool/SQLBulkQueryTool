@@ -24,12 +24,22 @@ package org.jboss.bqt.client;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.QueryReader;
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.api.ResultsGenerator;
+import org.jboss.bqt.client.xml.XMLExpectedResults;
+import org.jboss.bqt.client.xml.XMLGenerateResults;
+import org.jboss.bqt.client.xml.XMLQueryReader;
+import org.jboss.bqt.client.xml.XMLQueryScenario;
 import org.jboss.bqt.core.util.ReflectionHelper;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 
 /**
- * 
+ *  The ClassFactory is responsible for creating the framework implementations to be used in executing
+ *  the query tests.    The default implementations are from the {@link org.jboss.bqt.client.xml Xmlpackage}.
  */
 public class ClassFactory {
 
@@ -45,11 +55,8 @@ public class ClassFactory {
 	 */
 
 	// use xml expected results format
-	public static final String QUERY_SCENARIO_DEFAULT_CLASSNAME = "org.jboss.bqt.test.client.ctc.CTCQueryScenario"; //$NON-NLS-1$
+	public static final String QUERY_SCENARIO_DEFAULT_CLASSNAME = XMLQueryScenario.class.getName(); //$NON-NLS-1$
 	
-	// use text based results format
-//	public static final String QUERY_SCENARIO_DEFAULT_CLASSNAME = "org.jboss.bqt.test.client.impl.QueryScenarioImpl"; //$NON-NLS-1$
-
 	/**
 	 * The {@link #QUERY_READER_CLASSNAME} property indicates the implementation
 	 * of {@link QueryReader} to use.
@@ -61,7 +68,7 @@ public class ClassFactory {
 	 * {@link #QUERY_READER_CLASSNAME} is not defined.
 	 */
 
-	public static final String QUERY_READER_DEFAULT_CLASSNAME = "org.jboss.bqt.test.client.ctc.XMLQueryReader"; //$NON-NLS-1$
+	public static final String QUERY_READER_DEFAULT_CLASSNAME = XMLQueryReader.class.getName(); //$NON-NLS-1$
 
 	/**
 	 * The {@link #RESULTS_GENERATOR_CLASSNAME} property indicates the
@@ -74,7 +81,7 @@ public class ClassFactory {
 	 * {@link #QUERY_READER_CLASSNAME} is not defined.
 	 */
 
-	public static final String RESULTS_GENERATOR_DEFAULT_CLASSNAME = "org.jboss.bqt.test.client.impl.ResultsGeneratorImpl"; //$NON-NLS-1$
+	public static final String RESULTS_GENERATOR_DEFAULT_CLASSNAME = XMLGenerateResults.class.getName(); //$NON-NLS-1$
 
 	/**
 	 * The {@link #EXPECTED_RESULTS_CLASSNAME} property indicates the
@@ -87,9 +94,9 @@ public class ClassFactory {
 	 * {@link #EXPECTED_RESULTS_CLASSNAME} is not defined.
 	 */
 
-	public static final String EXPECTED_RESULTS_DEFAULT_CLASSNAME = "org.jboss.bqt.test.client.impl.ExpectedResultsImpl"; //$NON-NLS-1$
+	public static final String EXPECTED_RESULTS_DEFAULT_CLASSNAME = XMLExpectedResults.class.getName(); //$NON-NLS-1$
 
-	public static QueryScenario createQueryScenario(String scenarioName) {
+	public static QueryScenario createQueryScenario(String scenarioName) throws FrameworkException {
 
 		String clzzname = ConfigPropertyLoader.getInstance().getProperty(
 				QUERY_SCENARIO_CLASSNAME);
@@ -105,8 +112,9 @@ public class ClassFactory {
 		try {
 			scenario = (QueryScenario) ReflectionHelper.create(clzzname, args,
 					null);
+		} catch (FrameworkException fe) {
+			throw fe;
 		} catch (Exception e) {
-			System.out.println("Unable to create class: " + clzzname);
 			e.printStackTrace();
 			throw new FrameworkRuntimeException(e);
 		}

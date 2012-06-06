@@ -19,43 +19,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
+package org.jboss.bqt.test;
 
-package org.jboss.bqt.client;
+import java.io.File;
 
-import java.util.Collection;
-import java.util.List;
+import org.jboss.bqt.client.TestClient;
+import org.jboss.bqt.core.util.UnitTestUtil;
+import org.jboss.bqt.framework.ConfigPropertyNames;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import org.jboss.bqt.core.exception.QueryTestFailedException;
 
-/**
- * The QueryReader is responsible for providing a set queries for a given
- * <code>querySetID</code>.
- * 
- * The querySetID identifies a list of {@link QueryTest test} to be executed.
- * 
- * @author vanhalbert
- * 
- */
-public interface QueryReader extends QueryProperties {
+@SuppressWarnings("nls")
+public class TestIntegrationWithLocalDB {
 
-	/**
-	 * Return the <code>querySetID</code>s that identifies all the query sets
-	 * that are available to execute during this test.
-	 * 
-	 * @return QuerySetIDs
-	 */
-	Collection<String> getQuerySetIDs();
+	@BeforeClass
+    public static void beforeEach() throws Exception {  		
+		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
+		
+		System.setProperty("output.dir", UnitTestUtil.getTestOutputPath() + File.separator + "sqltest" );
+		
+		System.setProperty(ConfigPropertyNames.CONFIG_FILE, UnitTestUtil.getTestDataPath() + File.separator + "localconfig.properties");		
+		
+    }
 
-	/**
-	 * Return a <code>List</code> containing {@link QueryTest}
-	 * @param querySetID 
-	 * @return List
-	 * @throws QueryTestFailedException
-	 * 
-	 * @since
-	 */
-	List<QueryTest> getQueries(String querySetID)
-			throws QueryTestFailedException;
-
+	@Test
+	public void testBQTClientExecution() {
+		
+		TestClient tc = new TestClient();
+		tc.runTest();
+		
+	}
 
 }

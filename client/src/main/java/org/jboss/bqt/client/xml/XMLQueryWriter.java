@@ -27,13 +27,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
-import org.jboss.bqt.client.QueryWriter;
+import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.QueryWriter;
+import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
@@ -51,36 +52,20 @@ public class XMLQueryWriter implements QueryWriter {
 	public XMLQueryWriter(String queryScenarioID, Properties properties) {
 		this.props = properties;
 		this.queryScenarioIdentifier = queryScenarioID;
-	}
+		init();
+	}	
 	
-	
-	private void init() throws Exception {
-		
-		String query_dir_loc = this.props.getProperty(PROP_QUERY_FILES_DIR_LOC);
-		if (query_dir_loc == null)
-			throw new QueryTestFailedException(
-					"queryfiles.loc property was not specified ");
-
-		String query_root_loc = this.props
-				.getProperty(PROP_QUERY_FILES_ROOT_DIR);
-
-		queryFileDir = query_dir_loc;
-
-		if (query_root_loc != null) {
-			File dir = new File(query_root_loc, query_dir_loc);
-			queryFileDir = dir.getAbsolutePath();
+	private void init()  {	
+		queryFileDir = this.props.getProperty(TestProperties.PROP_SQL_DIR);
+		if (queryFileDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_SQL_DIR);
 		}
 		
-		ClientPlugin.LOGGER.info("Writing queries to " + queryFileDir);
-
-
+		ClientPlugin.LOGGER.debug("Directory to write queries to " + queryFileDir);
 	}
 
 	@Override
 	public void writeQueryTest(QueryTest tests) throws Exception {
-		init();
-		
-
 		OutputStream outputStream=null;
 		try {
 			
@@ -128,7 +113,7 @@ public class XMLQueryWriter implements QueryWriter {
 			} catch (IOException e) {
 			}
 		}
-		ClientPlugin.LOGGER.info("Completed writing queries ");
+		ClientPlugin.LOGGER.debug("XMLQueryWriter: Completed writing queries ");
 
 		
 	}
@@ -136,15 +121,15 @@ public class XMLQueryWriter implements QueryWriter {
 
 
 
-	private static String getQuerySetName(String queryFileName) {
-		// Get query set name
-		String querySet = queryFileName;
-		List<String> nameParts = StringUtil.split(querySet, "./\\"); //$NON-NLS-1$
-		if (nameParts.size() > 1) {
-			querySet = (String) nameParts.get(nameParts.size() - 2);
-		}
-		return querySet;
-	}
+//	private static String getQuerySetName(String queryFileName) {
+//		// Get query set name
+//		String querySet = queryFileName;
+//		List<String> nameParts = StringUtil.split(querySet, "./\\"); //$NON-NLS-1$
+//		if (nameParts.size() > 1) {
+//			querySet = (String) nameParts.get(nameParts.size() - 2);
+//		}
+//		return querySet;
+//	}
 
 //	public static void main(String[] args) {
 //		System.setProperty(ConfigPropertyNames.CONFIG_FILE,

@@ -47,6 +47,7 @@ import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.util.DataTypeManager;
 import org.jboss.bqt.client.xml.QueryResults.ColumnInfo;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
@@ -108,13 +109,13 @@ public class XMLQueryVisitationStrategy {
 				List<Element> parmChildren = queryElement.getChildren(TagNames.Elements.SQL);
 		        	
 				if (parmChildren == null || parmChildren.isEmpty()) {
-					ClientPlugin.LOGGER.debug("=======  Single QueryTest ");
+					ClientPlugin.LOGGER.debug("=======  Creating Single QueryTest " + queryName);
 	        	    QuerySQL sql = createQuerySQL(queryElement);
 	         	    
 	        	    QueryTest q = new QueryTest(queryScenarioID, uniqueID, querySetID, new QuerySQL[] {sql}, false);
 	        	    queries.add(q);
 	        	} else {
-	        		ClientPlugin.LOGGER.debug("=======  QueryTest has multiple sql statements");
+	        		ClientPlugin.LOGGER.debug("=======  Creating QueryTest has multiple sql statements " + queryName);
 	         		QuerySQL[] querysql = new QuerySQL[parmChildren.size()];
 	        		int c = 0;
 	        		
@@ -473,10 +474,12 @@ public class XMLQueryVisitationStrategy {
         Collection collectionOfColumnInfos = new ArrayList();
         while ( elementSymbolItr.hasNext() ) {
             ElementSymbol elementSymbol = (ElementSymbol) elementSymbolItr.next();
-            Class elementType = elementSymbol.getType();
-            String dataType = DataTypeManager.getDataTypeName(elementType);
-            ColumnInfo columnInfo = new ColumnInfo(elementSymbol.getName(), dataType, elementType);
-            collectionOfColumnInfos.add(columnInfo);
+ //           Class elementType = elementSymbol.getType();
+            String dataType = elementSymbol.getType();
+  //          String dataType = DataTypeManager.getDataTypeName(elementType);
+ //           ColumnInfo columnInfo = new ColumnInfo(elementSymbol.getName(), dataType, elementType);
+            ColumnInfo columnInfo = new ColumnInfo(elementSymbol.getName(), dataType);
+                       collectionOfColumnInfos.add(columnInfo);
         }
         // Save column info
         results.addFields(collectionOfColumnInfos);
@@ -559,11 +562,20 @@ public class XMLQueryVisitationStrategy {
             Attribute dataType = dataElement.getAttribute(TagNames.Attributes.TYPE);
             // add the dataType of the element to the list containing dataTypes
             ElementSymbol nodeID = new ElementSymbol(dataElement.getText());
-            Class nodeType = (Class) TagNames.TYPE_MAP.get(dataType.getValue());
-            if (nodeType == null)  {
-                throw new JDOMException("Unknown class for type \"" + dataType.getValue() + "\"."); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-            nodeID.setType(nodeType);
+ //           Class nodeType = (Class) TagNames.TYPE_MAP.get(dataType.getValue());
+            nodeID.setType(dataType.getValue());
+//            if (nodeType == null)  {
+//            	ClientPlugin.LOGGER.error("Unknown class for type \"" + dataType.getValue() + ", using " + dataType.getValue());
+//   //             throw new JDOMException("Unknown class for type \"" + dataType.getValue() + "\"."); //$NON-NLS-1$ //$NON-NLS-2$
+//            	  
+//            	try {
+//					nodeID.setType(Class.forName(dataType.getValue()));
+//				} catch (ClassNotFoundException e) {
+//					throw new FrameworkRuntimeException(e);
+//				}
+//            } else {
+//            	nodeID.setType(nodeType);
+//            }
             select.addSymbol(nodeID);
         }
 

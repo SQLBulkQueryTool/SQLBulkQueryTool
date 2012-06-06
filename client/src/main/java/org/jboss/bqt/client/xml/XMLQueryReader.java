@@ -27,20 +27,17 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
-import org.jboss.bqt.client.QueryReader;
 import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
-import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.StringUtil;
-import org.jboss.bqt.framework.ConfigPropertyLoader;
-import org.jboss.bqt.framework.ConfigPropertyNames;
 
 public class XMLQueryReader implements QueryReader {
 
@@ -78,30 +75,9 @@ public class XMLQueryReader implements QueryReader {
 	}
 
 	private void loadQuerySets() throws QueryTestFailedException {
-		String query_dir_loc = this.props.getProperty(PROP_QUERY_FILES_DIR_LOC);
-		if (query_dir_loc == null)
-			throw new QueryTestFailedException(
-					"queryfiles.loc property was not specified ");
 
-		String query_root_loc = this.props
-				.getProperty(PROP_QUERY_FILES_ROOT_DIR);
+		File files[] = TestProperties.loadQuerySets(this.props);
 
-		String loc = query_dir_loc;
-
-		if (query_root_loc != null) {
-			File dir = new File(query_root_loc, query_dir_loc);
-			loc = dir.getAbsolutePath();
-		}
-
-		ClientPlugin.LOGGER.info("Loading queries from " + loc);
-
-		File files[] = FileUtils.findAllFilesInDirectoryHavingExtension(loc,
-				".xml");
-		if (files == null || files.length == 0)
-			throw new QueryTestFailedException((new StringBuilder())
-					.append("No query files found in directory ").append(loc)
-					.toString());
-		// List<String> queryFiles = new ArrayList<String>(files.length);
 		for (int i = 0; i < files.length; i++) {
 			String queryfile = files[i].getAbsolutePath();
 			// Get query set name
@@ -121,7 +97,7 @@ public class XMLQueryReader implements QueryReader {
 		if (!queryFile.exists() || !queryFile.canRead()) {
 			String msg = "Query file doesn't exist or cannot be read: "
 					+ queryFileName + ", ignoring and continuing";
-			ClientPlugin.LOGGER.info(msg);
+			ClientPlugin.LOGGER.error(msg);
 			throw new TransactionRuntimeException(msg); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		// Get query set name
@@ -141,9 +117,9 @@ public class XMLQueryReader implements QueryReader {
 			// }
 
 		} catch (Exception e) {
-			String msg = "Error reading query file: " + queryFileName + ", " + e.getMessage(); //$NON-NLS-1$ //$NON-NLS-2$
-			ClientPlugin.LOGGER.info(msg);
-			throw new IOException(msg); //$NON-NLS-1$ //$NON-NLS-2$
+			String msg = "Error reading query file: " + queryFileName; //$NON-NLS-1$ //$NON-NLS-2$
+			ClientPlugin.LOGGER.error(e, msg);
+			throw new IOException(msg, e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
 		// return queries;
@@ -160,36 +136,36 @@ public class XMLQueryReader implements QueryReader {
 	}
 
 	public static void main(String[] args) {
-		System.setProperty(ConfigPropertyNames.CONFIG_FILE,
-				"ctc-bqt-test.properties");
-
-		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
-		Properties p = _instance.getProperties();
-		if (p == null || p.isEmpty()) {
-			throw new RuntimeException("Failed to load config properties file");
-
-		}
-
-		_instance.setProperty(PROP_QUERY_FILES_ROOT_DIR, new File(
-				"src/main/resources/").getAbsolutePath());
-
-		try {
-			XMLQueryReader reader = new XMLQueryReader("scenario_id",
-					_instance.getProperties());
-			Iterator<String> it = reader.getQuerySetIDs().iterator();
-			while (it.hasNext()) {
-				String querySetID = it.next();
-
-				List<QueryTest> queries = reader.getQueries(querySetID);
-
-				if (queries.size() == 0l) {
-					System.out.println("Failed, didn't load any queries ");
-				}
-			}
-		} catch (QueryTestFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		System.setProperty(ConfigPropertyNames.CONFIG_FILE,
+//				"ctc-bqt-test.properties");
+//
+//		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
+//		Properties p = _instance.getProperties();
+//		if (p == null || p.isEmpty()) {
+//			throw new RuntimeException("Failed to load config properties file");
+//
+//		}
+//
+//		_instance.setProperty(TestProperties.PROP_QUERY_FILES_ROOT_DIR, new File(
+//				"src/main/resources/").getAbsolutePath());
+//
+//		try {
+//			XMLQueryReader reader = new XMLQueryReader("scenario_id",
+//					_instance.getProperties());
+//			Iterator<String> it = reader.getQuerySetIDs().iterator();
+//			while (it.hasNext()) {
+//				String querySetID = it.next();
+//
+//				List<QueryTest> queries = reader.getQueries(querySetID);
+//
+//				if (queries.size() == 0l) {
+//					System.out.println("Failed, didn't load any queries ");
+//				}
+//			}
+//		} catch (QueryTestFailedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 	}
 

@@ -738,6 +738,10 @@ public final class StringUtil {
         Matcher matcher = Constants.PARAMETER_COUNT_PATTERN.matcher(pattern);
         StringBuffer text = new StringBuffer();
         int requiredParameterCount = 0;
+        int parmlength = parameters.length;
+        if (parameters.length == 1 && parameters[0] == null) {
+        	parmlength = 0;
+        }
         boolean err = false;
         while (matcher.find()) {
             int ndx = Integer.valueOf(matcher.group(1));
@@ -758,7 +762,7 @@ public final class StringUtil {
                 matcher.appendReplacement(text, Matcher.quoteReplacement(parameter == null ? "null" : parameter.toString()));
             }
         }
-        if (err || requiredParameterCount < parameters.length) {
+        if (err || requiredParameterCount < parmlength) {
             throw new IllegalArgumentException(
 					CorePlugin.Util
 					.getString("StringUtil.requiredToSuppliedParameterMismatch",parameters.length,

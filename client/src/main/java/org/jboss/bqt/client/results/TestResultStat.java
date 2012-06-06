@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.TestResult;
+import org.jboss.bqt.client.api.TestResult;
 
 /**
  * ATestResultStat

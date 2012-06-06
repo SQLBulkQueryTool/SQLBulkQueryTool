@@ -36,6 +36,7 @@ public class JNDITransaction extends TransactionContainer {
 		super();
 	}
 
+	@Override
 	protected void before(TransactionQueryTestCase test) {
 		String jndi = test
 				.getConnectionStrategy()
@@ -58,6 +59,7 @@ public class JNDITransaction extends TransactionContainer {
 		}
 	}
 
+	@Override
 	protected void after(TransactionQueryTestCase test) {
 		try {
 			if (this.userTxn != null) {

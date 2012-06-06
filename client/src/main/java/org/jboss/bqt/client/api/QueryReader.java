@@ -20,30 +20,47 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client;
+package org.jboss.bqt.client.api;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 /**
- * The QueryProperties provides the properties relative to reading and writing query files.
+ * The QueryReader is responsible for providing a set queries for a given
+ * <code>querySetID</code>.
+ * 
+ * The querySetID identifies a list of {@link QueryTest test} to be executed.
+ * 
+ * See {@link TestProperties#QUERY_SET_NAME querySet} and {@link TestProperties#PROP_QUERY_FILES_DIR_LOC queryDir} 
+ * for properties that define where the query sets can be found.
  * 
  * @author vanhalbert
  * 
  */
-public interface QueryProperties {
+public interface QueryReader  {
 
 	/**
-	 * {@link #PROP_QUERY_FILES_DIR_LOC} indicates the location to find the
-	 * query files
-	 */
-	public static final String PROP_QUERY_FILES_DIR_LOC = "queryfiles.loc";
-	/**
-	 * {@link #PROP_QUERY_FILES_ROOT_DIR}, if specified, indicates the root
-	 * directory to be prepended to the {@link #PROP_QUERY_FILES_DIR_LOC} to
-	 * create the full directory to find the query files.
+	 * Return the <code>querySetID</code>s that identifies all the query sets
+	 * that are available to execute during this test.
 	 * 
-	 * This property is normally used during the nightly builds so that the
-	 * query files will coming from other projects.
+	 * @return QuerySetIDs
 	 */
-	public static final String PROP_QUERY_FILES_ROOT_DIR = "queryfiles.root.dir";
+	Collection<String> getQuerySetIDs();
+
+	/**
+	 * Return a <code>List</code> containing {@link QueryTest}
+	 * @param querySetID 
+	 * @return List
+	 * @throws QueryTestFailedException
+	 * 
+	 * @since
+	 */
+	List<QueryTest> getQueries(String querySetID)
+			throws QueryTestFailedException;
+
 
 }

@@ -56,7 +56,7 @@ import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
  * The connection is not closed by this class, only lent to this class for
  * query processing.
  */
-public abstract class AbstractQueryTest {
+public abstract class AbstractQuery {
 
 	// NOTE not all tests will pass with this set to true, only those with
 	// scrollable resultsets
@@ -73,11 +73,11 @@ public abstract class AbstractQueryTest {
 	protected long beginTS = 0;
 
 
-	public AbstractQueryTest() {
+	public AbstractQuery() {
 		super();
 	}
 
-	public AbstractQueryTest(Connection conn) {
+	public AbstractQuery(Connection conn) {
 		super();
 		this.internalConnection = conn;
 

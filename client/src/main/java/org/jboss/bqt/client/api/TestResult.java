@@ -20,7 +20,9 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client;
+package org.jboss.bqt.client.api;
+
+import org.jboss.bqt.client.TestProperties;
 
 /**
  * The TestResult represents the results from a single test. A single test can

@@ -20,13 +20,16 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client;
+package org.jboss.bqt.client.api;
 
-public interface QueryWriter extends QueryProperties {
+import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.TestProperties;
+
+public interface QueryWriter {
 	
 	/**
-	 * When the result mode is "GENERATE", the QueryWriter will
-	 * be called to persist a series of queries.
+	 * When the result mode is {@link QueryScenario.RESULT_MODE#GENERATE generate}, the QueryWriter will
+	 * be called to persist a series of queries to {@link TestProperties#PROP_OUTPUT_DIR outputDirectory}.
 	 * @param tests contains the SQL queries to write.
 	 * @throws Exception
 	 */

@@ -31,7 +31,7 @@ import org.jboss.bqt.core.util.Logger;
  * CorePlugin
  */
 public class ClientPlugin {
-	// Example:  					CorePlugin.Util.getString("ClassName.message", args...)); 
+	// Example:  					ClientPlugin.Util.getString("ClassName.message", args...)); 
 
 	//
 	// Class Constants:
