@@ -120,7 +120,10 @@ public abstract class QueryScenario {
 			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
 		}
 		
-		this.errorWriter = ClassFactory.createErrorWriter(args);
+		// NONE will not create error files
+		if (!this.isNone()) {
+			this.errorWriter = ClassFactory.createErrorWriter(args);
+		}
 	}
 	
 	public String getOutputDir() {

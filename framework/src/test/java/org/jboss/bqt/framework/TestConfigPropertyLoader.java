@@ -106,10 +106,10 @@ public class TestConfigPropertyLoader {
 		assertEquals("myscenariofile.properties", _instance.getProperty("bqt.scenario.file")); //$NON-NLS-1$ //$NON-NLS-2$
 
 		assertEquals("/output/dir", _instance.getProperty("bqt.output.dir")); //$NON-NLS-1$ //$NON-NLS-2$
-		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode/expectedresultsdir", _instance.getProperty("bqt.generate.dir")); //$NON-NLS-1$ //$NON-NLS-2$
-		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode", _instance.getProperty("bqt.compare.dir")); //$NON-NLS-1$ //$NON-NLS-2$		
-		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode/testqueriesdir", _instance.getProperty("bqt.sql.dir")); //$NON-NLS-1$ //$NON-NLS-2$	
-		assertEquals("/output/dir/myscenariofile/querysetdirname/errors_for_testmode", _instance.getProperty("bqt.errors.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/testmode/querysetdirname/expectedresultsdir", _instance.getProperty("bqt.generate.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/testmode", _instance.getProperty("bqt.compare.dir")); //$NON-NLS-1$ //$NON-NLS-2$		
+		assertEquals("/output/dir/myscenariofile/testmode/querysetdirname/testqueriesdir", _instance.getProperty("bqt.sql.dir")); //$NON-NLS-1$ //$NON-NLS-2$	
+		assertEquals("/output/dir/myscenariofile/errors_for_testmode", _instance.getProperty("bqt.errors.dir")); //$NON-NLS-1$ //$NON-NLS-2$
 
 		
 

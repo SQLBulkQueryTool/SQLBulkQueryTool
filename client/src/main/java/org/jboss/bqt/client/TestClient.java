@@ -22,7 +22,10 @@
 
 package org.jboss.bqt.client;
 
+import java.io.File;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -30,11 +33,14 @@ import java.util.Properties;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
+import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.jboss.bqt.framework.TransactionContainer;
 import org.jboss.bqt.framework.TransactionFactory;
 
@@ -60,8 +66,6 @@ public class TestClient {
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
 	private ConfigPropertyLoader CONFIG = ConfigPropertyLoader.getInstance();
-	
-	private String scenario_name;
 
 	public TestClient() {
 
@@ -78,8 +82,16 @@ public class TestClient {
 
 		try {
 
-			init();
-			runScenario();
+			List<File> scenarios = getScenarios();
+			for (File f:scenarios) {
+				String scenario_name = init(f);
+				runScenario(f, scenario_name);
+				
+				// reset for reloading cause there are points that call setProperty(..)
+				// on the ConfigurationProperties
+				CONFIG.clearOverrides();
+			}
+
 
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -89,37 +101,58 @@ public class TestClient {
 
 	}
 	
-	private void init() throws Exception {
+	private List<File> getScenarios() throws Exception {
+
 		String scenario_file = CONFIG.getProperty(TestProperties.PROP_SCENARIO_FILE);
 		if (scenario_file == null) {
-			BQTUtil.throwInvalidProperty(TestProperties.PROP_SCENARIO_FILE);
+			final String msg = ClientPlugin.Util.getString(
+					"QTTClient.emptyScenarioFile", scenario_file); //$NON-NLS-1$            
+			throw new FrameworkRuntimeException(msg);
+			
+		} 
+		
+		File sfile = new File(scenario_file);
+		if (!sfile.exists()) {
+			throw new FrameworkRuntimeException(ClientPlugin.Util.getString("QTTClient.scenarioFileDoesntExist", scenario_file));
 		}
+		
+		File[] sfiles = null;
+		if (sfile.isDirectory()) {
+			sfiles = FileUtils.findAllFilesInDirectory(scenario_file);
+		} else {
+			sfiles = new File[] {sfile};
+		}
+		
+		return Arrays.asList(sfiles);
 
-		this.scenario_name = FileUtils
-				.getBaseFileNameWithoutExtension(scenario_file);
+	}	
+	
+	private String init(File scenarioFile) throws Exception {
 
-		Properties sc_props = PropertiesUtils.load(scenario_file);
+		Properties sc_props = PropertiesUtils.load(scenarioFile.getAbsolutePath());
 		
 		if (sc_props.isEmpty()) {
 			final String msg = ClientPlugin.Util.getString(
-					"TestClient.emptyScenarioFile", scenario_file); //$NON-NLS-1$            
+					"TestClient.emptyScenarioFile", scenarioFile.getAbsoluteFile()); //$NON-NLS-1$            
 			throw new FrameworkRuntimeException(msg);
-
 		}
 		
-		Properties configprops = CONFIG.getProperties();
-
-		configprops.putAll(sc_props);
-
-		Properties resolvedprops = PropertiesUtils.resolveNestedProperties(configprops);
+		String scenario_name = FileUtils.getBaseFileNameWithoutExtension(scenarioFile.getName());
 		
-		CONFIG.setProperties(resolvedprops);
+		sc_props.setProperty("scenario.name", scenario_name);		
+				
+		CONFIG.setProperties(sc_props);
+		
+		return scenario_name;
 	}
+	
 
-	private void runScenario() throws Exception {
-		ClientPlugin.LOGGER.info("Starting scenario " + this.scenario_name);
 
-		QueryScenario queryset = ClassFactory.createQueryScenario(this.scenario_name);
+	private void runScenario(File scenarioFile, String scenario_name) throws Exception {
+
+		ClientPlugin.LOGGER.info("Starting scenario " + scenario_name);
+
+		QueryScenario queryset = ClassFactory.createQueryScenario(scenario_name);
 		
 		if (queryset.isSQL()) {
 			this.createSQL(queryset);
@@ -164,7 +197,17 @@ public class TestClient {
 					try {
 						tc.runTransaction(userTxn);
 					} catch (FrameworkRuntimeException rme) {
-						throw rme;		
+						
+						queryset.getErrorWriter().generateErrorFile(q.geQuerySetID(), q.getQueryID(),
+								 (String) null, (ResultSet) null, rme, (Object) null);
+						
+						TestResult tr = new TestResultStat(q.geQuerySetID(), q.getQueryID(), "");
+						tr.setException(rme);
+						tr.setResultMode(queryset.getResultsMode());
+						tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+						
+						summary.addTestResult(q.geQuerySetID(), tr);
+	
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}

@@ -120,8 +120,12 @@ public class ConfigPropertyLoader {
 		overrides.setProperty(key, value);
 	}
 
-	public void setProperties(Properties props) {
-		overrides.putAll(props);
+	public void setProperties(Properties properties) {
+		
+		overrides.putAll(this.props);
+		overrides.putAll(properties);
+		overrides = PropertiesUtils.resolveNestedProperties(overrides, false);
+
 	}
 
 	public Properties getProperties() {
@@ -136,5 +140,11 @@ public class ConfigPropertyLoader {
 
 		return p;
 	}
+	/**
+	 * The clearing of property overrides is used to reset on a per scenario basis.
+	 */
+	public void clearOverrides() {
+		this.overrides.clear();
+	}	
 
 }

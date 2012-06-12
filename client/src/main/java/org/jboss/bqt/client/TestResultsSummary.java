@@ -133,6 +133,11 @@ public class TestResultsSummary {
 			summaryName = summaryName + ".txt"; //$NON-NLS-1$
 		}
 
+		File outputdir = new File(outputDir);
+		if (!outputdir.exists()) {
+			outputdir.mkdirs();
+		}
+		
 		File summaryFile = new File(outputDir, summaryName);
 		if (summaryFile.exists()) {
 			if ( !overwrite) {
@@ -157,6 +162,10 @@ public class TestResultsSummary {
 
 	private static File createSummaryFile(String outputDir, String summaryName)
 			throws IOException {
+		File outputdir = new File(outputDir);
+		if (!outputdir.exists()) {
+			outputdir.mkdirs();
+		}		
 		File summaryFile = new File(outputDir, summaryName + ".txt"); //$NON-NLS-1$
 		if (summaryFile.exists()) {
 			ClientPlugin.LOGGER.error("Summary file already exists: " + summaryFile.getName()); //$NON-NLS-1$

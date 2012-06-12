@@ -15,9 +15,9 @@
 #----------------------------
 #	Properties:
 #
-#	1.	queryset.dir	-	points to a directory, under the QUERYSETDIR location, that represents a query set (queries and expected results)
-#	2.	test.queries.dir	-	must be a subdirectory under the queryset.dir that contains the test query.
-#	3	expected.results.dir	-	must be a subdirectory under the queryset.dir that contains all the related 
+#	-	queryset.dirname	-	name of the directory, under the QUERYSETDIR location, that represents a query set (queries and expected results)
+#	-	test.queries.dirname	-	must be a name of the subdirectory under the queryset.dir that contains the test query.
+#	-	expected.results.dirname	-	must be the name of the subdirectory under the queryset.dir that contains all the related 
 #									expected result files to use to validate the test_queries against.
 #
 #	NOTE: There maybe multiple expected_results directories (by different names of course) sometimes depending on the datasources
@@ -29,11 +29,10 @@
 #
 #----------------------------
 
+queryset.dirname=<queries_folder>
 
-queryset.dir=<queries_folder>
-
-test.queries.dir=test_queries
-expected.results.dir=expected_results
+test.queries.dirname=test_queries
+expected.results.dirname=expected_results
 
 vdb.name=<vdbname>
 
