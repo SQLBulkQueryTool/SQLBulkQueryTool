@@ -41,7 +41,7 @@ import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
@@ -51,7 +51,7 @@ import org.jboss.bqt.core.util.ObjectConverterUtil;
 import org.jboss.bqt.core.util.StringUtil;
 import org.jdom.JDOMException;
 
-public class XMLExpectedResults implements ExpectedResults {
+public class XMLExpectedResults implements ExpectedResultsReader {
 	private static String newline = System.getProperty("line.separator"); //$NON-NLS-1$
 	
 	protected Properties props;
@@ -73,13 +73,13 @@ public class XMLExpectedResults implements ExpectedResults {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
 		}
 		
-		String expected_root_loc = this.props
-				.getProperty(TestProperties.PROP_EXPECTED_RESULTS_ROOT_DIR);
-
-		if (expected_root_loc != null) {
-			File dir = new File(expected_root_loc, results_dir_loc);
-			this.results_dir_loc = dir.getAbsolutePath();
-		}
+//		String expected_root_loc = this.props
+//				.getProperty(TestProperties.PROP_EXPECTED_RESULTS_ROOT_DIR);
+//
+//		if (expected_root_loc != null) {
+//			File dir = new File(expected_root_loc, results_dir_loc);
+//			this.results_dir_loc = dir.getAbsolutePath();
+//		}
 		
 		String exceed_per = props.getProperty(TestProperties.PROP_EXECUTE_EXCEED_PERCENT);
 		String exec_min = props.getProperty(TestProperties.PROP_EXECUTE_TIME_MINEMUM);
@@ -100,6 +100,20 @@ public class XMLExpectedResults implements ExpectedResults {
 
 		ClientPlugin.LOGGER.debug("Expected results loc: " + this.results_dir_loc);
 	}
+	
+	
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @see org.jboss.bqt.client.api.ExpectedResultsReader#getExpectResultsLocation()
+	 */
+	@Override
+	public String getExpectResultsLocation() {
+		return this.results_dir_loc;
+	}
+
+
 
 	@Override
 	public boolean isExpectedResultsNeeded() {
@@ -817,7 +831,7 @@ public class XMLExpectedResults implements ExpectedResults {
 	private File findExpectedResultsFile(String queryIdentifier,
 			String querySetIdentifier) throws FrameworkRuntimeException {
 		String resultFileName = queryIdentifier + ".xml"; //$NON-NLS-1$
-		File file = new File(results_dir_loc,
+		File file = new File(results_dir_loc + File.separator + querySetIdentifier,
 				resultFileName);
 		if (!file.exists() && this.isExpectedResultsNeeded()) {
 			throw new FrameworkRuntimeException("Query results file "

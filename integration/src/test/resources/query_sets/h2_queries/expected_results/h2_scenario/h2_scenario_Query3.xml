@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <query><![CDATA[Select TRANSACTION_ID, ACCOUNT_ID, PRODUCT_ID, PURCHASE_DATE, SHARES_COUNT From HOLDINGS]]></query>
-  <queryResults name="h2_scenario_Query3" exectime="2">
+  <queryResults name="h2_scenario_Query3" exectime="0">
     <select>
       <dataElement type="INTEGER">TRANSACTION_ID</dataElement>
       <dataElement type="INTEGER">ACCOUNT_ID</dataElement>

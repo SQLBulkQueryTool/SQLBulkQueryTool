@@ -25,12 +25,16 @@ package org.jboss.bqt.client.api;
 import java.io.File;
 import java.sql.ResultSet;
 
+import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 /**
- * An ExpectedResults represents one set of expected results (referred to as the
- * queryset) identified by the {@link #getQuerySetID}. The
+ * An ExpectedResultsReader represents one set of expected results (referred to as the
+ * queryset) that will be read when the result mode is either {@link TestProperties.RESULT_MODES#NONE none} or
+ * {@link TestProperties.RESULT_MODES#COMPARE compare} or {@link TestProperties.RESULT_MODES#GENERATE generate}.  
+ * The query files should be found in the {@link TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC executedResultsDir}
+ * and identified by the {@link #getQuerySetID}. The
  * <code>queryidentifier</code> identify a unique query and corresponds to the
  * expected results file.
  * 
@@ -38,8 +42,15 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * @author vanhalbert
  * 
  */
-public interface ExpectedResults {
+public interface ExpectedResultsReader {
 
+	/**
+	 * Returns the full path to the expected results location.
+	 * @return String full directory path
+	 * 
+	 * @see TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC
+	 */
+	String getExpectResultsLocation();
 
 	/**
 	 * Return the unique identifier for this query set.

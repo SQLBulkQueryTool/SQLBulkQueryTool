@@ -21,6 +21,7 @@
  */
 package org.jboss.bqt.client.api;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,11 +57,14 @@ public abstract class QueryScenario {
 	}
 
 	protected QueryReader reader = null;
-	protected ResultsGenerator resultsGen = null;
+	protected ExpectedResultsWriter resultsGen = null;
+	protected ErrorWriter errorWriter = null;
 
 	private Properties props = null;
 	private String scenarioName;
 	private String querySetName;
+	private String rootOutputDir = null;
+	private String testrunDir = null;
 	
 	private RESULT_MODE mode = RESULT_MODE.NONE;
 	
@@ -73,7 +77,25 @@ public abstract class QueryScenario {
 		if (this.querySetName == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.QUERY_SET_NAME);
 		}
-
+		
+		this.rootOutputDir = props.getProperty(TestProperties.PROP_OUTPUT_DIR);
+		if (this.rootOutputDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_OUTPUT_DIR);
+		}
+		
+		// at the top directory level, only create if it doesn't exist,
+		// do not delete, because it may contain other test results
+		// for other result.mode run's
+		File d = new File(this.rootOutputDir);
+		if (!d.exists()) {
+			d.mkdirs();
+		}
+		
+		this.testrunDir = props.getProperty(TestProperties.PROP_TESTRUN_DIR);
+		if (this.testrunDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_TESTRUN_DIR);
+		}
+		
 		setUp();
 
 	}
@@ -94,11 +116,21 @@ public abstract class QueryScenario {
 						"The queryreader did not return any queryset ID's to process");
 			}
 		} 
+		if (this.isGenerate()) {
+			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
+		}
 		
-		// resultsGenerator will be needed if an error occurs, because it needs
-		// to write out the error file
-		resultsGen = ClassFactory.createResultsGenerator(args);
+		this.errorWriter = ClassFactory.createErrorWriter(args);
 	}
+	
+	public String getOutputDir() {
+		return this.rootOutputDir;
+	}
+	
+	public String getTestRunDir() {
+		return this.testrunDir;
+	}
+	
 	
 	public boolean isNone() {
 		return (mode == RESULT_MODE.NONE);
@@ -233,14 +265,14 @@ public abstract class QueryScenario {
 	}
 
 	/**
-	 * Return the {@link ExpectedResults} for the specified
+	 * Return the {@link ExpectedResultsReader} for the specified
 	 * <code>querySetID</code>. These expected results will be used to compare
 	 * with the actual results in order to determine success or failure.
 	 * 
 	 * @param querySetID
-	 * @return ExpectedResults
+	 * @return ExpectedResultsReader
 	 */
-	public ExpectedResults getExpectedResults(String querySetID) {
+	public ExpectedResultsReader getExpectedResults(String querySetID) {
 		Collection<Object> args = new ArrayList<Object>(2);
 		args.add(querySetID);
 		args.add(props);
@@ -250,12 +282,12 @@ public abstract class QueryScenario {
 	}
 
 	/**
-	 * Return the {@link ResultsGenerator} that is to be used to create new sets
+	 * Return the {@link ExpectedResultsWriter} that is to be used to create new sets
 	 * of expected results.
 	 * 
-	 * @return ResultsGenerator
+	 * @return ExpectedResultsWriter
 	 */
-	public ResultsGenerator getResultsGenerator() {
+	public ExpectedResultsWriter getExpectedResultsGenerator() {
 		return this.resultsGen;
 	}
 
@@ -267,6 +299,16 @@ public abstract class QueryScenario {
 	 */
 	public QueryReader getQueryReader() {
 		return this.reader;
+	}
+	
+	/**
+	 * Return the {@link ErrorWriter} that is to be used to write
+	 * the error files.
+	 * 
+	 * @return QueryReader
+	 */
+	public ErrorWriter getErrorWriter() {
+		return this.errorWriter;
 	}
 	
 	/**

@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
@@ -45,7 +45,7 @@ import org.jboss.bqt.framework.TransactionFactory;
  * don't match. The process The bulk testing, in its simplicity, will do the
  * following: <li>use a {@link QueryReader} to read the queries that it will
  * execute</li> <li>based on the results of each query executed, the process
- * will compare the results to the {@link ExpectedResults }.</li> <li>If the
+ * will compare the results to the {@link ExpectedResultsReader }.</li> <li>If the
  * {@link TestProperties#PROP_RESULT_MODE} option is set to
  * {@link TestProperties.RESULT_MODES#GENERATE} then the process will not
  * perform a comparison, but generate a new set of expected result files that
@@ -59,7 +59,7 @@ public class TestClient {
 	public static final SimpleDateFormat TSFORMAT = new SimpleDateFormat(
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
-	private static final ConfigPropertyLoader CONFIG = ConfigPropertyLoader.getInstance();
+	private ConfigPropertyLoader CONFIG = ConfigPropertyLoader.getInstance();
 	
 	private String scenario_name;
 
@@ -84,6 +84,8 @@ public class TestClient {
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+	
+		ConfigPropertyLoader.reset();
 
 	}
 	
@@ -105,40 +107,13 @@ public class TestClient {
 
 		}
 		
+		Properties configprops = CONFIG.getProperties();
+
+		configprops.putAll(sc_props);
+
+		Properties resolvedprops = PropertiesUtils.resolveNestedProperties(configprops);
 		
-		// 1st perform substitution on the scenario file, this will
-		// substitute any System properties for variables=${..}
-		Properties sc_updates = getSubstitutedProperties(sc_props);
-//		if (!sc_updates.isEmpty()) {
-//			sc_props.putAll(sc_updates);
-//			this.overrides.putAll(sc_props);
-//
-//		}
-		CONFIG.setProperties(sc_updates);
-
-//		// 2nd perform substitution on current configuration - which will 
-//		// substitute configuration properties 
-//		// based on the config properties file
-//		Properties config_updates = getSubstitutedProperties(CONFIG.getProperties());
-//		if (!config_updates.isEmpty()) {
-//			this.overrides.putAll(config_updates);
-//			CONFIG.setProperties(config_updates);
-//		}
-
-		// update the URL with the vdb that is to be used
-//		String url = CONFIG.getProperty(DriverConnection.DS_URL);
-		
-//		String vdb_name = CONFIG.getProperty(
-//				DataSourceConnection.DS_DATABASENAME);
-//
-//		ArgCheck.isNotNull(vdb_name, DataSourceConnection.DS_DATABASENAME
-//				+ " property not set, need it for the vdb name");
-//
-//		url = StringUtil.replace(url, "${vdb}", vdb_name);
-
-//		CONFIG.setProperty(DriverConnection.DS_URL,
-//				url);
-
+		CONFIG.setProperties(resolvedprops);
 	}
 
 	private void runScenario() throws Exception {
@@ -175,7 +150,7 @@ public class TestClient {
 				// the iterator to process the query tests
 				Iterator<QueryTest> queryTestIt = queryTests.iterator();
 
-				ExpectedResults expectedResults = queryset
+				ExpectedResultsReader expectedResults = queryset
 						.getExpectedResults(querySetID);
 
 				long beginTS = System.currentTimeMillis();
@@ -237,15 +212,6 @@ public class TestClient {
 		
 		ClientPlugin.LOGGER.debug("Completed creating sql " );
 	
-	}
-
-	private Properties getSubstitutedProperties(Properties props) {
-		Properties configprops = CONFIG.getProperties();
-
-		configprops.putAll(props);
-
-		return PropertiesUtils.resolveNestedProperties(configprops);
-
 	}
 
 }

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <query><![CDATA[Select ACCOUNT_ID, SSN, STATUS, TYPE, DATEOPENED, DATECLOSED From ACCOUNT]]></query>
+  <queryResults name="h2_scenario_Query1" exectime="0">
+    <select>
+      <dataElement type="INTEGER">ACCOUNT_ID</dataElement>
+      <dataElement type="CHAR">SSN</dataElement>
+      <dataElement type="CHAR">STATUS</dataElement>
+      <dataElement type="CHAR">TYPE</dataElement>
+      <dataElement type="TIMESTAMP">DATEOPENED</dataElement>
+      <dataElement type="TIMESTAMP">DATECLOSED</dataElement>
+    </select>
+    <table rowCount="17" columnCount="6">
+      <tableRow>
+        <tableCell>
+          <integer>19980002</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01002</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1998-02-01 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19980003</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01003</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1998-03-06 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19980004</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01004</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1998-03-07 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19980005</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01005</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1998-06-15 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19980006</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01006</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1998-09-15 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19990007</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01007</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1999-01-20 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19990008</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01008</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1999-04-16 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>19990009</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01009</string>
+        </tableCell>
+        <tableCell>
+          <string>Business</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>1999-06-25 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20000015</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01015</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Closed</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2000-04-20 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>
+          <timestamp>2001-06-22 00:00:00.0</timestamp>
+        </tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20000019</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01019</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2000-10-08 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20000020</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01020</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2000-10-20 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20000021</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01021</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2000-12-05 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20010022</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01022</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2001-01-05 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20010027</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01027</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2001-08-22 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20020034</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01034</string>
+        </tableCell>
+        <tableCell>
+          <string>Business</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2002-01-22 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20020035</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01035</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2002-02-12 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+      <tableRow>
+        <tableCell>
+          <integer>20020036</integer>
+        </tableCell>
+        <tableCell>
+          <string>CST01036</string>
+        </tableCell>
+        <tableCell>
+          <string>Personal</string>
+        </tableCell>
+        <tableCell>
+          <string>Active</string>
+        </tableCell>
+        <tableCell>
+          <timestamp>2002-03-22 00:00:00.0</timestamp>
+        </tableCell>
+        <tableCell>null</tableCell>
+      </tableRow>
+    </table>
+  </queryResults>
+</root>
+

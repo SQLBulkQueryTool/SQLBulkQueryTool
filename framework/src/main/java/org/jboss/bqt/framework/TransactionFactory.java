@@ -21,9 +21,11 @@
  */
 package org.jboss.bqt.framework;
 
-import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.framework.transaction.*;
+import org.jboss.bqt.framework.transaction.JNDITransaction;
+import org.jboss.bqt.framework.transaction.LocalTransaction;
+import org.jboss.bqt.framework.transaction.OnWrapTransaction;
+import org.jboss.bqt.framework.transaction.TxnAutoTransaction;
 
 
 /**

@@ -26,13 +26,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.framework.AbstractQueryTransaction;
 
 /**
@@ -42,7 +40,7 @@ import org.jboss.bqt.framework.AbstractQueryTransaction;
 public class TestClientTransaction extends AbstractQueryTransaction {
 
 	private QueryScenario querySet = null;
-	private ExpectedResults expectedResults = null;
+	private ExpectedResultsReader expectedResults = null;
 	private QueryTest query = null;
 
 	private QuerySQL[] queries = null;
@@ -66,7 +64,7 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 	}
 
 	public void init(TestResultsSummary testResultsSummary,
-			ExpectedResults expectedResults, QueryTest query) {
+			ExpectedResultsReader expectedResults, QueryTest query) {
 		this.query = query;
 		this.testResultsSummary = testResultsSummary;
 		this.expectedResults = expectedResults;

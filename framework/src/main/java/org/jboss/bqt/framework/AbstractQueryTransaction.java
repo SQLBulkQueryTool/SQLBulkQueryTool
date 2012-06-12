@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.PropertiesUtils;
-import org.jboss.bqt.framework.ConfigPropertyNames.CONNECTION_STRATEGY_PROPS;
 import org.jboss.bqt.framework.connection.ConnectionStrategy;
 import org.jboss.bqt.framework.connection.ConnectionStrategyFactory;
 

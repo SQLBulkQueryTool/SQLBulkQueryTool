@@ -42,6 +42,14 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * 
  */
 public interface QueryReader  {
+	
+	/**
+	 * Returns the full path to the query files location.
+	 * @return String full directory path
+	 * 
+	 * @see TestProperties#PROP_QUERY_FILES_DIR_LOC
+	 */
+	String getQueryFilesLocation();
 
 	/**
 	 * Return the <code>querySetID</code>s that identifies all the query sets

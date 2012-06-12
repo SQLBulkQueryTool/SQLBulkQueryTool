@@ -59,7 +59,7 @@ public class XMLQueryScenario extends QueryScenario {
 //				throw new TransactionRuntimeException(e1);
 //			}
 //	
-//			resultsGen = new XMLGenerateResults(this.getQueryScenarioIdentifier(),
+//			resultsGen = new XMLExpectedResultsWriter(this.getQueryScenarioIdentifier(),
 //					this.getProperties());
 //	
 //			if (reader.getQuerySetIDs() == null
@@ -71,7 +71,7 @@ public class XMLQueryScenario extends QueryScenario {
 //	}
 
 //	@Override
-//	public ExpectedResults getExpectedResults(String querySetID) {
+//	public ExpectedResultsReader getExpectedResults(String querySetID) {
 //		return new XMLExpectedResults(querySetID, this.getProperties());
 //	}
 
@@ -104,15 +104,15 @@ public class XMLQueryScenario extends QueryScenario {
 			}
 
 		} else if (tr.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.GENERATE)) { //$NON-NLS-1$
-				this.getResultsGenerator().generateQueryResultFile(tr, resultSet);
+				this.getExpectedResultsGenerator().generateQueryResultFile(tr, resultSet);
 		} 
 		
 		// just create the error file for any failures
-		// also, rechecck cause the status could have changed to exception during the
+		// also, recheck cause the status could have changed to exception during the
 		// the processing of expected results (i.e, malformed xml file)
 
 		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
-				this.getResultsGenerator().generateErrorFile(tr, resultSet,
+				this.getErrorWriter().generateErrorFile(tr, resultSet,
 						this.getExpectedResults(tr.getQuerySetID()).getResultsFile(tr.getQueryID()));
 
 		}
@@ -126,12 +126,6 @@ public class XMLQueryScenario extends QueryScenario {
 			return true;
 		}
 		return false;
-
-	}
-	
-	@Override
-	public void writeQueryTests(QueryTest queryTest) throws Exception {
-		getQueryWriter().writeQueryTest(queryTest);
 
 	}
 	

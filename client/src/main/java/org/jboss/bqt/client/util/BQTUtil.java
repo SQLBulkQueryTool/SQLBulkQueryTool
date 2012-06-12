@@ -23,8 +23,11 @@
  */
 package org.jboss.bqt.client.util;
 
+import java.io.File;
+
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.util.FileUtils;
 
 /**
  * @author vhalbert
@@ -37,5 +40,30 @@ public class BQTUtil {
 				"BQTFramework.invalidProperty", property); //$NON-NLS-1$            
 		throw new FrameworkRuntimeException(msg);
 	}
+
+	/**
+		 * Call to obtain all the query {@link File files} defined for this tests
+		 * that will be executed.
+		 *
+		 * @param query_dir_location to the query files
+		 * @return File[] that is all the queries to be executed.
+		 * 
+		 */
+		public static File[] loadQuerySets(String query_dir_location)  {
+
+			String loc = query_dir_location;
+	
+			ClientPlugin.LOGGER.info("Loading queries from " + loc);
+	
+			File files[] = FileUtils.findAllFilesInDirectoryHavingExtension(loc,
+					".xml");
+			if (files == null || files.length == 0)
+				throw new FrameworkRuntimeException((new StringBuilder())
+						.append("No query files found in directory ").append(loc)
+						.toString());
+			
+			return files;
+	
+		}
 
 }

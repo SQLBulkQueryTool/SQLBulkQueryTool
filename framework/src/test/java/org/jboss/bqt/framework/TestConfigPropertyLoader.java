@@ -59,24 +59,66 @@ public class TestConfigPropertyLoader {
 
 		_instance.setProperty("override", "ovalue");
 
-		assertEquals("ovalue", _instance.getProperties().getProperty("override")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("ovalue", _instance.getProperty("override")); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// confirm the loader actually loaded the default-config.properties file
-		assertEquals("driver", _instance.getProperties().getProperty(ConfigPropertyNames.CONNECTION_TYPE)); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("driver", p.getProperty(ConfigPropertyNames.CONNECTION_TYPE)); //$NON-NLS-1$ //$NON-NLS-2$
 
+		System.setProperty("username", "");
 		
 		
 		ConfigPropertyLoader.reset();
 				
 		_instance = ConfigPropertyLoader.getInstance();
+		 p = _instance.getProperties();
 		
 		assertNull("should be null after reset", _instance.getProperties().getProperty("override"));
 
 		assertEquals("failed to pickup system property", "value", p.getProperty("test")); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		// confirm the loader actually loaded the default-config.properties file
-		assertEquals("failed to correctly pickup the User ", "", p.getProperty("User")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("failed to correctly pickup the User ", "", _instance.getProperty("conn.user")); //$NON-NLS-1$ //$NON-NLS-2$
 
+    }
+    
+    /**
+     * Tests {@link org.jboss.bqt.core.util.PropertiesUtils}
+     * @throws Exception 
+     */
+    @Test
+    public void testEachConfigProperty() throws Exception {
+    	System.setProperty(ConfigPropertyNames.CONFIG_FILE, "configtest.properties");
+ 
+    	ConfigPropertyLoader.reset();
+		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
+		assertNotNull(_instance);
+
+		assertEquals("testmode", _instance.getProperty("bqt.result.mode")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("querysetdirname", _instance.getProperty("bqt.queryset.dirname")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("OFF", _instance.getProperty("bqt.transaction.option")); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		//bqt.expectedresults.loc=${queryset.artifacts.dir}/${queryset.dir}/${expected.results.dir}
+		assertEquals("/queryset/artifacts/dir/querysetdirname/expectedresultsdir", _instance.getProperty("bqt.expectedresults.loc")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		//bqt.queryfiles.loc=${queryset.artifacts.dir}/${queryset.dir}/${test.queries.dir}
+		assertEquals("/queryset/artifacts/dir/querysetdirname/testqueriesdir", _instance.getProperty("bqt.queryfiles.loc")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		assertEquals("myscenariofile.properties", _instance.getProperty("bqt.scenario.file")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		assertEquals("/output/dir", _instance.getProperty("bqt.output.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode/expectedresultsdir", _instance.getProperty("bqt.generate.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode", _instance.getProperty("bqt.compare.dir")); //$NON-NLS-1$ //$NON-NLS-2$		
+		assertEquals("/output/dir/myscenariofile/querysetdirname/testmode/testqueriesdir", _instance.getProperty("bqt.sql.dir")); //$NON-NLS-1$ //$NON-NLS-2$	
+		assertEquals("/output/dir/myscenariofile/querysetdirname/errors_for_testmode", _instance.getProperty("bqt.errors.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		
+
+		assertEquals("myconntype", _instance.getProperty("conn.type")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("org.jdbc.oracle.OracleDriver", _instance.getProperty("conn.driver")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("jdbc:teiid:VDB@mm://localhost:31000", _instance.getProperty("conn.url")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("admin", _instance.getProperty("conn.user")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("adminpw", _instance.getProperty("conn.password")); //$NON-NLS-1$ //$NON-NLS-2$
+    	
     }
     
     

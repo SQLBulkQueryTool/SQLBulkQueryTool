@@ -16,3 +16,16 @@ The tool has the following result modes when run:
 
 The tool can assist you in getting started by using the "sql" option, or you can create your own queries, 
 following the template (bqt-distro/src/main/resources/ctc_tests/query_sets.
+
+
+Design:
+
+Scenarios:
+
+-   ResultMode=SQL
+
+    QueryWriter -- {writes} -- for each table in the DatabaseMetadata
+
+    QueryReader -- {reads} -- query files based on PROP_QUERY_FILES_DIR_LOC
+    
+
