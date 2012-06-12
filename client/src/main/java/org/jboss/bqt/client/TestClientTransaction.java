@@ -22,6 +22,7 @@
 
 package org.jboss.bqt.client;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,6 +32,7 @@ import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.framework.AbstractQueryTransaction;
 
 /**
@@ -101,6 +103,8 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 
 	@Override
 	public void testCase() throws FrameworkRuntimeException {
+		if (this.getApplicationException() != null) return;
+		
 		ClientPlugin.LOGGER.debug("expected error: " + this.errorExpected);
 
 		int l = queries.length;
