@@ -25,11 +25,26 @@ package org.jboss.bqt.client.api;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 
+/**
+ * The QueryWriter is responsible for persisting a {@link QueryTest query} to 
+ * {@link TestProperties#PROP_SQL_DIR outputDirectory} when the result mode 
+ * is {@link QueryScenario.RESULT_MODE#SQL sql}.
+ * 
+ * @author vhalbert
+ *
+ */
 public interface QueryWriter {
 	
 	/**
-	 * When the result mode is {@link QueryScenario.RESULT_MODE#GENERATE generate}, the QueryWriter will
-	 * be called to persist a series of queries to {@link TestProperties#PROP_OUTPUT_DIR outputDirectory}.
+	 * Returns the full path to the location the query files will be persisted to.
+	 * @return String full directory path
+	 * 
+	 * @see TestProperties#PROP_SQL_DIR
+	 */
+	String getSQlFileOutputLocation();
+	
+	/**
+	 * Called to write the <code>tests</code> to the {@link #getSQlFileOutputLocation() output} location.
 	 * @param tests contains the SQL queries to write.
 	 * @throws Exception
 	 */

@@ -32,9 +32,9 @@ import java.util.Properties;
 import org.jboss.bqt.client.ClassFactory;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.ResultsGenerator;
+import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
@@ -74,7 +74,7 @@ public class TestXMLExpectedResults {
 
 		QueryScenario set = ClassFactory.createQueryScenario("testscenario");
 
-		_instance.setProperty(TestProperties.PROP_QUERY_FILES_ROOT_DIR,
+		_instance.setProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC,
 				new File("src/main/resources/").getAbsolutePath());
 
 		Iterator<String> it = set.getQuerySetIDs().iterator();
@@ -86,12 +86,12 @@ public class TestXMLExpectedResults {
 				System.out.println("Failed, didn't load any queries ");
 			}
 
-			ExpectedResults er = set.getExpectedResults(querySetID);
+			ExpectedResultsReader er = set.getExpectedResults(querySetID);
 			// new XMLExpectedResults(_instance.getProperties(),
 			// querySetID);
 
-			ResultsGenerator gr = set.getResultsGenerator();
-			// new XMLGenerateResults(_instance.getProperties(), "testname",
+			ExpectedResultsWriter gr = set.getExpectedResultsGenerator();
+			// new XMLExpectedResultsWriter(_instance.getProperties(), "testname",
 			// set.getOutputDirectory());
 
 			Iterator<QueryTest> qIt = queries.iterator();

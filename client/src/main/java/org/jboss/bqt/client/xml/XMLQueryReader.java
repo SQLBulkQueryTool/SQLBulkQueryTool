@@ -35,7 +35,8 @@ import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryReader;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.StringUtil;
 
@@ -43,25 +44,44 @@ public class XMLQueryReader implements QueryReader {
 
 	private Properties props = null;
 	private String queryScenarioIdentifier;
+	private String query_dir_loc = null;
 
 	private Map<String, String> querySetIDToFileMap = new HashMap<String, String>();
 
-	public XMLQueryReader(String queryScenarioID, Properties properties)
-			throws QueryTestFailedException {
+	public XMLQueryReader(String queryScenarioID, Properties properties) {
 		this.props = properties;
 		this.queryScenarioIdentifier = queryScenarioID;
+		
+		query_dir_loc = props.getProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC);
+		if (query_dir_loc == null) {
+				BQTUtil.throwInvalidProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC);
+		}
+
 		loadQuerySets();
 	}
+	
+	
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @see org.jboss.bqt.client.api.QueryReader#getQueryFilesLocation()
+	 */
+	@Override
+	public String getQueryFilesLocation() {
+		return query_dir_loc;
+	}
+
+
 
 	@Override
-	public List<QueryTest> getQueries(String querySetID)
-			throws QueryTestFailedException {
+	public List<QueryTest> getQueries(String querySetID) {
 		String queryFile = querySetIDToFileMap.get(querySetID);
 
 		try {
 			return loadQueries(querySetID, queryFile);
 		} catch (IOException e) {
-			throw new QueryTestFailedException((new StringBuilder())
+			throw new FrameworkRuntimeException((new StringBuilder())
 					.append("Failed to load queries from file: ")
 					.append(queryFile).append(" error:").append(e.getMessage())
 					.toString());
@@ -74,9 +94,9 @@ public class XMLQueryReader implements QueryReader {
 		return new HashSet<String>(querySetIDToFileMap.keySet());
 	}
 
-	private void loadQuerySets() throws QueryTestFailedException {
+	private void loadQuerySets() {
 
-		File files[] = TestProperties.loadQuerySets(this.props);
+		File files[] = BQTUtil.loadQuerySets(query_dir_loc);
 
 		for (int i = 0; i < files.length; i++) {
 			String queryfile = files[i].getAbsolutePath();
@@ -98,7 +118,7 @@ public class XMLQueryReader implements QueryReader {
 			String msg = "Query file doesn't exist or cannot be read: "
 					+ queryFileName + ", ignoring and continuing";
 			ClientPlugin.LOGGER.error(msg);
-			throw new TransactionRuntimeException(msg); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new IOException(msg); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		// Get query set name
 		//			String querySet = getQuerySetName(queryFileName) ; //$NON-NLS-1$

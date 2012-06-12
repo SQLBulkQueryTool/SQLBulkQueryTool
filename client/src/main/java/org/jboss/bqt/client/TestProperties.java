@@ -21,23 +21,41 @@
  */
 package org.jboss.bqt.client;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.util.FileUtils;
 
 /**
  * The TestProperties are those properties that define a test scenario.  
  * 
- * Note:  The scenario and query set files are 
+ * Note:  The scenario and query set files are what make up the testing suite.
+ * <p>The following are core properties:
+ * </p>
+ * <li><b>Properties used as INPUT to the process</b>
+ * <li>{@link #PROP_SCENARIO_FILE scenarioFile} is the driver property file for controling which query sets and 
+ * expected result files are used.  Additionally, other properties can be added to this file and picked to be
+ * during execution.  The only requirement is either the configuration template.properties or
  * <p>
+ * In the scenario file, it is recommended to control which {@link #QUERY_SET_NAME querySet}, 
+ * </p>
+ * </li>
+ * 
+ * 
+ * 
+ * </li>
+ * 
+ * 
  * A {@link #PROP_SCENARIO_FILE scenarioFile} consist of:
- * <li>{@link #QUERY_SET_NAME querySet} - which queries to execute</li>
+ * <li>{@link #QUERY_SET_NAME querySet} - which queries to execute
+ * 	<p>The querySet will be loaded based on #PROP_QUERY_FILES_DIR_LOC.  From this location, 
+ * 	the {@link #QUERY_SET_NAME querySetName} must exist as a sub-directory.
+ *  </p>
+ * </li>
  * <li>{@link #PROP_RESULT_MODE resultMode} - how to process the queries {@link RESULT_MODES modes}</li>
  * <li>{@link #PROP_OUTPUT_DIR outputDirectory} - where to write the output from the test</li> 
+ * <li>{@link #PROP_EXPECTED_RESULTS_DIR_LOC} indicates the location that the expected result files should be found.</li>
+ * 
  * <p>
  * Options to validate query execution time:
  * <li>{@link #PROP_EXECUTE_EXCEED_PERCENT exceedPct} - flag the query when it deviates greater than this percent</li>
@@ -53,75 +71,71 @@ public class TestProperties {
 	/**
 	 * PROP_SCENARIO_FILE indicates the scenario properties file to load.
 	 */
-	public static final String PROP_SCENARIO_FILE = "scenariofile";
-
-	/**
-	 * The {@link #QUERY_SET_NAME} property indicates the name of directory that
-	 * contains the set of queries and expected results that will be used. This
-	 * is referred to as the <b>query set</b>
-	 * 
-	 * This property should be found in the {@link #PROP_SCENARIO_FILE}.
-	 */
-	public static final String QUERY_SET_NAME = "queryset.dir"; //$NON-NLS-1$
+	public static final String PROP_SCENARIO_FILE = "bqt.scenario.file";
 	
 	/**
-	 * PROP_EXECUTE_EXCEED_PERCENT controls, when specified, at what percent execution time can
-	 * exceed expected results.  When a query execution time is exceeded, an exception
-	 * will be thrown.
+	 * PROP_TESTRUN_DIR will indicate the root location for everything 
+	 * written out for a give scenario.
 	 */
-	public static final String PROP_EXECUTE_EXCEED_PERCENT = "exceedpercent";	
-
+	public static final String PROP_TESTRUN_DIR = "bqt.testrun.dir";
+	
+	
 	/**
-	 * PROP_EXECUTE_TIME_MINEMUM indicates the minimum time at which a query will be validated if
-	 * it exceeds the {@link #PROP_EXECUTE_EXCEED_PERCENT} above the expected results 
-	 * execution time (i.e., exectime).  By increasing this time, it will filter out the short running
-	 * queries and focus on the longer running queries.
+	 * PROP_ERRORS_DIR indicates where error files will be written
+	 * for a given run.
 	 */
-	public static final String PROP_EXECUTE_TIME_MINEMUM = "exectimemin";	 // milliseconds
+	public static final String PROP_ERRORS_DIR = "bqt.errors.dir";
 
 	/**
 	 * {@link #PROP_QUERY_FILES_DIR_LOC} indicates the location to find the
 	 * query files
 	 */
-	public static final String PROP_QUERY_FILES_DIR_LOC = "queryfiles.loc";
+	public static final String PROP_QUERY_FILES_DIR_LOC = "bqt.queryfiles.loc";
+
+//	/**
+//	 * Optional, {@link #PROP_QUERY_FILES_ROOT_DIR}, indicates the root
+//	 * directory to be prepended to the {@link #PROP_QUERY_FILES_DIR_LOC} to
+//	 * create the full directory to find the query files.
+//	 * 
+//	 * This property is normally used during the nightly builds so that the
+//	 * query files will coming from other projects.
+//	 */
+//	public static final String PROP_QUERY_FILES_ROOT_DIR = "bqt.queryfiles.root.dir";
 
 	/**
-	 * {@link #PROP_QUERY_FILES_ROOT_DIR}, if specified, indicates the root
-	 * directory to be prepended to the {@link #PROP_QUERY_FILES_DIR_LOC} to
-	 * create the full directory to find the query files.
-	 * 
-	 * This property is normally used during the nightly builds so that the
-	 * query files will coming from other projects.
+	 * The {@link #QUERY_SET_NAME} property indicates the name of directory that
+	 * contains the set of queries and expected results that will be used. This
+	 * is referred to as the <b>query set</b>.
 	 */
-	public static final String PROP_QUERY_FILES_ROOT_DIR = "queryfiles.root.dir";
-
+	public static final String QUERY_SET_NAME = "bqt.queryset.dirname"; //$NON-NLS-1$
+	
 	/**
 	 * The results location is where expected result files can be found
 	 */
-	public static final String PROP_EXPECTED_RESULTS_DIR_LOC = "results.loc";
+	public static final String PROP_EXPECTED_RESULTS_DIR_LOC = "bqt.expectedresults.loc";
 
-	/**
-	 * Optional, {@link #PROP_EXPECTED_RESULTS_ROOT_DIR}, if specified, indicates the root
-	 * directory to be prepended to the {@link #PROP_EXPECTED_RESULTS_DIR_LOC}
-	 * to create the full directory to find the expected results files.
-	 * 
-	 * This property is normally used during the nightly builds so that the
-	 * query files will coming from other projects.
-	 */
+//	/**
+//	 * Optional, {@link #PROP_EXPECTED_RESULTS_ROOT_DIR}, if specified, indicates the root
+//	 * directory to be prepended to the {@link #PROP_EXPECTED_RESULTS_DIR_LOC}
+//	 * to create the full directory to find the expected results files.
+//	 * 
+//	 * This property is normally used during the nightly builds so that the
+//	 * query files will coming from other projects.
+//	 */
+//
+//	public static final String PROP_EXPECTED_RESULTS_ROOT_DIR = "results.root.dir";
 
-	public static final String PROP_EXPECTED_RESULTS_ROOT_DIR = "results.root.dir";
-
-	/**
-	 * {@link #PROP_SUMMARY_PRT_DIR} is the directory where summary reports
-	 * will be written to.
-	 */
-	public static final String PROP_SUMMARY_PRT_DIR = "summarydir";
+//	/**
+//	 * {@link #PROP_SUMMARY_PRT_DIR} is the directory where summary reports
+//	 * will be written to.
+//	 */
+//	public static final String PROP_SUMMARY_PRT_DIR = "summarydir";
 
 	/**
 	 * PROP_RESULT_MODE controls what to do with the execution results.
 	 * 
 	 */
-	public static final String PROP_RESULT_MODE = "resultmode";
+	public static final String PROP_RESULT_MODE = "bqt.result.mode";
 
 	/**
 	 * All test options will produce the following basic information at the end
@@ -158,23 +172,47 @@ public class TestProperties {
 	 * The {@link #PROP_OUTPUT_DIR} property indicates the root directory that
 	 * output files will be written.
 	 */
-	public static final String PROP_OUTPUT_DIR = "outputdir"; //$NON-NLS-1$
+	public static final String PROP_OUTPUT_DIR = "bqt.output.dir"; //$NON-NLS-1$
+	
+	
+	/**
+	 * The {@link #PROP_COMPARE_DIR} property indicates the root directory
+	 * for which all files will be written to for a given scenario
+	 */
+	public static final String PROP_COMPARE_DIR = "bqt.compare.dir"; //$NON-NLS-1$	
 	
 	/**
 	 * The {@link #PROP_GENERATE_DIR} property indicates where newly generated
 	 * results files will be written to. The newly generated files should be
 	 * written to a different location than the existing expected results.
 	 */
-	public static final String PROP_GENERATE_DIR = "generatedir"; //$NON-NLS-1$
+	public static final String PROP_GENERATE_DIR = "bqt.generate.dir"; //$NON-NLS-1$
 
 	/**
 	 * The {@link #PROP_SQL_DIR} property indicates where newly generated
 	 * test query files will be written to. The newly created sql files should be
 	 * written to a different location than the existing test queries.
 	 */
-	public static final String PROP_SQL_DIR = "sqldir"; //$NON-NLS-1$
+	public static final String PROP_SQL_DIR = "bqt.sql.dir"; //$NON-NLS-1$
+	
+	/**
+	 * PROP_EXECUTE_EXCEED_PERCENT controls, when specified, at what percent execution time can
+	 * exceed expected results.  When a query execution time is exceeded, an exception
+	 * will be thrown.
+	 */
+	public static final String PROP_EXECUTE_EXCEED_PERCENT = "bqt.exceedpercent";	
+
+	/**
+	 * PROP_EXECUTE_TIME_MINEMUM indicates the minimum time at which a query will be validated if
+	 * it exceeds the {@link #PROP_EXECUTE_EXCEED_PERCENT} above the expected results 
+	 * execution time (i.e., exectime).  By increasing this time, it will filter out the short running
+	 * queries and focus on the longer running queries.
+	 */
+	public static final String PROP_EXECUTE_TIME_MINEMUM = "bqt.exectimemin";	 // milliseconds
+
 	
 	
+	@SuppressWarnings("null")
 	public static String getResultMode(Properties props) {
 		// Determine from property what to do with query results
 		String resultModeStr = props.getProperty(
@@ -202,46 +240,6 @@ public class TestProperties {
 			"Invalid results mode of "+ resultModeStr + " must be COMPARE, GENERATE, SQL or NONE");
 
 		}
-
-	}
-	
-	/**
-	 * Call to obtain all the query {@link File files} defined for this tests
-	 * that will be executed.
-	 *
-	 * @param props
-	 * @return File[] that is all the queries to be executed.
-	 * @throws QueryTestFailedException
-	 * 
-	 * @see #PROP_QUERY_FILES_DIR_LOC
-	 * @see #PROP_QUERY_FILES_ROOT_DIR
-	 */
-	public static File[] loadQuerySets(Properties props) throws QueryTestFailedException {
-		String query_dir_loc = props.getProperty(PROP_QUERY_FILES_DIR_LOC);
-		if (query_dir_loc == null) {
-				BQTUtil.throwInvalidProperty(PROP_QUERY_FILES_DIR_LOC);
-		}
-
-		String query_root_loc = props
-				.getProperty(PROP_QUERY_FILES_ROOT_DIR);
-
-		String loc = query_dir_loc;
-
-		if (query_root_loc != null) {
-			File dir = new File(query_root_loc, query_dir_loc);
-			loc = dir.getAbsolutePath();
-		}
-
-		ClientPlugin.LOGGER.info("Loading queries from " + loc);
-
-		File files[] = FileUtils.findAllFilesInDirectoryHavingExtension(loc,
-				".xml");
-		if (files == null || files.length == 0)
-			throw new QueryTestFailedException((new StringBuilder())
-					.append("No query files found in directory ").append(loc)
-					.toString());
-		
-		return files;
 
 	}
 

@@ -81,7 +81,7 @@ public class CreateSQLQueryFile extends AbstractQueryTransaction {
 
 			}
 			
-			ClientPlugin.LOGGER.info("# Query files to be created: " + querystrings.size());
+			ClientPlugin.LOGGER.info("# Queries written in the file: " + querystrings.size());
 			
 			QuerySQL[] querysqls = new QuerySQL[querystrings.size()];
 			

@@ -26,38 +26,26 @@ import java.sql.ResultSet;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 /**
- * The ResultsGenerator represents how a new set of expected results will be written for
+ * The ExpectedResultsWriter represents how a new set of expected results will be written for
  * a given <code>querySetID</code> and <code>queryIdentifier</code>. The
  * implementor should write out one result file for each call that is made to
  * {@link #generateQueryResultFile(TestResult, ResultSet)  }
- * , however, it will control the format of the content.
+ * , however, it will control the format of the content.  The location should be
+ * based on {@link TestProperties#PROP_GENERATE_DIR generateDirectory}.
  * 
  * The testing process will only generate a new result file when the result mode
- * is {@link TestProperties.RESULT_MODES#GENERATE}
+ * is {@link TestProperties.RESULT_MODES#GENERATE}.  
  * 
  */
-public interface ResultsGenerator {
+public interface ExpectedResultsWriter {
 
 	/**
-	 * Return the location that report files are written to.
-	 * In the case of generating results, the output files
-	 * will be error files indicating which queries were failures.
+	 * Returns the full path to the newly created expected results location.
+	 * @return String full directory path
 	 * 
-	 * @return String directory location of the output files
-	 * 
-	 * @since
-	 */
-	String getOutputDir();
-
-	/**
-	 * Return the location that results will be generated to.
-	 * 
-	 * @return String directory name where files will be generated
-	 * 
-	 * @since
+	 * @see TestProperties#PROP_GENERATE_DIR
 	 */
 	String getGenerateDir();
 
@@ -74,21 +62,6 @@ public interface ResultsGenerator {
 	
 	void generateQueryResultFile(final TestResult testResult,
 			final ResultSet resultSet) throws FrameworkRuntimeException;	
-	
-
-	/**
-	 * Call to generate an error file as the result of incompatibilities in the
-	 * comparison of the expected results to the actual results.
-	 * @param testResult 
-	 * @param resultSet 
-	 * @param results 
-	 * @return String name for the error file
-	 * @throws FrameworkRuntimeException
-	 */
-	
-	String generateErrorFile(final TestResult testResult,
-			final ResultSet resultSet, 
-			final Object results) throws FrameworkRuntimeException;	
 	
 	
 

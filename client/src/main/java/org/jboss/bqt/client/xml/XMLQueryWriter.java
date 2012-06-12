@@ -36,6 +36,7 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
 import org.jdom.Document;
@@ -60,8 +61,28 @@ public class XMLQueryWriter implements QueryWriter {
 		if (queryFileDir == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_SQL_DIR);
 		}
+		File d = new File(queryFileDir);
+		if (d.exists()) {
+			FileUtils.removeDirectoryAndChildren(d);
+		}
+		if (!d.exists()) {
+			d.mkdirs();
+		}
+				
 		
 		ClientPlugin.LOGGER.debug("Directory to write queries to " + queryFileDir);
+	}
+	
+	
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @see org.jboss.bqt.client.api.QueryWriter#getSQlFileOutputLocation()
+	 */
+	@Override
+	public String getSQlFileOutputLocation() {
+		return this.queryFileDir;
 	}
 
 	@Override
@@ -73,7 +94,7 @@ public class XMLQueryWriter implements QueryWriter {
 			targetDir.mkdirs();
 			File f = new File(targetDir, this.queryScenarioIdentifier + ".xml");
 			
-			ClientPlugin.LOGGER.info("Writing queries to file: " + f.getAbsolutePath());
+			ClientPlugin.LOGGER.trace("XMLQueryWriter: Writing query file: " + f.getAbsolutePath());
 
 			FileOutputStream fos = new FileOutputStream(f);
 			outputStream = new BufferedOutputStream(fos);
@@ -113,7 +134,7 @@ public class XMLQueryWriter implements QueryWriter {
 			} catch (IOException e) {
 			}
 		}
-		ClientPlugin.LOGGER.debug("XMLQueryWriter: Completed writing queries ");
+		ClientPlugin.LOGGER.debug("XMLQueryWriter: Completed writing query file");
 
 		
 	}

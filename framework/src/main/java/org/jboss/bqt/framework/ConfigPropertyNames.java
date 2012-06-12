@@ -49,7 +49,7 @@ public interface ConfigPropertyNames {
 	 * Connection Type indicates the type of connection (strategy) to use when
 	 * connecting to Teiid. Options are {@link CONNECTION_TYPES}
 	 */
-	public static final String CONNECTION_TYPE = "connection-type"; //$NON-NLS-1$
+	public static final String CONNECTION_TYPE = "conn.type"; //$NON-NLS-1$
 
 	/**
 	 * Connection_Types indicates the method on connection to the source that 

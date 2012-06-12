@@ -32,6 +32,8 @@ import org.junit.Test;
 
 @SuppressWarnings("nls")
 public class TestIntegrationWithLocalDB {
+	
+	
 
 	@BeforeClass
     public static void beforeEach() throws Exception {  		
@@ -43,12 +45,44 @@ public class TestIntegrationWithLocalDB {
 		
     }
 
+
 	@Test
-	public void testBQTClientExecution() {
+	public void testBQTClientExecutionResultSetModeSQL() {
+		
+		System.setProperty("result.mode", "sql" );
 		
 		TestClient tc = new TestClient();
 		tc.runTest();
-		
+	
 	}
 
+	@Test
+	public void testBQTClientExecutionResultSetModeGenerate() {
+		
+		System.setProperty("result.mode", "generate" );
+		
+		TestClient tc = new TestClient();
+		tc.runTest();
+	
+	}
+
+	@Test
+	public void testBQTClientExecutionResultSetModeCompare() {
+		
+		System.setProperty("result.mode", "compare" );
+		
+		TestClient tc = new TestClient();
+		tc.runTest();
+	
+	}	
+	
+	@Test
+	public void testBQTClientExecutionResultSetModeNone() {
+		
+		System.setProperty("result.mode", "none" );
+		
+		TestClient tc = new TestClient();
+		tc.runTest();
+	
+	}	
 }

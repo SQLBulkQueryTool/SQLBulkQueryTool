@@ -23,7 +23,6 @@ package org.jboss.bqt.framework;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Properties;
 
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;

@@ -37,7 +37,7 @@ import org.jboss.bqt.core.util.PropertiesUtils;
  */
 
 public class ConfigPropertyLoader {
-	private static final String CONFIG_TEMPLATE_FILE_NAME = "config-template.properties";
+	public static final String CONFIG_TEMPLATE_FILE_NAME = "config-template.properties";
 
 	/**
 	 * The default config file to use when #CONFIG_FILE system property isn't
@@ -46,7 +46,6 @@ public class ConfigPropertyLoader {
 	public static final String DEFAULT_CONFIG_FILE_NAME = "default-config.properties";
 
 	private static ConfigPropertyLoader _instance = null;
-	private static String LAST_CONFIG_FILE = null;
 
 	/**
 	 * Contains any overrides specified for the test
@@ -63,43 +62,17 @@ public class ConfigPropertyLoader {
 	}
 
 	public static synchronized ConfigPropertyLoader getInstance() {
-		boolean diff = differentConfigProp();
-
 		if (_instance != null) {
-			if (!diff) {
-				return _instance;
-			}
-
-			reset();
-
+			return _instance;
 		}
 
-		_instance = new ConfigPropertyLoader();
+		ConfigPropertyLoader instance = new ConfigPropertyLoader();
 
-		_instance.initialize();
+		instance.initialize();
+		
+		_instance = instance;
 
 		return _instance;
-	}
-
-	/**
-	 * because a config file could be different for the subsequent test, check
-	 * to see if the file is different.
-	 * 
-	 * @return boolean
-	 */
-	private static boolean differentConfigProp() {
-		String filename = System.getProperty(ConfigPropertyNames.CONFIG_FILE);
-		if (filename == null) {
-			filename = DEFAULT_CONFIG_FILE_NAME;
-		}
-
-		if (LAST_CONFIG_FILE == null
-				|| !LAST_CONFIG_FILE.equalsIgnoreCase(filename)) {
-			LAST_CONFIG_FILE = filename;
-			return true;
-		}
-		return false;
-
 	}
 
 	/**
@@ -114,14 +87,17 @@ public class ConfigPropertyLoader {
 		_instance.props.clear();
 
 		_instance = null;
-		LAST_CONFIG_FILE = null;
 
 	}
 
 	private void initialize() {
 
 		Properties templateProps = PropertiesUtils.load(CONFIG_TEMPLATE_FILE_NAME, null);
-		Properties defaultProps = PropertiesUtils.load(LAST_CONFIG_FILE, null);
+		String filename = System.getProperty(ConfigPropertyNames.CONFIG_FILE);
+		if (filename == null) {
+			filename = DEFAULT_CONFIG_FILE_NAME;
+		}
+		Properties defaultProps = PropertiesUtils.load(filename, null);
 		templateProps.putAll(defaultProps);
 		props = PropertiesUtils.resolveNestedProperties(templateProps, false);
 		

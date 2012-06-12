@@ -480,7 +480,7 @@ public final class PropertiesUtils {
 	}
 	
 	public static Properties load(String filename, Properties defaults) {
-		ArgCheck.isNotNull(filename);
+		ArgCheck.isNotNull(filename, "Property filename is null");
 		InputStream in = null;
 		Properties props = new Properties();
 		if (defaults != null) {
