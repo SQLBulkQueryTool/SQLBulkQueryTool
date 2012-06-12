@@ -92,16 +92,6 @@ public class TestProperties {
 	 */
 	public static final String PROP_QUERY_FILES_DIR_LOC = "bqt.queryfiles.loc";
 
-//	/**
-//	 * Optional, {@link #PROP_QUERY_FILES_ROOT_DIR}, indicates the root
-//	 * directory to be prepended to the {@link #PROP_QUERY_FILES_DIR_LOC} to
-//	 * create the full directory to find the query files.
-//	 * 
-//	 * This property is normally used during the nightly builds so that the
-//	 * query files will coming from other projects.
-//	 */
-//	public static final String PROP_QUERY_FILES_ROOT_DIR = "bqt.queryfiles.root.dir";
-
 	/**
 	 * The {@link #QUERY_SET_NAME} property indicates the name of directory that
 	 * contains the set of queries and expected results that will be used. This
@@ -113,23 +103,6 @@ public class TestProperties {
 	 * The results location is where expected result files can be found
 	 */
 	public static final String PROP_EXPECTED_RESULTS_DIR_LOC = "bqt.expectedresults.loc";
-
-//	/**
-//	 * Optional, {@link #PROP_EXPECTED_RESULTS_ROOT_DIR}, if specified, indicates the root
-//	 * directory to be prepended to the {@link #PROP_EXPECTED_RESULTS_DIR_LOC}
-//	 * to create the full directory to find the expected results files.
-//	 * 
-//	 * This property is normally used during the nightly builds so that the
-//	 * query files will coming from other projects.
-//	 */
-//
-//	public static final String PROP_EXPECTED_RESULTS_ROOT_DIR = "results.root.dir";
-
-//	/**
-//	 * {@link #PROP_SUMMARY_PRT_DIR} is the directory where summary reports
-//	 * will be written to.
-//	 */
-//	public static final String PROP_SUMMARY_PRT_DIR = "summarydir";
 
 	/**
 	 * PROP_RESULT_MODE controls what to do with the execution results.

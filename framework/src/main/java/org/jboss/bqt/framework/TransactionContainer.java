@@ -109,8 +109,5 @@ public abstract class TransactionContainer {
 		FrameworkPlugin.LOGGER.info("[" + this.testClassName + "] " + message);
 	}
 
-//	protected boolean done() {
-//		return true;
-//	}
 
 }

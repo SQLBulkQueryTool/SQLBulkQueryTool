@@ -169,30 +169,37 @@ public class TestResultStat implements TestResult, Serializable {
 	/**
 	 * @return Returns the errorfile.
 	 */
+	@Override
 	public String getErrorfile() {
 		return errorFile;
 	}
 
+	@Override
 	public void setErrorFile(String errorfile) {
 		this.errorFile = errorfile;
 	}
 
+	@Override
 	public long getRowCount() {
 		return rowCount;
 	}
 
+	@Override
 	public void setRowCount(long rowCount) {
 		this.rowCount = rowCount;
 	}
 
+	@Override
 	public long getUpdateCount() {
 		return updateCount;
 	}
 
+	@Override
 	public void setUpdateCount(long updateCount) {
 		this.updateCount = updateCount;
 	}
 
+	@Override
 	public long getExecutionTime() {
 		Date starttest = new Date(getBeginTS());
 		Date endtest = new Date(getEndTS());

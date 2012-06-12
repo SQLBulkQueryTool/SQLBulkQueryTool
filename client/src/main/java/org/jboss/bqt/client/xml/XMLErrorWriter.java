@@ -98,7 +98,8 @@ public class XMLErrorWriter implements ErrorWriter {
 		
 		}
 
-	 String generateErrorFile(final String querySetID,
+	@Override
+	public String generateErrorFile(final String querySetID,
 			final String queryID, final String sql, final ResultSet resultSet,
 			final Throwable queryError, final Object expectedResultsFile)
 			throws FrameworkRuntimeException {
@@ -125,6 +126,23 @@ public class XMLErrorWriter implements ErrorWriter {
 		}
 		return errorFileName;
 	}
+	 
+//		/**
+//		 * Generate an error file for a query that failed comparison. File should
+//		 * have the SQL, the actual results returned from the server and the results
+//		 * that were expected.
+//		 * @param querySetID 
+//		 * @param queryID 
+//		 * @param expectedResultFile 
+//		 * @param ex 
+//		 * @throws QueryTestFailedException 
+//
+//		 */
+//	 	public void generateErrorResults(String querySetID, String queryID,
+//				File expectedResultFile, Throwable ex)
+//				throws QueryTestFailedException {
+//	 	
+//	 	}
 
 		/**
 		 * Generate an error file for a query that failed comparison. File should

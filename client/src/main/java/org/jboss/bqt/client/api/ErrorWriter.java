@@ -22,10 +22,12 @@
 
 package org.jboss.bqt.client.api;
 
+import java.io.File;
 import java.sql.ResultSet;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 
 /**
@@ -59,5 +61,24 @@ public interface ErrorWriter {
 	String generateErrorFile(final TestResult testResult,
 			final ResultSet resultSet, 
 			final Object results) throws FrameworkRuntimeException;
+	
+	/**
+	 * Generate an error file for a query that failed comparison. File should
+	 * have the SQL, the actual results returned from the server and the results
+	 * that were expected.
+	 * @param querySetID 
+	 * @param queryID
+	 * @param sql
+	 * @param resultSet 
+	 * @param queryError 
+	 * @param expectedResultsFile 
+	 * @return String
+	 * @throws FrameworkRuntimeException 
+	 */
+	String generateErrorFile(final String querySetID,
+			final String queryID, final String sql, final ResultSet resultSet,
+			final Throwable queryError, final Object expectedResultsFile)
+			throws FrameworkRuntimeException;
+
 
 }

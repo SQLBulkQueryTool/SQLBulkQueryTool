@@ -150,8 +150,10 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		ResultsHolder rh = null;
 
 		if (!loadedResults.containsKey(queryidentifier)) {
-			rh = loadExpectedResults(findExpectedResultsFile(queryidentifier,
-					this.querySetIdentifier));
+			File er = findExpectedResultsFile(queryidentifier, this.querySetIdentifier);
+			rh = loadExpectedResults(er);
+			
+			loadedResults.put(queryidentifier, rh);
 		} else {
 			rh = loadedResults.get(queryidentifier);
 		}
@@ -834,8 +836,9 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		File file = new File(results_dir_loc + File.separator + querySetIdentifier,
 				resultFileName);
 		if (!file.exists() && this.isExpectedResultsNeeded()) {
-			throw new FrameworkRuntimeException("Query results file "
+			FrameworkRuntimeException fre = new FrameworkRuntimeException("Query results file "
 					+ file.getAbsolutePath() + " cannot be found");
+			throw fre;
 		}
 
 		return file;
