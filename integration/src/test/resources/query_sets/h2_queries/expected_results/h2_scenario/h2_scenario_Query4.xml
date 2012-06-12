@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <query><![CDATA[Select ID, SYMBOL, COMPANY_NAME From PRODUCT]]></query>
-  <queryResults name="h2_scenario_Query4" exectime="1">
+  <queryResults name="h2_scenario_Query4" exectime="0">
     <select>
       <dataElement type="INTEGER">ID</dataElement>
       <dataElement type="VARCHAR">SYMBOL</dataElement>

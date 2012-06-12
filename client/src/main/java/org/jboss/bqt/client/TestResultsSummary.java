@@ -44,9 +44,7 @@ import java.util.Map;
 
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
-import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.StringUtil;
-import org.jboss.bqt.framework.ConfigPropertyLoader;
 
 public class TestResultsSummary {
 
@@ -416,7 +414,7 @@ public class TestResultsSummary {
 		String testname = scenario.getQueryScenarioIdentifier();
 		Collection<TestResult> testResults = getTestResults(querySetID);
 		// Properties props = scenario.getProperties();
-		String outputDir = scenario.getResultsGenerator().getOutputDir();
+		String outputDir = scenario.getTestRunDir();
 
 		//       CombinedTestClient.log("Calculating and printing result statistics"); //$NON-NLS-1$
 		if (testResults == null) {
@@ -424,14 +422,14 @@ public class TestResultsSummary {
 
 		} else if (testResults.size() > 0) {
 			// Create output file
-			String outputFileName = generateFileName(querySetID,
-					System.currentTimeMillis(), runNumber);
+			String outputFileName = generateFileName(querySetID, scenario.getResultsMode(),
+					System.currentTimeMillis());
 			//           CombinedTestClient.log("Creating output file: " + outputFileName); //$NON-NLS-1$
 			PrintStream outputStream = null;
 			PrintStream overwriteStream = null;
 			try {
 				outputStream = getSummaryStream(outputDir, outputFileName);
-				overwriteStream = getSummaryStream(outputDir, querySetID, true); //$NON-NLS-1$
+				overwriteStream = getSummaryStream(outputDir, querySetID + "_" + scenario.getResultsMode(), true); //$NON-NLS-1$
 			} catch (IOException e) {
 				//              logError("Unable to get output stream for file: " + outputFileName); //$NON-NLS-1$
 				throw e;
@@ -461,11 +459,11 @@ public class TestResultsSummary {
 					diffdate, numberOfClients, TestClient.TSFORMAT, testResults);
 
 			// HTML Vesion of output
-			PrintStream htmlStream = getSummaryStream(outputDir, querySetID
-					+ ".html", true); //$NON-NLS-1$
-			printHtmlQueryTestResults(htmlStream, testStartTS, endTS,
-					numberOfClients, TestClient.TSFORMAT, testResults);
-			htmlStream.close();
+//			PrintStream htmlStream = getSummaryStream(outputDir, outputFileName
+//					+ ".html", true); //$NON-NLS-1$
+//			printHtmlQueryTestResults(htmlStream, testStartTS, endTS,
+//					numberOfClients, TestClient.TSFORMAT, testResults);
+//			htmlStream.close();
 
 			// Wiki Update
 			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, testResults); //$NON-NLS-1$ //$NON-NLS-2$
@@ -525,17 +523,7 @@ public class TestResultsSummary {
 		String scenario_name = scenario.getQueryScenarioIdentifier();
 		String querysetname = scenario.getQuerySetName();
 
-		String summarydir = ConfigPropertyLoader.getInstance().getProperty(
-				TestProperties.PROP_SUMMARY_PRT_DIR);
-		// if (summarydir != null) {
-		// outputDir = summarydir;
-		// }
-		
-		File s = new File(summarydir);
-		if (!s.exists()) {
-			s.mkdirs();
-		}
-
+		String summarydir = scenario.getOutputDir();
 
 		PrintStream outputStream = null;
 		Writer overallsummary = null;
@@ -656,10 +644,10 @@ public class TestResultsSummary {
 
 	}
 
-	private static String generateFileName(String configName, long timestamp,
-			int runNumber) {
-		return configName
-				+ "_" + FILE_NAME_DATE_FORMATER.format(new Date(timestamp)) + "_Run-" + runNumber; //$NON-NLS-1$ //$NON-NLS-2$
+	private static String generateFileName(String configName, String resultmode, long timestamp) {
+		return configName + "_" + resultmode
+				+ "_" + FILE_NAME_DATE_FORMATER.format(new Date(timestamp));
+		//+ "_Run-" + runNumber; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private static void printHtmlQueryTestResults(PrintStream outputStream,

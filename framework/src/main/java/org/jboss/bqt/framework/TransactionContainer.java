@@ -21,8 +21,6 @@
  */
 package org.jboss.bqt.framework;
 
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.StringUtil;
 

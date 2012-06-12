@@ -26,8 +26,6 @@ import java.sql.SQLException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.framework.TransactionContainer;
 import org.jboss.bqt.framework.TransactionQueryTestCase;
-import org.jboss.bqt.framework.ConfigPropertyNames.CONNECTION_STRATEGY_PROPS;
-import org.jboss.bqt.framework.ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS;
 
 /**
  * A transaction which is user controlled.

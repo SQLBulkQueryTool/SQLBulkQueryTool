@@ -24,12 +24,14 @@ package org.jboss.bqt.client;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ErrorWriter;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.ResultsGenerator;
+import org.jboss.bqt.client.api.ExpectedResultsWriter;
+import org.jboss.bqt.client.xml.XMLErrorWriter;
 import org.jboss.bqt.client.xml.XMLExpectedResults;
-import org.jboss.bqt.client.xml.XMLGenerateResults;
+import org.jboss.bqt.client.xml.XMLExpectedResultsWriter;
 import org.jboss.bqt.client.xml.XMLQueryReader;
 import org.jboss.bqt.client.xml.XMLQueryScenario;
 import org.jboss.bqt.core.util.ReflectionHelper;
@@ -72,7 +74,7 @@ public class ClassFactory {
 
 	/**
 	 * The {@link #RESULTS_GENERATOR_CLASSNAME} property indicates the
-	 * implementation of {@link ResultsGenerator} to use.
+	 * implementation of {@link ExpectedResultsWriter} to use.
 	 */
 	public static final String RESULTS_GENERATOR_CLASSNAME = "results.generator.classname"; //$NON-NLS-1$
 
@@ -81,11 +83,11 @@ public class ClassFactory {
 	 * {@link #QUERY_READER_CLASSNAME} is not defined.
 	 */
 
-	public static final String RESULTS_GENERATOR_DEFAULT_CLASSNAME = XMLGenerateResults.class.getName(); //$NON-NLS-1$
+	public static final String RESULTS_GENERATOR_DEFAULT_CLASSNAME = XMLExpectedResultsWriter.class.getName(); //$NON-NLS-1$
 
 	/**
 	 * The {@link #EXPECTED_RESULTS_CLASSNAME} property indicates the
-	 * implementation of {@link ExpectedResults} to use.
+	 * implementation of {@link ExpectedResultsReader} to use.
 	 */
 	public static final String EXPECTED_RESULTS_CLASSNAME = "expected.results.classname"; //$NON-NLS-1$
 
@@ -95,6 +97,20 @@ public class ClassFactory {
 	 */
 
 	public static final String EXPECTED_RESULTS_DEFAULT_CLASSNAME = XMLExpectedResults.class.getName(); //$NON-NLS-1$
+	
+	/**
+	 * The {@link #ERROR_WRITER_DEFAULT_CLASSNAME} property indicates the
+	 * implementation of {@link XMLErrorWriter} to use.
+	 */
+	public static final String ERROR_WRITER_CLASSNAME = "expected.results.classname"; //$NON-NLS-1$
+
+	/**
+	 * The default error writer class to use when
+	 * {@link #ERROR_WRITER_CLASSNAME} is not defined.
+	 */
+
+	public static final String ERROR_WRITER_DEFAULT_CLASSNAME = XMLErrorWriter.class.getName(); //$NON-NLS-1$
+	
 
 	public static QueryScenario createQueryScenario(String scenarioName) throws FrameworkException {
 
@@ -140,16 +156,16 @@ public class ClassFactory {
 		return reader;
 	}
 
-	public static ResultsGenerator createResultsGenerator(Collection<?> args) {
+	public static ExpectedResultsWriter createExpectedResultsWriter(Collection<?> args) {
 		String clzzname = ConfigPropertyLoader.getInstance().getProperty(
 				RESULTS_GENERATOR_CLASSNAME);
 		if (clzzname == null) {
 			clzzname = RESULTS_GENERATOR_DEFAULT_CLASSNAME;
 		}
 
-		ResultsGenerator resultsgen;
+		ExpectedResultsWriter resultsgen;
 		try {
-			resultsgen = (ResultsGenerator) ReflectionHelper.create(clzzname,
+			resultsgen = (ExpectedResultsWriter) ReflectionHelper.create(clzzname,
 					args, null);
 		} catch (Exception e) {
 			throw new FrameworkRuntimeException(e.getMessage());
@@ -158,16 +174,16 @@ public class ClassFactory {
 		return resultsgen;
 	}
 
-	public static ExpectedResults createExpectedResults(Collection<?> args) {
+	public static ExpectedResultsReader createExpectedResults(Collection<?> args) {
 		String clzzname = ConfigPropertyLoader.getInstance().getProperty(
 				EXPECTED_RESULTS_CLASSNAME);
 		if (clzzname == null) {
 			clzzname = EXPECTED_RESULTS_DEFAULT_CLASSNAME;
 		}
 
-		ExpectedResults expResults;
+		ExpectedResultsReader expResults;
 		try {
-			expResults = (ExpectedResults) ReflectionHelper.create(clzzname,
+			expResults = (ExpectedResultsReader) ReflectionHelper.create(clzzname,
 					args, null);
 		} catch (Exception e) {
 			throw new FrameworkRuntimeException(e.getMessage());
@@ -175,4 +191,23 @@ public class ClassFactory {
 
 		return expResults;
 	}
+	
+	public static ErrorWriter createErrorWriter(Collection<?> args) {
+		String clzzname = ConfigPropertyLoader.getInstance().getProperty(
+				ERROR_WRITER_CLASSNAME);
+		if (clzzname == null) {
+			clzzname = ERROR_WRITER_DEFAULT_CLASSNAME;
+		}
+
+		ErrorWriter writer;
+		try {
+			writer = (ErrorWriter) ReflectionHelper.create(clzzname,
+					args, null);
+		} catch (Exception e) {
+			throw new FrameworkRuntimeException(e.getMessage());
+		}
+
+		return writer;
+	}
+
 }

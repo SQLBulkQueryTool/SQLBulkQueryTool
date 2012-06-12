@@ -84,6 +84,7 @@ public class TestResultStat implements TestResult, Serializable {
 		this.errorFile = errorFile;
 	}
 
+	@Override
 	public String getResultStatusString() {
 		switch (resultStatus) {
 		case RESULT_STATE.TEST_SUCCESS:
@@ -102,53 +103,65 @@ public class TestResultStat implements TestResult, Serializable {
 		return this.querySetID;
 	}
 
+	@Override
 	public String getQueryID() {
 		return queryID;
 	}
 
+	@Override
 	public String getQuery() {
 		return query;
 	}
 
+	@Override
 	public int getStatus() {
 		return resultStatus;
 	}
 
+	@Override
 	public void setStatus(int endStatus) {
 		resultStatus = endStatus;
 	}
 
+	@Override
 	public String getExceptionMsg() {
 		return (this.errorMsg != null ? this.errorMsg : (error != null ? error
 				.getMessage() : ""));
 	}
 
+	@Override
 	public void setException(Throwable error) {
 		this.error = error;
 	}
 
+	@Override
 	public void setExceptionMessage(String errorMsg) {
 		this.errorMsg = errorMsg;
 
 	}
 
+	@Override
 	public Throwable getException() {
 		return this.error;
 	}
 
+	@Override
 	public long getBeginTS() {
 		return beginTS;
 
 	}
 
+	@Override
 	public void setBeginTS(long beginTS) {
 		this.beginTS = beginTS;
 	}
 
+	@Override
 	public long getEndTS() {
 		return endTS;
 	}
 
+	@Override
 	public void setEndTS(long endts) {
 		this.endTS = endts;
 	}
