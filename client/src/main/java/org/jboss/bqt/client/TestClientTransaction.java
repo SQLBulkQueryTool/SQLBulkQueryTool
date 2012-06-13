@@ -169,7 +169,9 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 			}
 
 		} catch (Throwable t) {
-			t.printStackTrace();
+			if (ClientPlugin.LOGGER.isDebugEnabled()) {
+				t.printStackTrace();
+			}
 			this.setApplicationException(t);
 		} 
 	}

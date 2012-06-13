@@ -8,7 +8,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jboss.bqt</groupId>
-	<artifactId>client</artifactId>
+	<artifactId>bqt-client</artifactId>
 	<name>BQT Client</name>
 	<description>The client code used for executing the framework</description>
 
@@ -20,11 +20,11 @@
 		
 		<dependency>
 			<groupId>org.jboss.bqt</groupId>
-			<artifactId>core</artifactId>
+			<artifactId>bqt-core</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>org.jboss.bqt</groupId>
-			<artifactId>framework</artifactId>
+			<artifactId>bqt-framework</artifactId>
 		</dependency>		
 		
 		<dependency>
