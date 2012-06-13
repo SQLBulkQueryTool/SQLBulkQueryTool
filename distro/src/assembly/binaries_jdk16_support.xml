@@ -14,14 +14,13 @@
   <baseDirectory>server</baseDirectory>
     
   <dependencySets>
-
+<!-- 
     <dependencySet>
 	  <outputDirectory>/ant</outputDirectory>
 
       <useProjectArtifact>false</useProjectArtifact>      
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <useTransitiveFiltering>false</useTransitiveFiltering>
-      <!-- useDefaultExcludes>true</useDefaultExcludes-->
       <unpack>false</unpack>
 
        <includes>
@@ -33,7 +32,7 @@
       </includes>
 
     </dependencySet>
-
+ -->
 
     <dependencySet>
 	  <outputDirectory>/lib</outputDirectory>
@@ -45,15 +44,16 @@
       <unpack>false</unpack>
 
        <includes>
-      	<include>commons-collections:commons-collections</include>
+      	<!-- include>commons-collections:commons-collections</include-->
 		<include>org.slf4j:slf4j-api</include>
-		<include>log4j:log4j</include>
-		<include>junit:junit</include>
+        <include>org.slf4j:slf4j-log4j12</include>
+		<!-- include>log4j:log4j</include-->
+		<!-- include>junit:junit</include-->
 		<include>jdom:jdom</include>
 		
-		<include>org.jboss.bqt:core</include>
-		<include>org.jboss.bqt:framework</include>
-		<include>org.jboss.bqt:client</include>
+		<include>org.jboss.bqt:bqt-core</include>
+		<include>org.jboss.bqt:bqt-framework</include>
+		<include>org.jboss.bqt:bqt-client</include>
       </includes>
 
     </dependencySet>
@@ -68,12 +68,17 @@
     </fileSet>
 
     <fileSet>
-      <directory>src/main/resources/ctc_tests</directory>
- 		<outputDirectory>ctc_tests</outputDirectory>
+      <directory>src/main/resources/tests</directory>
+ 		<outputDirectory>tests</outputDirectory>
     </fileSet>
+    
+     <fileSet>
+      <directory>src/main/resources/config</directory>
+        <outputDirectory>config</outputDirectory>
+    </fileSet>   
 	
     <fileSet>
-      <directory>src/main/resources/</directory>
+      <directory>.</directory>
  		<outputDirectory>.</outputDirectory>
 		<includes>
 			<include>README.*</include>

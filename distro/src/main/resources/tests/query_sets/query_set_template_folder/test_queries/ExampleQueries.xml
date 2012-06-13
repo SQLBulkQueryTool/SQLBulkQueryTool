@@ -11,11 +11,20 @@
 <query name="TestQuery2">select * from pm1.g2 where e1 >= 0 order by e1</query>
 <query name="TestQuery3">select * from pm2.g1 where e1 >= 0 order by e1</query>
 
-<!--  Note: setting numtimes to run, no expected results will get created, nor will compare be performed for this query -->
-<query name="TestQuery4"  numtimes="5">select * from pm2.g2 where e1 >= 0 order by e1</query>
+<!--  
+
+Note: setting numtimes to run, no expected results will get created, nor will compare be performed for this query
+
+TestQuery4b  will execute 20 times, validating that the resultset contains 100000 rows
+ -->
+<query name="TestQuery4a"  numtimes="5">select * from pm2.g2 where e1 >= 0 order by e1</query>
+<query name="TestQuery4b"  numtimes="20" rowCount="100000">select * from pm1.g1</query>
 
 
-<!--  Note:  setting up subqueries where there is more than 1 query, no expected results will be created, nor 
+<!-- 
+    TRANSACTION TESTING
+
+    Note:  setting up subqueries where there is more than 1 query, no expected results will be created, nor 
 				will compare be performed for this query -->
 <query name="TestQuery5">
 	<sql updatecnt="1">insert into pm1.g1 (e1, e2) values(?, ?)      
@@ -60,8 +69,6 @@
 	<sql>select a.* from pm1.g1 as a, pm1.g2 as b where a.e1 = 1100 and a.e1=b.e1</sql>   
 
 </query>
-
-
 
 </root>
 

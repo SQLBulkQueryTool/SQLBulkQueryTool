@@ -292,12 +292,12 @@ public class TestResultsSummary {
 				.println("Number Failed    : " + passFailGenMap.get("fail")); //$NON-NLS-1$ //$NON-NLS-2$
 		//	outputStream.println("Number Generated : " + passFailGenMap.get("gen")); //$NON-NLS-1$ //$NON-NLS-2$
 
-		ResponseTimes responseTimes = calcQueryResponseTimes(results);
-		outputStream.println("QPS              : " + responseTimes.qps); //$NON-NLS-1$
+//		ResponseTimes responseTimes = calcQueryResponseTimes(results);
+//		outputStream.println("QPS              : " + responseTimes.qps); //$NON-NLS-1$
 
-		outputStream.println("Ave First Resp   : " + responseTimes.first); //$NON-NLS-1$
+//		outputStream.println("Ave First Resp   : " + responseTimes.first); //$NON-NLS-1$
 
-		outputStream.println("Ave Full Resp    : " + responseTimes.full); //$NON-NLS-1$
+//		outputStream.println("Ave Full Resp    : " + responseTimes.full); //$NON-NLS-1$
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
