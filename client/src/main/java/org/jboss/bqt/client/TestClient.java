@@ -26,6 +26,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -106,19 +107,19 @@ public class TestClient {
 		String scenario_file = CONFIG.getProperty(TestProperties.PROP_SCENARIO_FILE);
 		if (scenario_file == null) {
 			final String msg = ClientPlugin.Util.getString(
-					"QTTClient.emptyScenarioFile", scenario_file); //$NON-NLS-1$            
+					"TestClient.emptyScenarioFile", scenario_file); //$NON-NLS-1$            
 			throw new FrameworkRuntimeException(msg);
 			
 		} 
 		
 		File sfile = new File(scenario_file);
 		if (!sfile.exists()) {
-			throw new FrameworkRuntimeException(ClientPlugin.Util.getString("QTTClient.scenarioFileDoesntExist", scenario_file));
+			throw new FrameworkRuntimeException(ClientPlugin.Util.getString("TestClient.scenarioFileDoesntExist", scenario_file));
 		}
 		
 		File[] sfiles = null;
 		if (sfile.isDirectory()) {
-			sfiles = FileUtils.findAllFilesInDirectory(scenario_file);
+			sfiles = FileUtils.findAllFilesInDirectoryHavingExtension(scenario_file, ".properties");
 		} else {
 			sfiles = new File[] {sfile};
 		}
@@ -176,7 +177,7 @@ public class TestClient {
 			while (qsetIt.hasNext()) {
 				querySetID = qsetIt.next();
 
-				ClientPlugin.LOGGER.info("Start Test Query ID [" + querySetID + "]");
+				ClientPlugin.LOGGER.info("Start Test: " + new Date() + " - Query ID [" + querySetID + "]");
 
 				final List<QueryTest> queryTests = queryset.getQueries(querySetID);
 
@@ -216,7 +217,7 @@ public class TestClient {
 
 				long endTS = System.currentTimeMillis();
 
-				ClientPlugin.LOGGER.info("End Test Query ID [" + querySetID + "]");
+				ClientPlugin.LOGGER.info("End Test: " + new Date() + " - Query ID [" + querySetID + "]");
 
 				summary.printResults(queryset, querySetID, beginTS, endTS);
 

@@ -80,9 +80,7 @@ public class CreateSQLQueryFile extends AbstractQueryTransaction {
 				throw new FrameworkRuntimeException(msg);
 
 			}
-			
-			ClientPlugin.LOGGER.info("# Queries written in the file: " + querystrings.size());
-			
+						
 			QuerySQL[] querysqls = new QuerySQL[querystrings.size()];
 			
 			int i = 0;
@@ -96,6 +94,7 @@ public class CreateSQLQueryFile extends AbstractQueryTransaction {
 			this.queries = new QueryTest(queryScenario.getQueryScenarioIdentifier(),"sql", queryScenario.getQuerySetName(), querysqls,false);
 			
 			this.queryScenario.writeQueryTests(this.queries);
+			ClientPlugin.LOGGER.info("# Queries written in the file: " + querystrings.size());
 
 		} catch (FrameworkRuntimeException fre) {
 			throw fre;

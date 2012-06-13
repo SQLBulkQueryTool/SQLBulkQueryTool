@@ -94,7 +94,7 @@ public class XMLQueryWriter implements QueryWriter {
 			targetDir.mkdirs();
 			File f = new File(targetDir, this.queryScenarioIdentifier + ".xml");
 			
-			ClientPlugin.LOGGER.trace("XMLQueryWriter: Writing query file: " + f.getAbsolutePath());
+			ClientPlugin.LOGGER.info("XMLQueryWriter: Writing query file: " + f.getAbsolutePath());
 
 			FileOutputStream fos = new FileOutputStream(f);
 			outputStream = new BufferedOutputStream(fos);
