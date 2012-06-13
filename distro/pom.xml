@@ -72,7 +72,7 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<version>${maven.assembly.plugin.version}</version>
 						<configuration>
-							<!-- finalName>bqt-distro-jdk16-${project.version}</finalName-->
+							<finalName>bqt-distro-${project.version}</finalName>
 							<descriptors>
 								<descriptor>src/assembly/binaries_jdk16_support.xml</descriptor>
 							</descriptors>
@@ -106,7 +106,7 @@
 				                    <artifactId>${project.artifactId}</artifactId>
 				                    <groupId>${project.groupId}</groupId>
 				                    <version>${project.version}</version>
-				                    <file>${project.build.directory}/distribution/distro-${project.version}-bqt-kit.zip</file>
+				                    <file>${project.build.directory}/distribution/bqt-distro-${project.version}-kit.zip</file>
 				                </configuration>
 				            </execution>
 				        </executions>
