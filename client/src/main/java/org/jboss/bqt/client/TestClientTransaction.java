@@ -197,7 +197,7 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 		final Throwable resultException = (this.getLastException() != null ? this
 				.getLastException() : this.getApplicationException());
 
-		if (resultException != null || this.internalResultSet == null) {
+		if (resultException != null) {
 			if (this.exceptionExpected()) {
 				rs.setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
 			} else {
