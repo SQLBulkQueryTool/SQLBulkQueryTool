@@ -694,12 +694,12 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 						"Got incorrect column name at column " + i + ", expected = " + expectedShort + " but got = " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 								+ actualShort);
 			}
-			if (actualType.equalsIgnoreCase("xml")) {//$NON-NLS-1$
-				actualType = "string";//$NON-NLS-1$
-			}
-			if (actualType.equalsIgnoreCase("clob")) {//$NON-NLS-1$
-				actualType = "string";//$NON-NLS-1$
-			}
+//			if (actualType.equalsIgnoreCase("xml")) {//$NON-NLS-1$
+//				actualType = "string";//$NON-NLS-1$
+//			}
+//			if (actualType.equalsIgnoreCase("clob")) {//$NON-NLS-1$
+//				actualType = "string";//$NON-NLS-1$
+//			}
 
 			if (actualType.equalsIgnoreCase("blob")) {
 				Class nodeType = (Class) TagNames.TYPE_MAP.get(actualType);
