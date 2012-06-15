@@ -92,5 +92,21 @@ public class QuerySQL {
 	public Serializable getPayLoad() {
 		return this.payload;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("Query: ");
+		sb.append(sql);
+		sb.append("\nExpects: ");
+		sb.append("Rowcount: ");
+		sb.append(rowCnt);
+		sb.append("UpdateCnt: ");
+		sb.append(updateCnt);
+		sb.append("Run#Times: ");
+		sb.append(runtimes);
+
+		return sb.toString();
+	}
 
 }

@@ -64,5 +64,20 @@ public class QueryTest {
 	public String getQueryScenarioID() {
 		return this.queryScenarioID;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("QueryTest - Scenario: ");
+		sb.append(queryScenarioID);
+		sb.append("\nQuerySetID: ");
+		sb.append(querySetID);
+		sb.append("QueryID: ");
+		sb.append(queryID);
+		sb.append("#Queries: ");
+		sb.append(queries.length);
+
+		return sb.toString();
+	}
 
 }
