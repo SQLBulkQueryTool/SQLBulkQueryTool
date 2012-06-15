@@ -202,7 +202,7 @@ public class TestClient {
 						queryset.getErrorWriter().generateErrorFile(q.geQuerySetID(), q.getQueryID(),
 								 (String) null, (ResultSet) null, rme, (Object) null);
 						
-						TestResult tr = new TestResultStat(q.geQuerySetID(), q.getQueryID(), "");
+						TestResult tr = new TestResultStat(q.geQuerySetID(), q.getQueryID());
 						tr.setException(rme);
 						tr.setResultMode(queryset.getResultsMode());
 						tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);

@@ -113,6 +113,12 @@ public interface TestResult {
 	 * @since
 	 */
 	String getQuery();
+	
+	/**
+	 * Call to set the query to be executed
+	 * @param query
+	 */
+	void setQuery(String query);
 
 /**
     * Return the status of the execution of this query {@link #getQuery()};
@@ -212,4 +218,6 @@ public interface TestResult {
 	void setResultMode(String mode);
 	
 	String getResultMode();
+	
+	
 }

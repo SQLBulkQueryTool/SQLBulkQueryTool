@@ -83,8 +83,7 @@ public class XMLQueryScenario extends QueryScenario {
 	 * .TestResult, java.lang.String)
 	 */
 	@Override
-	public void handleTestResult(TestResult tr, ResultSet resultSet,
-			boolean resultFromQuery) {
+	public void handleTestResult(TestResult tr, ResultSet resultSet) {
 
 		Throwable resultException = tr.getException();
 		if (tr.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
@@ -92,7 +91,7 @@ public class XMLQueryScenario extends QueryScenario {
 				try {
 					this.getExpectedResults(tr.getQuerySetID())
 							.compareResults(tr, resultSet,
-									isOrdered(tr.getQuery()), resultFromQuery);
+									isOrdered(tr.getQuery()));
 
 				} catch (QueryTestFailedException qtf) {
 					resultException = (resultException != null ? resultException

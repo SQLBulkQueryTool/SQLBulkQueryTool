@@ -120,10 +120,7 @@ public abstract class QueryScenario {
 			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
 		}
 		
-		// NONE will not create error files
-		if (!this.isNone()) {
-			this.errorWriter = ClassFactory.createErrorWriter(args);
-		}
+		this.errorWriter = ClassFactory.createErrorWriter(args);
 	}
 	
 	public String getOutputDir() {
@@ -326,8 +323,7 @@ public abstract class QueryScenario {
 		throw new FrameworkRuntimeException(msg);
 	}	
 
-	public abstract void handleTestResult(TestResult tr, ResultSet resultSet,
-			boolean resultFromQuery);
+	public abstract void handleTestResult(TestResult tr, ResultSet resultSet);
 	
 	public void writeQueryTests(QueryTest queryTest) throws Exception {
 		getQueryWriter().writeQueryTest(queryTest);

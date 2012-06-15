@@ -97,14 +97,12 @@ public interface ExpectedResultsReader {
 	 * @param testresults 
 	 * @param resultSet 
 	 * @param isOrdered 
-	 * @param resultFromQuery 
 	 * @return Object identifying the errors in the comparison
 	 * @throws QueryTestFailedException
 	 */
 	
 	Object compareResults(final TestResult testresults,
-			final ResultSet resultSet, final boolean isOrdered, 
-			final boolean resultFromQuery) throws QueryTestFailedException;
+			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException;
 
 	
 

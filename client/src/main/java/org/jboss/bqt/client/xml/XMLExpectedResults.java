@@ -171,8 +171,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 */
 	@Override
 	public Object compareResults(final TestResult actualTestResults,
-			final ResultSet resultSet, final boolean isOrdered, 
-			final boolean resultFromQuery) throws QueryTestFailedException {
+			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
 	
 		final String eMsg = "CompareResults Error: "; //$NON-NLS-1$
 

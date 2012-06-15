@@ -447,7 +447,7 @@ public abstract class AbstractQuery {
 	public void assertRowCount(int expected) {
 		int count = getRowCount();
 		if (expected != count) {
-			throw new FrameworkRuntimeException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( updateCount) }));
+			throw new FrameworkRuntimeException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( count) }));
 		}
 	}
 

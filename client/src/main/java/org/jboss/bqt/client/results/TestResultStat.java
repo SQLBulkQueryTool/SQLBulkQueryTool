@@ -58,32 +58,29 @@ public class TestResultStat implements TestResult, Serializable {
 	private long rowCount;
 	private long updateCount;
 
-	public TestResultStat(final String querySetID, final String queryID,
-			String query) {
+	public TestResultStat(final String querySetID, final String queryID) {
 		this.querySetID = querySetID;
 		this.queryID = queryID;
-		this.query = query;
-
-	}
-
-	public TestResultStat(final String querySetID, final String queryID,
-			String query, final int resultStatus, long beginTS, long endTS,
-			final Throwable error) {
-		this(querySetID, queryID, query);
-		this.resultStatus = resultStatus;
-		this.beginTS = beginTS;
-		this.endTS = endTS;
-		this.error = error;
 
 	}
 
 	public TestResultStat(final String querySetID, final String queryID,
 			String query, final int resultStatus, long beginTS, long endTS,
 			final Throwable error, String errorFile) {
-		this(querySetID, queryID, query, resultStatus, beginTS, endTS, error);		
+		this(querySetID, queryID);
+		this.query = query;
+		this.resultStatus = resultStatus;
+		this.beginTS = beginTS;
+		this.endTS = endTS;
+		this.error = error;		
 		this.errorFile = errorFile;
 	}
 
+	/**
+	 * Return the result status in string format.
+	 * 
+	 * @return String
+	 */
 	@Override
 	public String getResultStatusString() {
 		switch (resultStatus) {
@@ -97,27 +94,65 @@ public class TestResultStat implements TestResult, Serializable {
 		return RESULT_STATE_STRING.UNKNOWN;
 	}
 
+	/**
+	 * Return the id the uniquely identifies the query set.
+	 * 
+	 * @return String is the query set id
+	 */
 	@Override
 	public String getQuerySetID() {
 		// TODO Auto-generated method stub
 		return this.querySetID;
 	}
 
+	/**
+	 * Return the id that uniquely identifies the query within the query set
+	 * {@link #getQuerySetID()}.
+	 * 
+	 * @return String
+	 * 
+	 * @since
+	 */
 	@Override
 	public String getQueryID() {
 		return queryID;
 	}
 
+	/**
+	 * Return the query that was executed in order to produce this result.
+	 * 
+	 * @return String
+	 * 
+	 * @since
+	 */
 	@Override
 	public String getQuery() {
 		return query;
 	}
+	
+	@Override
+	public void setQuery(String query) {
+		this.query = query;
+	}
 
+	/**
+	    * Return the status of the execution of this query {@link #getQuery()};
+	    * @see TestResult.RESULT_STATE
+	    * @return int
+	    *
+	    * @since
+	    */
 	@Override
 	public int getStatus() {
 		return resultStatus;
 	}
 
+	/**
+	 * Call to set the status for this test result.
+	 * 
+	 * @see TestResult.RESULT_STATE
+	 * @param endStatus
+	 */
 	@Override
 	public void setStatus(int endStatus) {
 		resultStatus = endStatus;
