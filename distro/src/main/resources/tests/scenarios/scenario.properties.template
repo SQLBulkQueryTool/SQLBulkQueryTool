@@ -29,7 +29,7 @@
 #
 #----------------------------
 
-queryset.dirname=<queries_folder>
+queryset.dirname=query_test_folder
 
 test.queries.dirname=test_queries
 expected.results.dirname=expected_results

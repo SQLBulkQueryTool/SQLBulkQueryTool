@@ -1,39 +1,39 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.jboss.bqt</groupId>
-  <artifactId>parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	<groupId>org.jboss.bqt</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <name>BQT JDBC Query Execution Framework</name>
-  <description>The BQT framework enables JDBC query testing and results validation</description>
-  <url>${site.url}</url>
-  <inceptionYear>2003</inceptionYear>
-  
-  	<organization>
+	<name>BQT JDBC Query Execution Framework</name>
+	<description>The BQT framework enables JDBC query testing and results validation</description>
+	<url>${site.url}</url>
+	<inceptionYear>2003</inceptionYear>
+
+	<organization>
 		<name>JBoss, a division of Red Hat</name>
 		<url>http://www.jboss.org</url>
 	</organization>
-  
-  	<licenses>
+
+	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
 			<url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-			<!--url>http://www.gnu.org/licenses/lgpl.html</url-->
+			<!--url>http://www.gnu.org/licenses/lgpl.html</url -->
 			<distribution>repo</distribution>
 			<comments>A business-friendly OSS license</comments>
 		</license>
-	</licenses>  
+	</licenses>
 
-  <scm>
-    <connection>scm:git:git://github.com/vhalbert/SQLBulkQueryTool.git</connection>
-    <developerConnection>scm:git:git@github.com:vhalbert/SQLBulkQueryTool.git</developerConnection>
-    <!-- url>http://github.com/ModeShape/modeshape</url-->
-  </scm>
-  
-  	<developers>
+	<scm>
+		<connection>scm:git:git://github.com/vhalbert/SQLBulkQueryTool.git</connection>
+		<developerConnection>scm:git:git@github.com:vhalbert/SQLBulkQueryTool.git</developerConnection>
+		<!-- url>http://github.com/ModeShape/modeshape</url -->
+	</scm>
+
+	<developers>
 		<developer>
 			<name>Van Halbert</name>
 			<id>vhalbert@redhat.com</id>
@@ -47,123 +47,119 @@
 		</developer>
 	</developers>
 
-  <properties>
-		<!--
-			These are properties used in the database profiles. Must initialize
-			them to be empty so that Maven applies them via filtering to the
-			resources. If a project needs files filtered, however, make sure to
-			include a 'testResources' fragment in the 'build' section of the
-			child project POM to say which files need to be filtered. See the
-			"modeshape-integration" or "extensions/modeshape-connector-store-jpa"
-			project POMs for examples.
-		-->
-		
-        <int.database />
-        <int.driver />
-        <int.url />
-        <int.username />
-        <int.password />
-        <int.scriptfile />
-        <int.rdbms_type />
-        <int.delim />
-		
-		
-		<jdbc.hsqldb.version>1.8.0.2</jdbc.hsqldb.version> 
-        <jdbc.h2.version>1.2.124</jdbc.h2.version>
+	<properties>
+		<!-- These are properties used in the database profiles. Must initialize 
+			them to be empty so that Maven applies them via filtering to the resources. 
+			If a project needs files filtered, however, make sure to include a 'testResources' 
+			fragment in the 'build' section of the child project POM to say which files 
+			need to be filtered. See the "modeshape-integration" or "extensions/modeshape-connector-store-jpa" 
+			project POMs for examples. -->
 
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
-    	<slf4j.api.version>1.6.1</slf4j.api.version>
+		<int.database />
+		<int.driver />
+		<int.url />
+		<int.username />
+		<int.password />
+		<int.scriptfile />
+		<int.rdbms_type />
+		<int.delim />
+
+
+		<jdbc.hsqldb.version>1.8.0.2</jdbc.hsqldb.version>
+		<jdbc.h2.version>1.2.124</jdbc.h2.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<slf4j.api.version>1.6.1</slf4j.api.version>
 		<slf4j.log4j.version>1.6.1</slf4j.log4j.version>
-    	<log4j.version>1.2.16</log4j.version>
-    	
-    	<apache.ant.version>1.7.0</apache.ant.version>
-    	
-        <maven.surefire.report.plugin.version>2.4.3</maven.surefire.report.plugin.version>
-        <maven.surefire.plugin.version>2.8</maven.surefire.plugin.version>
-        <maven.surefire.plugin.junit.version>2.8</maven.surefire.plugin.junit.version>
-    	
-   		<maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
-    	<maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
+		<log4j.version>1.2.16</log4j.version>
+
+		<apache.ant.version>1.7.0</apache.ant.version>
+
+		<maven.surefire.report.plugin.version>2.4.3</maven.surefire.report.plugin.version>
+		<maven.surefire.plugin.version>2.8</maven.surefire.plugin.version>
+		<maven.surefire.plugin.junit.version>2.8</maven.surefire.plugin.junit.version>
+
+		<maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
+		<maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
 		<maven.source.plugin.version>2.1.2</maven.source.plugin.version>
 		<maven.resources.plugin.version>2.4.3</maven.resources.plugin.version>
 		<maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
 		<maven.surefire.plugin.version>2.8</maven.surefire.plugin.version>
-		
-        <rootDir>${project.basedir}</rootDir>
-        <debug.argline></debug.argline>
 
-  </properties>
-  
-  	<modules>
+		<rootDir>${project.basedir}</rootDir>
+		<debug.argline></debug.argline>
+
+	</properties>
+
+	<modules>
 		<module>core</module>
 		<module>framework</module>
 		<module>client</module>
 	</modules>
 
-  <dependencies>
+	<dependencies>
 
-  
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.0</version>
-    </dependency>
-					
 
-  </dependencies>
-  
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>2.0</version>
+		</dependency>
+
+
+	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
-		
-		<dependency>
-  <groupId>org.jboss.teiid</groupId>
-  <artifactId>teiid-client</artifactId>
-  <version>7.7.0</version>
-</dependency>
-		
+
+			<dependency>
+				<groupId>org.jboss.teiid</groupId>
+				<artifactId>teiid-client</artifactId>
+				<version>7.7.0</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
 				<artifactId>bqt-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
 				<artifactId>bqt-framework</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>
 				<artifactId>bqt-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
-      <!--
-      Declare all dependency versions and default scopes here, but not optional.
-      Each module should declare it's direct dependency and possibily overwrite scope/optional.
-      -->
- 	
+			<!-- Declare all dependency versions and default scopes here, but not 
+				optional. Each module should declare it's direct dependency and possibily 
+				overwrite scope/optional. -->
+
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.4</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>javax</groupId>
 				<artifactId>javaee-api</artifactId>
 				<version>6.0</version>
 			</dependency>
 
-			
+
 			<dependency>
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
 				<version>${log4j.version}</version>
-			</dependency>		
-			
+			</dependency>
+
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
@@ -173,7 +169,7 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
 				<version>${slf4j.log4j.version}</version>
-			</dependency>				
+			</dependency>
 
 			<dependency>
 				<groupId>jdom</groupId>
@@ -215,69 +211,51 @@
 </build>
 
 	<profiles>
-        <!--
-            ###################################################################
-            Enable remotely debugging on the command line
-            ###################################################################
-
-            To use, specify "-Ddebug=true" on the Maven command line
-            (typically used when running a single test). Then, start
-            remote debugger (on port 1044) and connect.
-        -->
-        <profile>
-            <id>debug</id>
-            <activation>
-                <property>
-                    <name>debug</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                    <!-- Useful for remotely debugging the unit tests run by Surefire ... -->
-                <debug.argline>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</debug.argline>
-            </properties>
-        </profile>	
-	   <profile>
-         <id>distro</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>distro</module>
-            </modules>
-        </profile>	
-	   <profile>
-            <id>dbtest</id>
-            <activation>
-                <property>
-                    <name>configfile</name>
-                </property>
-            </activation>
-            <properties>
-                <config>${configfile}</config>
-            </properties>
-            <modules>
-                <module>integration</module>
-            </modules>
-    </profile>
-       <profile>
-            <!--
-                This profile is activated manually, as in "mvn ... -P integration ..."
-            -->
-            <id>integration</id>
-            <properties>
-                <int.database>h2</int.database>
-                <int.driver>org.h2.Driver</int.driver>
-                <int.url>jdbc:h2:file:${project.basedir}/target/db</int.url>
-                <int.username></int.username>
-                <int.password />
-                <int.scriptfile>src/test/resources/customer-schema.sql</int.scriptfile>
-                <int.rdbms_type>h2</int.rdbms_type>
-                <int.delim>;</int.delim>
-            </properties>
-            <modules>
-                <module>integration</module>
-            </modules>
-    </profile>
+		<!-- ################################################################### 
+			Enable remotely debugging on the command line ################################################################### 
+			To use, specify "-Ddebug=true" on the Maven command line (typically used 
+			when running a single test). Then, start remote debugger (on port 1044) and 
+			connect. -->
+		<profile>
+			<id>debug</id>
+			<activation>
+				<property>
+					<name>debug</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<properties>
+				<!-- Useful for remotely debugging the unit tests run by Surefire ... -->
+				<debug.argline>-Xdebug
+					-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044</debug.argline>
+			</properties>
+		</profile>
+		<profile>
+			<id>distro</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<modules>
+				<module>distro</module>
+			</modules>
+		</profile>
+		<profile>
+			<!-- This profile is activated manually, as in "mvn ... -P integration 
+				..." -->
+			<id>integration</id>
+			<properties>
+				<int.database>h2</int.database>
+				<int.driver>org.h2.Driver</int.driver>
+				<int.url>jdbc:h2:file:${project.basedir}/target/db</int.url>
+				<int.username></int.username>
+				<int.password />
+				<int.scriptfile>src/test/resources/customer-schema.sql</int.scriptfile>
+				<int.rdbms_type>h2</int.rdbms_type>
+				<int.delim>;</int.delim>
+			</properties>
+			<modules>
+				<module>integration</module>
+			</modules>
+		</profile>
 	</profiles>
 </project>
