@@ -127,12 +127,17 @@ fi
 
 if [ -z "${SERVERNAME}" ] 
 then
-    ARGS="${ARGS} -Dserver.host.name=localhost"
+    ARGS="${ARGS} -Dhost.name=localhost"
 else
-    ARGS="${ARGS} -Dserver.host.name=${SERVERNAME}"
+    ARGS="${ARGS} -Dhost.name=${SERVERNAME}"
 fi
 
+# default to the ip address used to start the server
 
+if [ ! -z "${PORT}" ] 
+then
+    ARGS="${ARGS} -Dhost.port=${PORT}"
+fi
 
 if [ -z "${EXCEEDPERCENT}" ] 
 then
