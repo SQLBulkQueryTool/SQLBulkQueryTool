@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!---------------------
+    The name of this file is referred to as the querysetid.
+    There should be a corresponding directory under the expected_results 
+    directory for the same query_set (often named the same as a scenario).
+    
+    When these queries are executed using the "compare" results mode, 
+    the corrsponding expected results files will be used to validate
+    results.  
+    
+    The corresponding expected results file will be named:
+       <querysetid>_<queryname>.xml
+       
+       where:
+          querysetid - name of the query file that was executed
+          queryname - the name of the query
+----------------------->
+<root>
+
+<!--  * =====================================================================*   -->
+<!--  *    Testing simple transactions                     *   -->
+<!--  * =====================================================================* -->
+
+<query name="TestQuery1">select * from pm1.g1 order by e1
+</query>
+
+<query name="TestQuery2">select * from pm1.g2 where e1 >= 0 order by e1</query>
+<query name="TestQuery3">select * from pm2.g1 where e1 >= 0 order by e1</query>
+
+
+<!--  * =====================================================================*   -->
+<!--  *    Test that verify based on Row Counts                     *   -->
+<!--  * =====================================================================* -->
+<!--  
+
+Note: setting numtimes to run, no expected results will get created, nor will compare be performed for this query
+
+TestQuery4b  will execute 20 times, validating that the resultset contains 100000 rows
+ -->
+<query name="TestQuery4a"  numtimes="5">select * from pm2.g2 where e1 >= 0 order by e1</query>
+<query name="TestQuery4b"  numtimes="20" rowCount="100000">select * from pm1.g1</query>
+
+
+<!--  * =====================================================================*   -->
+<!--  *    Test  Select Into                   *   -->
+<!--  * =====================================================================* -->
+<!--  
+    When testing a Select Into, run a multi-step test.
+    -  the 1st step is to perform the select into
+    -  the 2nd step is the verify the row count
+    
+    
+    You can run the Select Into in the single step, as above, but it only verifies that it executes, not
+    that there are actual results loaded into the table.
+
+ -->
+    <query name="TestQuerySelectInto">
+        <sql>SELECT intkey, RAND() AS RandID INTO #tempRAND FROM BQT1.SmallA ORDER BY INTKEY</sql>      
+        <sql rowCount="60">select * from #tempRAND</sql>
+    </query> 
+
+
+
+<!-- 
+    TRANSACTION TESTING
+
+    Note:  setting up subqueries where there is more than 1 query, no expected results will be created, nor 
+				will compare be performed for this query -->
+<query name="TestQuery5">
+	<sql updatecnt="1">insert into pm1.g1 (e1, e2) values(?, ?)      
+		<parm type="integer">1000</parm>
+		<parm type="string">'1000'</parm>
+	</sql>
+	<sql>select * from pm1.g1 where e1 = 1000</sql>
+</query>
+
+<query name="TestQuery6">
+	<sql updatecnt="1">insert into pm1.g1 (e1, e2) values(?, ?)      
+		<parm type="integer">1000</parm>
+		<parm type="string">'1000'</parm>
+	</sql>
+	<sql updatecnt="1">update pm1.g1 set e2='blah' where e1 = ?
+		<parm type="integer">1000</parm>
+	</sql>
+	<sql>select * from pm1.g1 where e2 = 'blah'</sql>
+</query>
+
+
+<query name="TestQuery7">
+	<sql updatecnt="1">insert into pm1.g1 (e1, e2) values(?, ?)      
+		<parm type="integer">1000</parm>
+		<parm type="string">'1000'</parm>
+	</sql>
+	<sql rowCount="1">select * from pm1.g1 where e1 = 1000</sql>
+	<sql updatecnt="1">delete from pm1.g1 where pm1.g1.e1 = 1000</sql>
+	<sql>select * from pm1.g1 where e1 > 999</sql>
+</query>
+
+<query name="TestQuery8">
+	<sql updatecnt="1">insert into pm1.g1 (e1, e2) values(?, ?)      
+		<parm type="integer">1100</parm>
+		<parm type="string">'1100'</parm>
+	</sql>
+	<sql updatecnt="1">insert into pm1.g2 (e1, e2) values(?, ?)      
+		<parm type="integer">1100</parm>
+		<parm type="string">'1100'</parm>
+	</sql>
+
+	<sql>select a.* from pm1.g1 as a, pm1.g2 as b where a.e1 = 1100 and a.e1=b.e1</sql>   
+
+</query>
+
+</root>
+
