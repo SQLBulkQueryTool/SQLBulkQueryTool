@@ -11,6 +11,9 @@ target
 /.metadata
 /RemoteSystemsTempFiles
 
+#ignore mac files
+.DS_Store
+
 # ignore IDEA files
 *.iml
 *.ipr
