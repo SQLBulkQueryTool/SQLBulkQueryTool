@@ -39,14 +39,15 @@ to so that you can be pro-active in catching issues.
 
 For configuration purposes, there is a hierarchy of files that can be configured.  The following list the files
 in the order of granular applicability (global -> execution -> scenario)
+
 NOTE: properties can be moved up or down, but is considered and advanced feature
+
 1.  config/test.properties - these are the global properties, where you can set the driver, url, etc.,
-2.  bin/run.conf - execution based properties, set the root locations of test artifacts (i.e., scenarios and query files)
+2.  bin/run.conf - per execution properties, set the root locations of test artifacts (i.e., scenarios and query files)
 3.  <scenario>.properties - the specific property file used to control 1 scenario.  Here you can set the specific scenario
-            of queries and expected results to use that must exist in the artifact root location (see run.conf above).
-            The idea was that you can mix and match queries and expected results.  This was the case with Teiid,
-            when the same queries can be used, even though the backend relational data sources were different,
-            and the expected results are different.
+            of queries and expected results to use, which must exist in the artifact root location (see run.conf above).
+            The idea was that you reuse queries, but have a different set of expected results.  This was the case with Teiid,
+            when the same queries can produce different rersults as each backend data source was tested.
 
 Here's the quick start to using distribution kit:
 
