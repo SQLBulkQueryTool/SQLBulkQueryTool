@@ -44,7 +44,7 @@ NOTE: properties can be moved up or down, but is considered and advanced feature
 
 1.  config/test.properties - these are the global properties, where you can set the driver, url, etc.,
 2.  bin/run.conf - per execution properties, set the root locations of test artifacts (i.e., scenarios and query files)
-3.  <scenario>.properties - the specific property file used to control 1 scenario.  Here you can set the specific scenario
+3.  {scenario}.properties - the specific property file used to control 1 scenario.  Here you can set the specific scenario
             of queries and expected results to use, which must exist in the artifact root location (see run.conf above).
             The idea was that you reuse queries, but have a different set of expected results.  This was the case with Teiid,
             when the same queries can produce different rersults as each backend data source was tested.
@@ -79,7 +79,7 @@ Run "compare" to perform regression testing that will execute the queries and co
 expected results files.
 1.  execute:  ./run.sh <scenario> compare
 2.  look in the results directory for the Summary report (useful when multiple scenarios are run) and
-    in the <scenario> directory, you should  the "COMPARE" report.
+    in the {scenario} directory, you should  the "COMPARE" report.
      
 At this point, rerunning the scenario is essentially testing regression.  As changes (not new tables) are made to your data source,
 you should see failures. 
