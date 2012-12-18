@@ -4,7 +4,7 @@
 
 	<groupId>org.jboss.bqt</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0.0-GA</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>BQT JDBC Query Execution Framework</name>
