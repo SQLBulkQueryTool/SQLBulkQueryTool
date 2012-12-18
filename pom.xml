@@ -4,7 +4,7 @@
 
 	<groupId>org.jboss.bqt</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-GA</version>
 	<packaging>pom</packaging>
 
 	<name>BQT JDBC Query Execution Framework</name>
@@ -30,7 +30,8 @@
 	<scm>
 		<connection>scm:git:git://github.com/vhalbert/SQLBulkQueryTool.git</connection>
 		<developerConnection>scm:git:git@github.com:vhalbert/SQLBulkQueryTool.git</developerConnection>
-		<!-- url>http://github.com/ModeShape/modeshape</url -->
+		<url>http://github.com/vhalbert/SQLBulkQueryTool</url>
+	<!-- url>http://github.com/ModeShape/modeshape</url -->
 	</scm>
 
 	<developers>
