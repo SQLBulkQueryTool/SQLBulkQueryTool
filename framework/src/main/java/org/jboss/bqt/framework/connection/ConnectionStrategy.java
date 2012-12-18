@@ -63,14 +63,6 @@ public abstract class ConnectionStrategy {
 
 	}
 
-	/**
-	 * @return Connection
-	 * @throws QueryTestFailedException
-	 */
-	public Connection getAdminConnection() throws QueryTestFailedException {
-		return null;
-	}
-
 	private boolean autoCommit = true;
 
 	public boolean getAutocommit() {
