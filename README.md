@@ -3,9 +3,9 @@ SQLBulkQueryTool
 
 Query Tool for Bulk execution of SQL statements and Verification of expected results (i.e., regression testing) 
 
-The premise of the tool is that you run a test ("scenario"), executing a defined set of SQL statements, and
-compare those results with expected results.  For which several different level of reports (individual, group and summary)
-are produced indicating success or failure.
+The premise of the tool is that you run a test ("scenario"), which defines a set of SQL statements to execute, and
+compare the actual results with expected results.  For which several different level of reports (individual, group and summary)
+are produced indicating success or failure, as well as, summary of successes and failures.
 
 The tool is easy to run one scenario at a time, but it's also designed so that you can run multiple scenarios
 in a single run.  This enables you to organize your scenarios in folder groupings, and then run those groups against the 
@@ -65,9 +65,10 @@ STEP-BY-STEP GUIDE TO USING DISTRIBUTION KEY:
 
 A distribution zip file is created from the build, which is meant to be used to execute the tests.
 
-/**************************
+
+**************************
  A)  Building From Source
-**************************/
+**************************
 
 (Maven needs to be installed for the following commands to work - see http://maven.apache.org/guides/getting-started/index.html)
 
@@ -77,9 +78,9 @@ A distribution zip file is created from the build, which is meant to be used to 
 
 or run:  mvn clean install -Pintegration,distro perform everything
 
-/**************************
+**************************
  B) Setup
-**************************/
+**************************
 
 The following describes the steps to setting up the environment to execute the tests.
 
@@ -97,9 +98,9 @@ The following describes the steps to setting up the environment to execute the t
 5.  Update the /bin/run.conf file to set the SERVERNAME and PORT.
 
 
-/**************************
+**************************
  C) Execution
-**************************/
+**************************
 
 To run a test, which could consist of one or more scenarios (i.e., {scenario}.properties files), you can run:
 
@@ -119,9 +120,9 @@ error reports, generated sql query files and generated expected results files.
 NOTE:  For the purposes of the document and describing what to execute, it will show how to execute ./run.sh [scenarioname] [resultmode]
 Realize these 2 parameters can be set in the run.conf file and then execute ./run.sh without parameters.  
 
-/**************************
+**************************
  D) Generating Queries
-**************************/
+**************************
 
 The "sql" result mode can be used to generate a set of queries based on the metadata from the database.  These queries
 would be considered a baseline set of queries that could be used to confirm each table or view is accessible and 
@@ -136,9 +137,9 @@ copy or move the [scenarioname] directory under /sql/ to test/query_sets directo
 test/query_sets/[scenarioname]/test_queries
 
 
-/**************************
+**************************
  E) Creating Expected Results
-**************************/
+**************************
 
 The next step is to use the generated query files to create the expected results.
  
@@ -154,9 +155,9 @@ The next step is to use the generated query files to create the expected results
  
  
  
-/***********************************************************
+********************************************
   F) Testing Queries against Expected Results / Regression Testing
-***********************************************************/
+********************************************
    
 With the queries and their expected results in place, you can now perform regression testing.
 First, the files containing the expected results must be put in place.
