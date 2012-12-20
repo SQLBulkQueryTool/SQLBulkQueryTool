@@ -147,28 +147,28 @@ The next step is to use the generated query files to create the expected results
 2.  Copy/move this folder to the following location: /tests/query_sets/[scenario].
     The structure should look like this: /tests/query_sets/[scenario folder]/test_queries
 3.  Run the script in GENERATE mode. This is performed by executing "./run.sh  [scenarioname] generate" 
-4.          The output files (.xml and .txt) will be created within the results/scenarios folder. In particular,
-          - The .txt report will be created directly under /bin/results/scenarios
-          - The /errors_for_generate directory will contain errors (if any)
+4.  The output files (.xml and .txt) will be created within the results/[scenarioname] folder. In particular,
+    - The .txt report will be created directly under results/[scenariooname]
+    - The /errors_for_generate directory will contain errors (if any)
     - The /generate directory holds the query xml files (1 for each query) that contain the expected results
  
  
  
 /***********************************************************
-  F) TESTING QUERIES AGAINST EXPECTED RESULTS / REGRESSION)
+  F) Testing Queries against Expected Results / Regression Testing
 ***********************************************************/
    
 With the queries and their expected results in place, you can now perform regression testing.
 First, the files containing the expected results must be put in place.
  
  
-1.  Navigate to the location where the expected results folder was created. This will be under /bin/results/scenarios/generate/<query_test_folder>
-2.  Copy/move this folder to the following location: tests/query_sets/<scenario>.
-          The structure should look like this: /tests/query_sets/<scenario folder>/expected_results
-3.          Run the script in COMPARE mode. This is performed by executing "./run.sh  <scenario> compare".
+1.  Navigate to the location where the expected results folder was created. This will be under /results/[scenarioname]/generate/[query_set_name]
+2.  Copy/move the [query_set_name] folder to the following location: tests/query_sets/.
+          The structure should look like this: /tests/query_sets/[query_set_name]/expected_results
+3.  Run the script in COMPARE mode. This is performed by executing "./run.sh  [scenarioname] compare".
           This will effectively perform regression testing by executing the queries and comparing the results against the expected results files.
-4.  The output files (.xml and .txt) will be created within the /bin/results/scenarios folder. In particular,
-          - The .txt report will be created directly under /bin/results/scenarios
+4.  The output files (.xml and .txt) will be created within the /results/[scenarioname] folder. In particular,
+          - The .txt report will be created directly under /results/[scenarioname]
           - The /errors_for_compare directory will contain errors (if any)
    
 At this point, rerunning the scenario is essentially testing regression.  As changes (not new tables) are made to your data source,
@@ -197,23 +197,17 @@ Also, logical boundary testing is supported. Multiple steps in a logical transac
 This is also show in the examples.
  
  
- 
- 
 ======================
 CONFIGURING SCENARIOS:
 ======================
  
  
-A single scenario is defined by a single <scenario>.properties file. 
+A single scenario is defined by a single [scenarioname].properties file. 
 One or more scenarios can be run at one time, in sequential order.
  
- 
 To create a scenario file, make a copy of the scenario.properties.template (found in the tests\scenarios folder) and rename it to {name}.properties.
- 
- 
+  
 Depending on whether you are creating a single or multiple scenarios the detailed steps are as follows:
- 
- 
  
  
 SINGLE SCENARIOS
