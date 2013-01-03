@@ -29,13 +29,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.bqt.client.ClassFactory;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.junit.Ignore;
@@ -53,6 +53,7 @@ public class TestXMLExpectedResults {
 	// ===================================================================
 	// ACTUAL TESTS
 	// ===================================================================
+	
 
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils}
@@ -61,9 +62,18 @@ public class TestXMLExpectedResults {
 	 */
 	@Test
 	@Ignore
-	public void test1() throws Exception {
-		System.setProperty(ConfigPropertyNames.CONFIG_FILE,
-				"ctc-bqt-test.properties");
+	public void testEmptyFolders() throws Exception {
+		//  the following 3 properties are what's normally found in the scenario.properties file
+		System.setProperty("queryset.dirname", "test_query_set");
+		System.setProperty("test.queries.dirname", "test_queries");
+		System.setProperty("expected.results.dirname", "expected_results");	
+	
+		//
+		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
+		
+		System.setProperty("output.dir", UnitTestUtil.getTestOutputPath() + File.separator + "sqltest" );
+		
+		System.setProperty(ConfigPropertyNames.CONFIG_FILE, UnitTestUtil.getTestDataPath() + File.separator + "localconfig.properties");		
 
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		Properties p = _instance.getProperties();
@@ -72,10 +82,10 @@ public class TestXMLExpectedResults {
 
 		}
 
-		QueryScenario set = ClassFactory.createQueryScenario("testscenario");
+		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 
-		_instance.setProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC,
-				new File("src/main/resources/").getAbsolutePath());
+//		_instance.setProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC,
+//				new File("src/main/resources/").getAbsolutePath());
 
 		Iterator<String> it = set.getQuerySetIDs().iterator();
 		while (it.hasNext()) {
@@ -87,12 +97,8 @@ public class TestXMLExpectedResults {
 			}
 
 			ExpectedResultsReader er = set.getExpectedResults(querySetID);
-			// new XMLExpectedResults(_instance.getProperties(),
-			// querySetID);
 
 			ExpectedResultsWriter gr = set.getExpectedResultsGenerator();
-			// new XMLExpectedResultsWriter(_instance.getProperties(), "testname",
-			// set.getOutputDirectory());
 
 			Iterator<QueryTest> qIt = queries.iterator();
 			while (qIt.hasNext()) {

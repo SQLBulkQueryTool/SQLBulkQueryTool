@@ -45,9 +45,7 @@ import java.util.Properties;
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
-import org.jboss.bqt.client.util.DataTypeManager;
 import org.jboss.bqt.client.xml.QueryResults.ColumnInfo;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
@@ -403,7 +401,7 @@ public class XMLQueryVisitationStrategy {
      ********************************************************************************************/
 
     /**
-     * Generate XML for an exception in Object form.
+     * GenerateExpectedResults XML for an exception in Object form.
      *
      * @param ex
      * @param exceptionElement

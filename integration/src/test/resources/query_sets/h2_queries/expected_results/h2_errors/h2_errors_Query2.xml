@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <query><![CDATA[Select SSN, FIRSTNAME, LASTNAME, ST_ADDRESS, APT_NUMBER, CITY, STATE, ZIPCODE, PHONE]]></query>
+  <queryResults name="h2_errors_Query2">
+    <exception>
+      <exceptionType>JdbcSQLException</exceptionType>
+      <message>Column "SSN" not found; SQL statement:
+Select SSN, FIRSTNAME, LASTNAME, ST_ADDRESS, APT_NUMBER, CITY, STATE, ZIPCODE, PHONE [42122-124]</message>
+      <class>org.h2.jdbc.JdbcSQLException</class>
+    </exception>
+  </queryResults>
+</root>
+

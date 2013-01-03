@@ -28,14 +28,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.bqt.client.ClassFactory;
 import org.jboss.bqt.client.ClientPlugin;
+import org.jboss.bqt.client.FileType;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.TestProperties.RESULT_MODES;
+import org.jboss.bqt.client.resultmode.Compare;
+import org.jboss.bqt.client.resultmode.CreateSQLQuery;
+import org.jboss.bqt.client.resultmode.GenerateExpectedResults;
+import org.jboss.bqt.client.resultmode.None;
 import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.ArgCheck;
+import org.jboss.bqt.core.util.ReflectionHelper;
 
 /**
  * The QueryScenario manages all the information required to run one scenario of
@@ -48,16 +55,13 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * 
  */
 public abstract class QueryScenario {
-	
-	enum RESULT_MODE {
-		COMPARE,
-		GENERATE,
-		SQL,
-		NONE
-	}
 
+	protected FileType fileType = null;
+	
 	protected QueryReader reader = null;
-	protected ExpectedResultsWriter resultsGen = null;
+	protected QueryWriter writer = null;
+	protected ExpectedResultsReader resultsReader = null;
+	protected ExpectedResultsWriter resultsWriter = null;
 	protected ErrorWriter errorWriter = null;
 
 	private Properties props = null;
@@ -65,10 +69,31 @@ public abstract class QueryScenario {
 	private String querySetName;
 	private String rootOutputDir = null;
 	private String testrunDir = null;
+		
+	public static final QueryScenario createInstance(String scenarioName, Properties properties) {
+		
+		String resultModeStr = BQTUtil.getResultMode(properties);
+		resultModeStr = (resultModeStr!=null?resultModeStr:"Null");
+		ClientPlugin.LOGGER.info("Results mode: " +  resultModeStr); //$NON-NLS-1$
+		
+		QueryScenario scenario = null;
+		if (resultModeStr.equals(TestProperties.RESULT_MODES.COMPARE)) {
+			scenario = new Compare(scenarioName, properties);
+		} else if (resultModeStr.equals(TestProperties.RESULT_MODES.GENERATE)) {
+			scenario = new GenerateExpectedResults(scenarioName, properties);
+		} else if (resultModeStr.equals(TestProperties.RESULT_MODES.NONE)) {
+			scenario = new None(scenarioName, properties);
+		} else {
+			// default is SQL
+			scenario = new CreateSQLQuery(scenarioName, properties);
+		}
+		
+		scenario.setUp();
+
+		return scenario;		
+	}
 	
-	private RESULT_MODE mode = RESULT_MODE.NONE;
-	
-	public QueryScenario(String scenarioName, Properties queryProperties) {
+	protected QueryScenario(String scenarioName, Properties queryProperties)  {
 		this.props = queryProperties;
 		this.scenarioName = scenarioName;
 
@@ -96,33 +121,38 @@ public abstract class QueryScenario {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_TESTRUN_DIR);
 		}
 		
-		setUp();
+		this.fileType = BQTUtil.createFileType(queryProperties);
 
 	}
 
-	protected void setUp() {
-		validateResultsMode(this.props);
-		
-		Collection<Object> args = new ArrayList<Object>(2);
-		args.add(scenarioName);
-		args.add(props);
-		
-		if (!this.isSQL()) {			
-			reader = ClassFactory.createQueryReader(args);
-	
-			if (reader.getQuerySetIDs() == null
-					|| reader.getQuerySetIDs().isEmpty()) {
-				throw new FrameworkRuntimeException(
-						"The queryreader did not return any queryset ID's to process");
-			}
-		} 
-		if (this.isGenerate()) {
-			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
-		}
-		
-		this.errorWriter = ClassFactory.createErrorWriter(args);
-	}
-	
+	/**
+	 * The implementation of setUp will create the appropriate readers/writers that
+	 * will be required that instance of QueryScenario.
+	 */
+	protected abstract void setUp();
+//	{
+//		validateResultsMode(this.props);
+//		
+//		Collection<Object> args = new ArrayList<Object>(2);
+//		args.add(scenarioName);
+//		args.add(props);
+//		
+//		if (!this.isSQL()) {			
+//			reader = ClassFactory.createQueryReader(args);
+//	
+//			if (reader.getQuerySetIDs() == null
+//					|| reader.getQuerySetIDs().isEmpty()) {
+//				throw new FrameworkRuntimeException(
+//						"The queryreader did not return any queryset ID's to process");
+//			}
+//		} 
+//		if (this.isGenerate()) {
+//			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
+//		}
+//		
+//		this.errorWriter = ClassFactory.createErrorWriter(args);
+//	}
+//	
 	public String getOutputDir() {
 		return this.rootOutputDir;
 	}
@@ -130,56 +160,23 @@ public abstract class QueryScenario {
 	public String getTestRunDir() {
 		return this.testrunDir;
 	}
-	
-	
+	 
 	public boolean isNone() {
-		return (mode == RESULT_MODE.NONE);
+		return false;
 	}	
 	
 	public boolean isGenerate() {
-		return (mode == RESULT_MODE.GENERATE);
+		return false;
 	}
 
 	public boolean isSQL() {
-		return (mode == RESULT_MODE.SQL);
+		return false;
 	}
 	
 	public boolean isCompare() {
-		return (mode == RESULT_MODE.COMPARE);
+		return false;
 	}
 	
-
-	public void setResultMode(String resultmode) {
-		
-		// default to NONE when its null
-		resultmode = (resultmode != null ? resultmode : TestProperties.RESULT_MODES.NONE);
-		
-		if (resultmode.equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
-			mode = RESULT_MODE.COMPARE;
-		} else if (resultmode.equalsIgnoreCase(TestProperties.RESULT_MODES.GENERATE)) {
-			mode = RESULT_MODE.GENERATE;
-		} else if (resultmode.equalsIgnoreCase(TestProperties.RESULT_MODES.SQL)) {
-			mode = RESULT_MODE.SQL;
-		} else if (resultmode.equalsIgnoreCase(TestProperties.RESULT_MODES.NONE)) {
-			mode = RESULT_MODE.NONE;
-		} else {
-			throw new FrameworkRuntimeException(
-			"Invalid results mode of "+ resultmode + " must be COMPARE, GENERATE, SQL or NONE");
-
-		}
-	}
-	protected void validateResultsMode(Properties props) {
-		// Determine from property what to do with query results
-		
-		String resultModeStr = TestProperties.getResultMode(props);
-		
-		setResultMode( resultModeStr );
-		// otherwise use default of NONE
-
-		ClientPlugin.LOGGER.info("Results mode: " + mode); //$NON-NLS-1$
-
-	}
-
 	/**
 	 * Return the name that identifies this query set. It should use the
 	 * {@link TestProperties#QUERY_SET_NAME} property to obtain the name.
@@ -221,7 +218,7 @@ public abstract class QueryScenario {
 
 	public List<QueryTest> getQueries(String querySetID) {
 		try {
-			return reader.getQueries(querySetID);
+			return getQueryReader().getQueries(querySetID);
 		} catch (QueryTestFailedException e) {
 			throw new FrameworkRuntimeException(e);
 		}
@@ -236,7 +233,7 @@ public abstract class QueryScenario {
 	 * @return Collection of querySetIDs
 	 */
 	public Collection<String> getQuerySetIDs() {
-		return reader.getQuerySetIDs();
+		return getQueryReader().getQuerySetIDs();
 	}
 
 	/**
@@ -245,24 +242,17 @@ public abstract class QueryScenario {
 	 * 
 	 * @return String result mode
 	 */
-	public String getResultsMode() {
-		
-		switch (mode) {
-		case COMPARE:
-			return TestProperties.RESULT_MODES.COMPARE;
-		case GENERATE:
-			return TestProperties.RESULT_MODES.GENERATE;
-		case SQL:
-			return TestProperties.RESULT_MODES.SQL;
-		case NONE:
-			return TestProperties.RESULT_MODES.NONE;
-			
-		default:
-			break;
-		}
-
-		return this.mode.toString();
-	}
+	public abstract String getResultsMode();
+	
+	/**
+	 * Will be called to handle the {@link TestResult} and the implementor will be responsible
+	 * for determining how to perform that task.
+	 * @param tr
+	 * @param resultSet
+	 * @throws QueryTestFailedException 
+	 * @throws FrameworkException 
+	 */
+	public abstract void handleTestResult(TestResult tr, ResultSet resultSet) throws QueryTestFailedException, FrameworkException;
 
 	/**
 	 * Return the {@link ExpectedResultsReader} for the specified
@@ -273,11 +263,12 @@ public abstract class QueryScenario {
 	 * @return ExpectedResultsReader
 	 */
 	public ExpectedResultsReader getExpectedResults(String querySetID) {
+		ArgCheck.isNotNull(querySetID, "QuerySetID must be passed in");
 		Collection<Object> args = new ArrayList<Object>(2);
 		args.add(querySetID);
 		args.add(props);
 
-		return ClassFactory.createExpectedResults(args);
+		return (ExpectedResultsReader) createInstance(fileType.getExpectedResultsReaderClassName(), args);
 
 	}
 
@@ -287,8 +278,11 @@ public abstract class QueryScenario {
 	 * 
 	 * @return ExpectedResultsWriter
 	 */
-	public ExpectedResultsWriter getExpectedResultsGenerator() {
-		return this.resultsGen;
+	public synchronized ExpectedResultsWriter getExpectedResultsGenerator() {
+		if (this.resultsWriter == null) {
+			this.resultsWriter = createExpectedResultsWriter();
+		}
+		return this.resultsWriter;
 	}
 
 	/**
@@ -297,7 +291,10 @@ public abstract class QueryScenario {
 	 * 
 	 * @return QueryReader
 	 */
-	public QueryReader getQueryReader() {
+	public synchronized QueryReader getQueryReader() {
+		if (this.reader == null) {
+			this.reader = createQueryReader();
+		}
 		return this.reader;
 	}
 	
@@ -307,7 +304,10 @@ public abstract class QueryScenario {
 	 * 
 	 * @return QueryReader
 	 */
-	public ErrorWriter getErrorWriter() {
+	public synchronized ErrorWriter getErrorWriter() {
+		if (this.errorWriter == null) {
+			this.errorWriter = createErrorWriter();
+		}
 		return this.errorWriter;
 	}
 	
@@ -317,16 +317,61 @@ public abstract class QueryScenario {
 	 * 
 	 * @return QueryWriter
 	 */
-	public QueryWriter getQueryWriter() {
-		final String msg = ClientPlugin.Util.getString(
-				"QueryScenario.unsupportedMethod", "QueryScenario.getQueryWriter"); //$NON-NLS-1$            
-		throw new FrameworkRuntimeException(msg);
-	}	
+	public synchronized QueryWriter getQueryWriter() {
+		if (this.writer == null) {
+			this.writer = createQueryWriter();
+		}
+		return this.writer;
 
-	public abstract void handleTestResult(TestResult tr, ResultSet resultSet);
+	}	
 	
 	public void writeQueryTests(QueryTest queryTest) throws Exception {
 		getQueryWriter().writeQueryTest(queryTest);
 
 	}	
+	
+	/* ************
+	 * 
+	 * Helper Methods
+	 * 
+	 **************/
+	
+	protected QueryReader createQueryReader() {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenarioName);
+		args.add(props);
+		return (QueryReader) createInstance(fileType.getQueryReaderClassName(), args);
+	}	
+	 
+	protected QueryWriter createQueryWriter() {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenarioName);
+		args.add(props);
+		return (QueryWriter) createInstance(fileType.getQueryWriterClassName(), args);
+	}
+	
+	protected ErrorWriter createErrorWriter() {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenarioName);
+		args.add(props);
+		return (ErrorWriter) createInstance(fileType.getErrorWriterClassName(), args);
+	}	
+	
+	protected ExpectedResultsReader createExpectedResultsReader() {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenarioName);
+		args.add(props);
+		return (ExpectedResultsReader) createInstance(fileType.getExpectedResultsReaderClassName(), args);
+	}	
+	
+	protected ExpectedResultsWriter createExpectedResultsWriter() {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenarioName);
+		args.add(props);
+		return (ExpectedResultsWriter) createInstance(fileType.getExpectedResultsWriterClassName(), args);
+	}
+
+	protected Object createInstance(String clzzName, final Collection<?> args) {
+		return ReflectionHelper.create(clzzName,args, null);
+	}
 }

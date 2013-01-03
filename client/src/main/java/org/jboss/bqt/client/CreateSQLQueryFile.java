@@ -28,19 +28,19 @@ import java.util.List;
 
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.framework.AbstractQueryTransaction;
 import org.jboss.bqt.framework.DatabaseMetaDataReader;
+import org.jboss.bqt.framework.TransactionQueryTestCase;
 
 /**
- * TestCreateSQLQueryFile is used to create sql queries based on the database metadata.
+ * CreateSQLQueryFile is used to create sql queries based on the database metadata.
  * 
  */
-public class CreateSQLQueryFile extends AbstractQueryTransaction {
+public class CreateSQLQueryFile extends TransactionQueryTestCase {
 
 	private QueryScenario queryScenario = null;
 	private QueryTest queries = null;
 
-	public CreateSQLQueryFile(QueryScenario querySet) {
+	CreateSQLQueryFile(QueryScenario querySet) {
 		super(querySet.getQueryScenarioIdentifier());
 		this.queryScenario = querySet;
 	}
@@ -50,12 +50,6 @@ public class CreateSQLQueryFile extends AbstractQueryTransaction {
 		return queryScenario.getQueryScenarioIdentifier();
 	}
 
-	@Override
-	public void before() {
-		// TODO Auto-generated method stub
-		super.before();
-
-	}
 
 	@Override
 	public void testCase() throws FrameworkRuntimeException {
@@ -107,12 +101,6 @@ public class CreateSQLQueryFile extends AbstractQueryTransaction {
 
 	}
 
-	@Override
-	public void after() {
-		// TODO Auto-generated method stub
-		super.after();
-
-	}
 
 	@SuppressWarnings("unused")
 	@Override

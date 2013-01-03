@@ -23,8 +23,6 @@
 package org.jboss.bqt.framework;
 
 
-import org.junit.Assert;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,10 +39,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ArgCheck;
-//import org.teiid.jdbc.TeiidStatement;
+import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.framework.resultsreaders.MetadataReader;
 import org.jboss.bqt.framework.resultsreaders.ResultSetReader;
 import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
@@ -91,16 +89,16 @@ public abstract class AbstractQuery {
 		return this.internalConnection;
 	}
 
-	public boolean execute(String sql) {
+	public boolean execute(String sql) throws QueryTestFailedException {
 		return execute(sql, new Object[] {});
 	}
 
-	public boolean execute(String sql, Object[] params) {
+	public boolean execute(String sql, Object[] params) throws QueryTestFailedException{
 		return execute(sql, params, null);
 		
 	}
 	
-	public boolean execute(String sql, Object[] params, Serializable payload) {
+	public boolean execute(String sql, Object[] params, Serializable payload) throws QueryTestFailedException {
 		closeStatement();
 		this.updateCount = -1;
 		endTS = 0;
@@ -132,7 +130,7 @@ public abstract class AbstractQuery {
 			} else {
 				this.internalStatement = createStatement();
 				assignExecutionProperties(this.internalStatement);
-				this.setPayload(this.internalStatement, payload);
+//				this.setPayload(this.internalStatement, payload);
 
 				beginTS = System.currentTimeMillis();
 
@@ -154,7 +152,7 @@ public abstract class AbstractQuery {
 
 			this.internalException = e;
 			if (!exceptionExpected()) {
-				throw new TransactionRuntimeException(e);
+				throw new QueryTestFailedException(e);
 			}
 		}
 		return false;
@@ -188,11 +186,11 @@ public abstract class AbstractQuery {
 //		} 
 	}
 
-	public int[] executeBatch(String[] sql) {
+	public int[] executeBatch(String[] sql) throws QueryTestFailedException {
 		return executeBatch(sql, -1);
 	}
 
-	public int[] executeBatch(String[] sql, int timeout) {
+	public int[] executeBatch(String[] sql, int timeout) throws QueryTestFailedException {
 		closeStatement();
 
 		try {
@@ -201,7 +199,7 @@ public abstract class AbstractQuery {
 
 			for (int i = 0; i < sql.length; i++) {
 				if (sql[i].indexOf("?") != -1) { //$NON-NLS-1$
-					throw new TransactionRuntimeException(FrameworkPlugin.Util.getString("AbstractQueryTest.invalidPreparedStatementInBatch")); 
+					throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.invalidPreparedStatementInBatch")); 
 				}
 			}
 
@@ -220,7 +218,7 @@ public abstract class AbstractQuery {
 		} catch (SQLException e) {
 			this.internalException = e;
 			if (!exceptionExpected()) {
-				throw new TransactionRuntimeException(e);
+				throw new QueryTestFailedException(e);
 			}
 		}
 
@@ -260,11 +258,11 @@ public abstract class AbstractQuery {
 		return this.internalException;
 	}
 
-	public void assertResultsSetEquals(File expected) {
+	public void assertResultsSetEquals(File expected) throws QueryTestFailedException {
 		assertResultsSetEquals(this.internalResultSet, expected);
 	}
 
-	public void assertResultsSetEquals(ResultSet resultSet, File expected) {
+	public void assertResultsSetEquals(ResultSet resultSet, File expected) throws QueryTestFailedException {
 		ArgCheck.isNotNull(resultSet, "Unable to compare ResultSet to expected file results, ResultSet is null");
 		try {
 			writeResultSet(expected, new BufferedReader(new ResultSetReader(
@@ -277,7 +275,7 @@ public abstract class AbstractQuery {
 		} catch (IOException e) {
 			throw new TransactionRuntimeException(e);
 		} catch (SQLException e) {
-			throw new TransactionRuntimeException(e);
+			throw new QueryTestFailedException(e);
 		}
 	}
 
@@ -373,8 +371,11 @@ public abstract class AbstractQuery {
 
 	protected void compareResults(BufferedReader resultReader,
 			BufferedReader expectedReader) throws IOException {
-		Assert.assertEquals(read(expectedReader, compareCaseSensitive()),
-				read(resultReader, compareCaseSensitive()));
+		ArgCheck.isTrue (StringUtil.isEqual(
+				read(expectedReader, compareCaseSensitive()),
+				read(resultReader, compareCaseSensitive( ))
+				                                )
+			                );
 	}
 
 	protected boolean compareCaseSensitive() {
@@ -394,7 +395,7 @@ public abstract class AbstractQuery {
 		printResults(this.internalResultSet, comparePrint);
 	}
 
-	public void walkResults() {
+	public void walkResults() throws QueryTestFailedException {
 		ArgCheck.isNotNull(this.internalResultSet, "Unable to walk results, ResultSet is null");
 
 		try {
@@ -407,7 +408,7 @@ public abstract class AbstractQuery {
 			}
 			closeResultSet();
 		} catch (SQLException e) {
-			throw new TransactionRuntimeException(e);
+			throw new QueryTestFailedException(e);
 		}
 	}
 
@@ -438,20 +439,20 @@ public abstract class AbstractQuery {
 		}
 	}
 
-	public void assertUpdateCount(int expected) {
+	public void assertUpdateCount(int expected) throws QueryTestFailedException {
 		if (expected != updateCount) {
-			throw new FrameworkRuntimeException(FrameworkPlugin.Util.getString("AbstractQueryTest.updateCountNotCorrect", new Object[] { String.valueOf(expected), String.valueOf( updateCount) }));
+			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.updateCountNotCorrect", new Object[] { String.valueOf(expected), String.valueOf( updateCount) }));
 		}
 	}
 
-	public void assertRowCount(int expected) {
+	public void assertRowCount(int expected) throws QueryTestFailedException {
 		int count = getRowCount();
 		if (expected != count) {
-			throw new FrameworkRuntimeException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( count) }));
+			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( count) }));
 		}
 	}
 
-	public int getRowCount() {
+	public int getRowCount() throws QueryTestFailedException {
 		if (this.internalResultSet == null) return 0;
 		// Count all
 		try {
@@ -461,7 +462,7 @@ public abstract class AbstractQuery {
 			}
 			return count;
 		} catch (SQLException e) {
-			throw new TransactionRuntimeException(e);
+			throw new QueryTestFailedException(e);
 		}
 	}
 
@@ -525,7 +526,7 @@ public abstract class AbstractQuery {
 		e.printStackTrace();
 	}
 
-	protected void executeAndAssertResults(String query, String[] expected) {
+	protected void executeAndAssertResults(String query, String[] expected) throws QueryTestFailedException {
 		execute(query);
 		if (expected != null) {
 			assertResults(expected);
@@ -534,14 +535,5 @@ public abstract class AbstractQuery {
 		}
 	}
 	
-
-	
-	/**
-	 * At end of each test, perform any post processing logic that your test requires.
-	 */
-	public void after() {
-		closeStatement();
-
-	}
 	
 }

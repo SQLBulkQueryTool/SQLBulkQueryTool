@@ -63,8 +63,6 @@ public class TransactionFactory {
 		String type = config.getProperty(TRANSACTION_TYPE);
 		if (type == null) {
             transacton = new TxnAutoTransaction();
-    //			throw new FrameworkRuntimeException(TRANSACTION_TYPE
-	//				+ " property was not specified");
             FrameworkPlugin.LOGGER.debug("====  Create Transaction-Option: not defined");
 		} else {
 
@@ -81,8 +79,6 @@ public class TransactionFactory {
                 		ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
             } else if (type.equalsIgnoreCase(TRANSACTION_TYPES.ONWRAP_TRANSACTION)) {
                 transacton = new OnWrapTransaction();
-                //new TxnAutoTransaction(
-                //		TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_ON);
             } else if (type
                     .equalsIgnoreCase(TRANSACTION_TYPES.AUTOWRAP_TRANSACTION)) {
                 transacton = new TxnAutoTransaction(

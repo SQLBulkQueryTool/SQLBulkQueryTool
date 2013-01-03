@@ -1045,6 +1045,16 @@ public final class StringUtil {
 		}
 		return newStr;
 	}
+	
+	@SuppressWarnings("null")
+	public static boolean isEqual(String arg1, String arg2) {
+		if (arg1 == null && arg2 == null) return true;
+		if (arg1 == null && arg2 != null) return false;
+		if (arg2 == null && arg1 != null) return false;
+				
+		return arg1.equals(arg2);
+
+	}
 
 	/**
 	 * Create a valid filename from the given String.

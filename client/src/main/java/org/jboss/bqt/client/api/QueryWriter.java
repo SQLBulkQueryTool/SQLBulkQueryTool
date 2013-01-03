@@ -28,7 +28,7 @@ import org.jboss.bqt.client.TestProperties;
 /**
  * The QueryWriter is responsible for persisting a {@link QueryTest query} to 
  * {@link TestProperties#PROP_SQL_DIR outputDirectory} when the result mode 
- * is {@link QueryScenario.RESULT_MODE#SQL sql}.
+ * is {@link TestProperties.RESULT_MODES#SQL sql}.
  * 
  * @author vhalbert
  *

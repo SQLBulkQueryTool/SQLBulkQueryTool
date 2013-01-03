@@ -22,11 +22,17 @@
 package org.jboss.bqt.framework;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Properties;
 
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.connection.ConnectionStrategy;
+import org.jboss.bqt.framework.connection.ConnectionStrategyFactory;
 
 /**
  * The TransactionQueryTest interface represents the transaction test lifecycle
@@ -106,8 +112,31 @@ import org.jboss.bqt.framework.connection.ConnectionStrategy;
  * 
  */
 
-public interface TransactionQueryTestCase {
+public abstract class TransactionQueryTestCase extends AbstractQuery {
 	
+	protected String testname = "NA";
+	protected int fetchSize = -1;
+	protected int queryTimeout = -1;
+
+	protected ConnectionStrategy connStrategy;
+
+	// because only a SQLException is accounted for in AbstractQueryTest,
+	// the applicationException is used to when unaccounted for exceptions
+	// occur. This could
+	// unintentional errors from the driver or ctc client test code.
+	private Throwable applicationException = null;
+	
+	public TransactionQueryTestCase() {
+		super();
+
+		this.connStrategy = ConnectionStrategyFactory
+				.createConnectionStrategy();
+	}
+	
+	public TransactionQueryTestCase(String testname) {
+		this();
+		this.testname = testname;
+	}
 
 	/**
 	 * Returns the name of the test so that better tracing of what tests are
@@ -115,8 +144,9 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @return String is test name
 	 */
-	String getTestName();
-
+	public String getTestName() {
+		return this.testname;
+	}
 	/**
 	 * Called to get the current connection strategy being used.
 	 * 
@@ -124,8 +154,69 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @since
 	 */
-	ConnectionStrategy getConnectionStrategy();
+	public ConnectionStrategy getConnectionStrategy() {
+		return this.connStrategy;
+	}
+	
+//	@Override
+//	protected void assignExecutionProperties(Statement stmt) {
+//		// if (stmt instanceof org.jboss.bqt.jdbc.TeiidStatement) {
+//		// org.jboss.bqt.jdbc.TeiidStatement statement =
+//		// (org.jboss.bqt.jdbc.TeiidStatement) stmt;
+//
+//		Properties executionProperties = this.connStrategy.getEnvironment();
+//		if (executionProperties != null) {
+//			
+//			List foop = PropertiesUtils.filter("statement.*", executionProperties);
+//			
+//			String txnautowrap = executionProperties
+//					.getProperty(CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP);
+//			if (txnautowrap != null) {
+//				Properties props = new Properties();
+//				props.setProperty("ExecutionProperty", txnautowrap);
+//
+//				PropertiesUtils.setBeanProperties(stmt, props, null);
+//			}
 
+			// statement.setExecutionProperty(
+			// CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
+			// txnautowrap);
+			// }
+
+//			String fetchSizeStr = executionProperties
+//					.getProperty(CONNECTION_STRATEGY_PROPS.FETCH_SIZE);
+//			if (fetchSizeStr != null) {
+//				try {
+//					fetchSize = Integer.parseInt(fetchSizeStr);
+//
+//					FrameworkPlugin.LOGGER.info("FetchSize = " + fetchSize, null);
+//				} catch (NumberFormatException e) {
+//					fetchSize = -1;
+//					// this.print("Invalid fetch size value: " + fetchSizeStr
+//					// + ", ignoring");
+//				}
+//			}
+
+//		}
+//		
+//
+//		if (this.fetchSize > 0) {
+//			try {
+//				stmt.setFetchSize(this.fetchSize);
+//			} catch (SQLException e) {
+//				FrameworkPlugin.LOGGER.info(e.getMessage());
+//			}
+//		}
+//
+//		if (this.queryTimeout > 0) {
+//			try {
+//				stmt.setQueryTimeout(this.queryTimeout);
+//			} catch (SQLException e) {
+//				FrameworkPlugin.LOGGER.info(e.getMessage());
+//			}
+//		}
+//
+//	}
 	/**
 	 * Called by the {@link TransactionContainer} prior to testcase processing
 	 * so that the responsibility for performing an setup duties (ie..,
@@ -135,37 +226,32 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @since
 	 */
-	void setup() throws QueryTestFailedException;
+	public void setup() throws QueryTestFailedException {
 
-	/**
-	 * Called by the @link TransactionContainer to set the Teiid connection to
-	 * be used in the test.
-	 * 
-	 * @param conn
-	 * 
-	 * @since
-	 */
-	void setConnection(Connection conn);
+		this.applicationException = null;
+		this.setConnection(connStrategy.getConnection());
+
+
+	}
 
 	/**
 	 * Override <code>before</code> if there is behavior that needs to be
 	 * performed prior to {@link #testCase()} being called.
-	 * 
+	 * @throws FrameworkException 
 	 * 
 	 * @since
 	 */
-	void before();
+	public void before()  throws FrameworkException {
+	}
 
 	/**
 	 * Implement testCase(), it is the entry point to the execution of the test.
 	 * If an exception occurs, other than {@link FrameworkRuntimeException}, then that
 	 * exception can be found by calling {@link #getApplicationException()}.
 	 * 
-	 * @throws  FrameworkRuntimeException  when a problem occurs that the whole process needs stopping.
-	 * 
 	 * @since
 	 */
-	void testCase() throws FrameworkRuntimeException;
+	public abstract void testCase();
 
 	/**
 	 * Override <code>after</code> if there is behavior that needs to be
@@ -174,7 +260,9 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @since
 	 */
-	void after();
+	public void after()  {
+		super.closeStatement();
+	}
 
 	/**
 	 * Indicates what should be done when a failure occurs in
@@ -184,8 +272,9 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @since
 	 */
-	boolean rollbackAllways();
-
+	public boolean rollbackAllways() {
+		return false;
+	}
 	/**
 	 * Called at the end of the test so that the testcase can clean itself up by
 	 * releasing any resources, closing any open connections, etc.
@@ -193,43 +282,54 @@ public interface TransactionQueryTestCase {
 	 * 
 	 * @since
 	 */
-	void cleanup();
-
-	/**
-	 * Returns the connection being used in the test.
-	 * 
-	 * @return Connectionm
-	 * 
-	 * @since
-	 */
-	Connection getConnection();
-
-//	XAConnection getXAConnection();
-
-	/**
-	 * Will indicate if the this specific test expects an exception to occur.
-	 * @return boolean
-	 */
-	boolean exceptionExpected();
+	public void cleanup() {
+	}
 
 	/**
 	 * Will indicate if an exception actually occurred.
 	 * @return boolean
 	 */
-	boolean exceptionOccurred();
+	@Override
+	public boolean exceptionOccurred() {
+		return (super.exceptionOccurred() ? super.exceptionOccurred()
+				: this.applicationException != null);
+	}
+	
+	@Override
+	public SQLException getLastException() {
+		if (super.getLastException() != null) {
+			return super.getLastException();
+		}
+		if (this.applicationException != null) {
+			if (this.applicationException instanceof SQLException) {
+				return (SQLException) this.applicationException;
+			}
+
+			SQLException mm = new SQLException(
+					this.applicationException.getMessage());
+			return mm;
+
+		}
+
+		return null;
+	}
 
 	/**
 	 * Called by the testing process to capture the exception to be exposed
 	 * when {@link #getApplicationException()} is called.
 	 * @param t
 	 */
-	void setApplicationException(Throwable t);
-
+	public void setApplicationException(Throwable t) {
+		this.applicationException = t;
+	}
 	/**
 	 * Called to obtain the exception, if it occurred, to be indicated in the
 	 * reporting of the results of the test.
 	 * @return Throwable exception if the test failed when executing
 	 */
-	Throwable getApplicationException();
+	public Throwable getApplicationException() {
+		return this.applicationException;
+	}
+
 
 }

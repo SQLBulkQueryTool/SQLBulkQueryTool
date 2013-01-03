@@ -21,10 +21,7 @@
  */
 package org.jboss.bqt.client;
 
-import java.util.Properties;
 
-import org.jboss.bqt.client.util.BQTUtil;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 
 /**
  * The TestProperties are those properties that define a test scenario.  
@@ -66,7 +63,7 @@ import org.jboss.bqt.core.exception.FrameworkRuntimeException;
  * @author vanhalbert
  * 
  */
-public class TestProperties {
+public interface TestProperties {
 
 	/**
 	 * PROP_SCENARIO_FILE indicates the scenario properties file to load.
@@ -182,39 +179,6 @@ public class TestProperties {
 	 * queries and focus on the longer running queries.
 	 */
 	public static final String PROP_EXECUTE_TIME_MINEMUM = "bqt.exectimemin";	 // milliseconds
-
-	
-	
-	@SuppressWarnings("null")
-	public static String getResultMode(Properties props) {
-		// Determine from property what to do with query results
-		String resultModeStr = props.getProperty(
-				TestProperties.PROP_RESULT_MODE);
-		// No need to check for null prop here since we've just checked for this
-		// required property
-		
-		if (resultModeStr == null) {
-			BQTUtil.throwInvalidProperty(PROP_RESULT_MODE);
-		}
-		
-		resultModeStr = resultModeStr.trim().toUpperCase();
-
-
-		if (resultModeStr.startsWith(TestProperties.RESULT_MODES.COMPARE)) {
-			return TestProperties.RESULT_MODES.COMPARE;
-		} else if (resultModeStr.startsWith(TestProperties.RESULT_MODES.GENERATE)) {
-			return TestProperties.RESULT_MODES.GENERATE;
-		} else if (resultModeStr.startsWith(TestProperties.RESULT_MODES.SQL)) {
-			return TestProperties.RESULT_MODES.SQL;
-		} else if (resultModeStr.startsWith(TestProperties.RESULT_MODES.NONE)) {
-			return TestProperties.RESULT_MODES.NONE;
-		} else {
-			throw new FrameworkRuntimeException(
-			"Invalid results mode of "+ resultModeStr + " must be COMPARE, GENERATE, SQL or NONE");
-
-		}
-
-	}
 
 
 }

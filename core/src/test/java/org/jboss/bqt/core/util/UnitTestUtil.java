@@ -39,8 +39,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
+import static org.junit.Assert.*;
+
 
 /**
  * This class contains static methods that are routinely and commonly used in many test cases, and related to methods to test
@@ -160,13 +162,13 @@ public final class UnitTestUtil {
             boolean equal = obj1.equals(obj2);
             if (equal) {
                 if (correctCompareToResult != 0) {
-                    Assert.fail("obj1.equals(obj2) returned true but was expected to return false"); //$NON-NLS-1$
+                    fail("obj1.equals(obj2) returned true but was expected to return false"); //$NON-NLS-1$
                 }
 
             } else {
                 // They are not considered equal, so verify that this is what was expected
                 if (correctCompareToResult == 0) {
-                	Assert.fail("obj1.equals(obj2) returned false but was expected to return true"); //$NON-NLS-1$
+                	fail("obj1.equals(obj2) returned false but was expected to return true"); //$NON-NLS-1$
                 }
             }
 
@@ -222,35 +224,35 @@ public final class UnitTestUtil {
                     // Check that obj1.compareTo(obj2) returned the same sign as the expected result
                     if (result1 < 0) {
                         if (!(correctCompareToResult < 0)) {
-                        	Assert.fail("obj1.compareTo(obj2) returned <0 (actual=" + result1 //$NON-NLS-1$
+                        	fail("obj1.compareTo(obj2) returned <0 (actual=" + result1 //$NON-NLS-1$
                                  + ") and did not match the expected result (" + correctCompareToResult + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
                         }
                         if (!(result2 > 0)) {
-                        	Assert.fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned <0 (actual=" + result1 //$NON-NLS-1$
+                        	fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned <0 (actual=" + result1 //$NON-NLS-1$
                                  + ") but obj2.compareTo(obj2) did not return >0 (actual=" + result2 + ") "); //$NON-NLS-1$ //$NON-NLS-2$ 
                         }
                     } else if (result1 > 0) {
                         if (!(correctCompareToResult > 0)) {
-                        	Assert.fail("obj1.compareTo(obj2) returned >0 (actual=" + result1 //$NON-NLS-1$
+                        	fail("obj1.compareTo(obj2) returned >0 (actual=" + result1 //$NON-NLS-1$
                                  + ") and did not match the expected result (" + correctCompareToResult + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
                         }
                         if (!(result2 < 0)) {
-                        	Assert.fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned >0 (actual=" + result1 //$NON-NLS-1$
+                        	fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned >0 (actual=" + result1 //$NON-NLS-1$
                                  + ") but obj2.compareTo(obj2) did not return <0 (actual=" + result2 + ") "); //$NON-NLS-1$ //$NON-NLS-2$ 
                         }
                     } else { // result1 == 0
                         if (correctCompareToResult != 0) {
-                        	Assert.fail("obj1.compareTo(obj2) returned 0 but did not match the expected result (" //$NON-NLS-1$
+                        	fail("obj1.compareTo(obj2) returned 0 but did not match the expected result (" //$NON-NLS-1$
                                  + correctCompareToResult + ") and the second compareTo call didn't match the first"); //$NON-NLS-1$ 
                         }
-                        Assert.fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned 0 while obj2.compareTo(obj2) returned " //$NON-NLS-1$
+                        fail("The compareTo call was not commutative: obj1.compareTo(obj2) returned 0 while obj2.compareTo(obj2) returned " //$NON-NLS-1$
                              + result2); 
                     }
 
                 }
                 // Otherwise the results are the same so correct 'compareTo' result should be 0
                 else if (correctCompareToResult != 0) {
-                	Assert.fail("obj1.compareTo(obj2) and obj2.compareTo(obj1) both returned " + result1 //$NON-NLS-1$
+                	fail("obj1.compareTo(obj2) and obj2.compareTo(obj1) both returned " + result1 //$NON-NLS-1$
                          + " but did not match the expected result (" + correctCompareToResult + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
                 }
 
@@ -260,12 +262,12 @@ public final class UnitTestUtil {
                 int result = 0;
                 try {
                     result = obj1.compareTo(obj2);
-                    Assert.fail("The second comparable object was null but no IllegalArgumentException was thrown in " //$NON-NLS-1$
+                    fail("The second comparable object was null but no IllegalArgumentException was thrown in " //$NON-NLS-1$
                          + obj1.getClass().getName() + ".compareTo(Object)"); //$NON-NLS-1$ 
                 } catch (IllegalArgumentException e) {
                 }
                 if (!(correctCompareToResult > 0)) {
-                	Assert.fail("obj1.compareTo(null) returned " + result + " but did not match the expected result (" //$NON-NLS-1$//$NON-NLS-2$
+                	fail("obj1.compareTo(null) returned " + result + " but did not match the expected result (" //$NON-NLS-1$//$NON-NLS-2$
                          + correctCompareToResult + ")"); //$NON-NLS-1$ 
                 }
             }
@@ -275,12 +277,12 @@ public final class UnitTestUtil {
             int result = 0;
             try {
                 result = obj2.compareTo(obj1);
-                Assert.fail("The first comparable object was null but no IllegalArgumentException was thrown in " //$NON-NLS-1$
+                fail("The first comparable object was null but no IllegalArgumentException was thrown in " //$NON-NLS-1$
                      + obj2.getClass().getName() + ".compareTo(Object)"); //$NON-NLS-1$ 
             } catch (IllegalArgumentException e) {
             }
             if (!(correctCompareToResult < 0)) {
-            	Assert.fail("obj2.compareTo(null) returned " + result + " but did not match the expected result (" //$NON-NLS-1$ //$NON-NLS-2$
+            	fail("obj2.compareTo(null) returned " + result + " but did not match the expected result (" //$NON-NLS-1$ //$NON-NLS-2$
                      + correctCompareToResult + ")"); //$NON-NLS-1$ 
             }
         }
@@ -288,7 +290,7 @@ public final class UnitTestUtil {
         else {
             // The correct result had better be 0
             if (correctCompareToResult != 0) {
-            	Assert.fail("The expected result was not 0 even though both references were null"); //$NON-NLS-1$
+            	fail("The expected result was not 0 even though both references were null"); //$NON-NLS-1$
             }
         }
     }
@@ -303,10 +305,10 @@ public final class UnitTestUtil {
      *             if parameter is <code>null</code>, or if any test doesn't pass
      */
     protected static void helpTestEquals(final Object obj) {
-    	Assert.assertNotNull(obj);
-    	Assert.assertTrue("The equals method of Object " + obj + " (Class " + obj.getClass().getName() //$NON-NLS-1$ //$NON-NLS-2$
+    	assertNotNull(obj);
+    	assertTrue("The equals method of Object " + obj + " (Class " + obj.getClass().getName() //$NON-NLS-1$ //$NON-NLS-2$
                    + ") does not return false for null parameter", !obj.equals(null)); //$NON-NLS-1$ 
-    	Assert.assertTrue("The equals method of Object " + obj + " (Class " + obj.getClass().getName() + ") is not reflexive.", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    	assertTrue("The equals method of Object " + obj + " (Class " + obj.getClass().getName() + ") is not reflexive.", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                    obj.equals(obj)); 
     }
 
@@ -324,9 +326,9 @@ public final class UnitTestUtil {
      */
     protected static void helpTestEqualsTransitivity(final Object test,
                                                      final Object control) {
-    	Assert.assertNotNull(test);
-    	Assert.assertNotNull(control);
-        Assert.assertEquals("Equals methods of test Object and control Object are not symmetric: " + test + ", " + control, //$NON-NLS-1$//$NON-NLS-2$
+    	assertNotNull(test);
+    	assertNotNull(control);
+        assertEquals("Equals methods of test Object and control Object are not symmetric: " + test + ", " + control, //$NON-NLS-1$//$NON-NLS-2$
                      test.equals(control), control.equals(test)); 
     }
 
@@ -359,7 +361,7 @@ public final class UnitTestUtil {
             int hash1 = obj1.hashCode();
             int hash2 = obj2.hashCode();
             if (shouldBeEqual) {
-            	Assert.assertTrue("The two objects are supposed to be equal but do not have the same hash code value; obj1.hashCode()=" //$NON-NLS-1$
+            	assertTrue("The two objects are supposed to be equal but do not have the same hash code value; obj1.hashCode()=" //$NON-NLS-1$
                            + hash1 + "; obj2.hashCode()=" + hash2, hash1 == hash2); //$NON-NLS-1$
             }
             // If they should not be equal, then it is NOT necessarily true
@@ -375,7 +377,7 @@ public final class UnitTestUtil {
      */
     protected static void helpTestReflexiveCompareTo(final Comparable obj) {
         if (obj != null && obj.compareTo(obj) != 0) {
-        	Assert.fail("The compareTo method is not reflexive; obj.compareTo(obj) does not equal 0"); //$NON-NLS-1$
+        	fail("The compareTo method is not reflexive; obj.compareTo(obj) does not equal 0"); //$NON-NLS-1$
         }
     }
 

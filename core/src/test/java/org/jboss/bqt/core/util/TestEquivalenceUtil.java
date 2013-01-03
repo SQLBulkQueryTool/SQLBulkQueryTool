@@ -22,19 +22,19 @@
 
 package org.jboss.bqt.core.util;
 
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class TestEquivalenceUtil extends TestCase {
+public class TestEquivalenceUtil {
 
     /**
      * Constructor for TestEquivalenceUtil.
-     * @param name
      */
-    public TestEquivalenceUtil(String name) {
-        super(name);
+    public TestEquivalenceUtil() {
     }
 
+    @Test
     public void testAreEqual() {
         // Test with nulls
         assertTrue(EquivalenceUtil.areEqual(null, null));
@@ -58,6 +58,7 @@ public class TestEquivalenceUtil extends TestCase {
         assertTrue(EquivalenceUtil.areEqual(obj1, obj3));
     }
 
+    @Test
     public void testAreEquivalent() {
         assertTrue(EquivalenceUtil.areEquivalent(null, null));
         // Empty arrays and nulls
@@ -81,6 +82,7 @@ public class TestEquivalenceUtil extends TestCase {
     /*
      * Test for boolean areStrictlyEquivalent(Object, Object)
      */
+    @Test
     public void testAreStrictlyEquivalentObjectObject() {
         // Equal references
         assertFalse(EquivalenceUtil.areStrictlyEquivalent((Object)null, (Object)null));
@@ -100,6 +102,7 @@ public class TestEquivalenceUtil extends TestCase {
     /*
      * Test for boolean areStrictlyEquivalent(Object[], Object[])
      */
+    @Test
     public void testAreStrictlyEquivalentObjectArrayObjectArray() {
         // Same reference
         assertFalse(EquivalenceUtil.areStrictlyEquivalent((Object[])null, (Object[])null));

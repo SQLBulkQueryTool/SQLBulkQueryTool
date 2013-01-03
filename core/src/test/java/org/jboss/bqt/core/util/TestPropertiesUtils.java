@@ -22,6 +22,8 @@
 
 package org.jboss.bqt.core.util;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,23 +36,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 
 /**
  * Tests primarily the various cloning scenarios available with PropertiesUtils
  */
-public class TestPropertiesUtils extends TestCase {    
+public class TestPropertiesUtils {    
     private static final String TEMP_FILE = UnitTestUtil.getTestScratchPath() + "/temp.properties";  //$NON-NLS-1$
 
     // ################################## FRAMEWORK ################################
 
-    public TestPropertiesUtils(String name) {
-        super(name);   
+    public TestPropertiesUtils() {
 
     }
     
-	public void tearDown() throws Exception{
+    @AfterClass
+	public static void tearDown() throws Exception{
         try {
             File temp = new File(TEMP_FILE);
             temp.delete();
@@ -69,6 +72,7 @@ public class TestPropertiesUtils extends TestCase {
      * Tests {@link org.jboss.bqt.core.util.PropertiesUtils}
      * @throws Exception 
      */
+    @Test
     public void testPrintLoadWithHeader() throws Exception {
         Properties props1 = make(MAP_C, null, !UNMODIFIABLE);
         
@@ -88,6 +92,7 @@ public class TestPropertiesUtils extends TestCase {
      * Tests {@link org.jboss.bqt.core.util.PropertiesUtils}
      * @throws Exception 
      */
+    @Test
     public void testPrintLoadWithoutHeader() throws Exception {
         Properties props1 = make(MAP_C, null, !UNMODIFIABLE);
         
@@ -104,6 +109,7 @@ public class TestPropertiesUtils extends TestCase {
     
 	// ################ putAll(Properties, Properties) ###########################
 
+    @Test
     public void testPutAllWithDefaults(){
 	    Properties c = make(MAP_C, null, !UNMODIFIABLE);
         Properties ab = make(MAP_A, make(MAP_B, null, UNMODIFIABLE), UNMODIFIABLE);
@@ -115,6 +121,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link  org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testSimpleModifiableClone(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 	    a = PropertiesUtils.clone(a);
@@ -124,6 +131,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link  org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testSimpleModifiableCloneWithUnmodifiableDefaults(){
 	    Properties ab = make(MAP_A, make(MAP_B, null, UNMODIFIABLE), !UNMODIFIABLE);
 	    ab = PropertiesUtils.clone(ab);
@@ -133,6 +141,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link  org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testSimpleModifiableCloneWithModifiableDefaults(){
 	    Properties ab = make(MAP_A, make(MAP_B, null, !UNMODIFIABLE), !UNMODIFIABLE);
 	    ab = PropertiesUtils.clone(ab);
@@ -144,6 +153,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testCloneModifiableAsModifiable(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 	    a = PropertiesUtils.clone(a);
@@ -153,6 +163,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testCloneUnmodifiableAsModifiable(){
 	    Properties a = make(MAP_A, null, UNMODIFIABLE);
 	    a = PropertiesUtils.clone(a);
@@ -162,6 +173,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties)}
 	 */
+    @Test
 	public void testCloneModifiableWithModifiableAsModifiable(){
 	    Properties ab = make(MAP_A, make(MAP_B, null, !UNMODIFIABLE), !UNMODIFIABLE);
 	    ab = PropertiesUtils.clone(ab);
@@ -173,6 +185,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties,  boolean)}
 	 */
+    @Test
 	public void testCloneModAndModAsMod(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 		Properties b = make(MAP_B, null, !UNMODIFIABLE); 
@@ -183,6 +196,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties,  boolean)}
 	 */
+    @Test
 	public void testDeepcloneModAndModAsMod(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 		Properties b = make(MAP_B, null, !UNMODIFIABLE); 
@@ -193,6 +207,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testCloneModAndUnmodAsMod(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 		Properties b = make(MAP_B, null, UNMODIFIABLE); 
@@ -203,6 +218,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testDeepcloneModAndUnmodAsMod(){
 	    Properties a = make(MAP_A, null, !UNMODIFIABLE);
 		Properties b = make(MAP_B, null, UNMODIFIABLE); 
@@ -213,6 +229,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testCloneUnmodAndModAsMod(){
 	    Properties a = make(MAP_A, null, UNMODIFIABLE);
 		Properties b = make(MAP_B, null, !UNMODIFIABLE); 
@@ -223,6 +240,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testDeepcloneUnmodAndModAsMod(){
 	    Properties a = make(MAP_A, null, UNMODIFIABLE);
 		Properties b = make(MAP_B, null, !UNMODIFIABLE); 
@@ -233,6 +251,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testCloneUnmodAndUnmodAsMod(){
 	    Properties a = make(MAP_A, null, UNMODIFIABLE);
 		Properties b = make(MAP_B, null, UNMODIFIABLE); 
@@ -243,6 +262,7 @@ public class TestPropertiesUtils extends TestCase {
 	/**
 	 * Tests {@link org.jboss.bqt.core.util.PropertiesUtils#clone(Properties, Properties, boolean)}
 	 */
+    @Test
 	public void testDeepcloneUnmodAndUnmodAsMod(){
 	    Properties a = make(MAP_A, null, UNMODIFIABLE);
 		Properties b = make(MAP_B, null, UNMODIFIABLE); 
