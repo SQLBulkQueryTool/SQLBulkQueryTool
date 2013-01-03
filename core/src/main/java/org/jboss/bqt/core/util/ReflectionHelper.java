@@ -23,6 +23,7 @@
 package org.jboss.bqt.core.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.bqt.core.CorePlugin;
-import org.jboss.bqt.core.exception.FrameworkException;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 
 public class ReflectionHelper {
 
-	private Class targetClass;
+	private Class<?> targetClass;
 	private Map methodMap = null; // used for the brute-force method finder
 
 	/**
@@ -333,12 +334,12 @@ public class ReflectionHelper {
 	 *            the class loader to use; may be null if the current class
 	 *            loader is to be used
 	 * @return Object is the instance of the class
-	 * @throws FrameworkException
+	 * @throws FrameworkRuntimeException
 	 *             if an error occurrs instantiating the class
 	 */
 
 	public static final Object create(String className, Collection ctorObjs,
-			final ClassLoader classLoader) throws FrameworkException {
+			final ClassLoader classLoader) throws FrameworkRuntimeException {
 		try {
 			int size = (ctorObjs == null ? 0 : ctorObjs.size());
 			Class[] names = new Class[size];
@@ -354,23 +355,29 @@ public class ReflectionHelper {
 				}
 			}
 			return create(className, objArray, names, classLoader);
-		} catch (Exception e) {
-			throw new FrameworkException(e);
+		} catch (FrameworkRuntimeException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new FrameworkRuntimeException(e);
 		}
 	}
 
 	public static final Object create(String className, Object[] ctorObjs,
 			Class<?>[] argTypes, final ClassLoader classLoader)
-			throws FrameworkException {
+			throws Throwable {
 		try {
-			final Class cls = loadClass(className, classLoader);
+			final Class<?> cls = loadClass(className, classLoader);
 
 			Constructor ctor = cls.getDeclaredConstructor(argTypes);
 
 			return ctor.newInstance(ctorObjs);
 
+		} catch (FrameworkRuntimeException e) {
+			throw e;
+		} catch (InvocationTargetException ite) {
+			throw ite.getCause();
 		} catch (Exception e) {
-			throw new FrameworkException(e);
+			throw new FrameworkRuntimeException(e);
 		}
 	}
 

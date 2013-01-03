@@ -22,11 +22,10 @@
 
 package org.jboss.bqt.client.api;
 
-import java.io.File;
 import java.sql.ResultSet;
 
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 
 
@@ -55,15 +54,16 @@ public interface ErrorWriter {
 	 * @param resultSet 
 	 * @param results 
 	 * @return String name for the error file
-	 * @throws FrameworkRuntimeException
+	 * @throws QueryTestFailedException could be seen if problems occur accessing resultSet
+	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
 	
 	String generateErrorFile(final TestResult testResult,
 			final ResultSet resultSet, 
-			final Object results) throws FrameworkRuntimeException;
+			final Object results) throws QueryTestFailedException, FrameworkException;
 	
 	/**
-	 * Generate an error file for a query that failed comparison. File should
+	 * Call to generate an error file for a query that failed comparison. File should
 	 * have the SQL, the actual results returned from the server and the results
 	 * that were expected.
 	 * @param querySetID 
@@ -72,13 +72,26 @@ public interface ErrorWriter {
 	 * @param resultSet 
 	 * @param queryError 
 	 * @param expectedResultsFile 
-	 * @return String
-	 * @throws FrameworkRuntimeException 
+	 * @return String name for the error file
+	 * @throws QueryTestFailedException could be seen if problems occur accessing resultSet
+	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
 	String generateErrorFile(final String querySetID,
 			final String queryID, final String sql, final ResultSet resultSet,
 			final Throwable queryError, final Object expectedResultsFile)
-			throws FrameworkRuntimeException;
+			throws QueryTestFailedException, FrameworkException;
 
-
+	
+	/**
+	 * Call to generate an error file based on an error that occurred.  
+	 * @param querySetID 
+	 * @param queryID
+	 * @param error
+	 * @return String name for the error file
+	 * @throws FrameworkException could be seen if problems occur creating error file
+	 */
+	String generateErrorFile(final String querySetID,
+			final String queryID, final Throwable error)
+			throws FrameworkException;
+	
 }

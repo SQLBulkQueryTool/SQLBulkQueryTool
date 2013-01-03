@@ -73,19 +73,16 @@ public class XMLQueryWriter implements QueryWriter {
 		ClientPlugin.LOGGER.debug("Directory to write queries to " + queryFileDir);
 	}
 	
-	
-
 	/**
 	 * {@inheritDoc}
 	 *
 	 * @see org.jboss.bqt.client.api.QueryWriter#getSQlFileOutputLocation()
 	 */
-	@Override
 	public String getSQlFileOutputLocation() {
 		return this.queryFileDir;
 	}
 
-	@Override
+
 	public void writeQueryTest(QueryTest tests) throws Exception {
 		OutputStream outputStream=null;
 		try {

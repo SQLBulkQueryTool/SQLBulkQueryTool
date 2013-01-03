@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.core.util.log;
+package org.jboss.bqt.core.log;
 
 import java.util.logging.Logger;
 import org.jboss.bqt.core.util.StringUtil;
@@ -29,7 +29,7 @@ import org.jboss.bqt.core.util.StringUtil;
  * 
  * @since 2.5
  */
-public class JdkLoggerImpl extends org.jboss.bqt.core.util.Logger {
+public class JdkLoggerImpl extends org.jboss.bqt.core.Logger {
 
     private final java.util.logging.Logger logger;
 

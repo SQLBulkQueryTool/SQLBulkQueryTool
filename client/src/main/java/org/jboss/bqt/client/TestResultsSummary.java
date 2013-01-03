@@ -275,29 +275,17 @@ public class TestResultsSummary {
 		outputStream
 				.println("Elapsed      Time: " + (length.getTime() / 1000) + " seconds"); //$NON-NLS-1$ //$NON-NLS-2$
 
-		//	outputStream.println("Start        Time: " + new Date(testStartTS)); //$NON-NLS-1$
-		//	outputStream.println("End          Time: " + new Date(endTS)); //$NON-NLS-1$
-		// outputStream
-		//		.println("Elapsed      Time: " + ((endTS - testStartTS) / 1000) + " seconds"); //$NON-NLS-1$ //$NON-NLS-2$
-		//
-
 		outputStream.println("Number of Clients: " + numberOfClients); //$NON-NLS-1$
 
-		Map passFailGenMap = getPassFailGen(results);
+		Map<String, String> passFailGenMap = getPassFailGen(results);
 		outputStream
-				.println("Number of Queries: " + passFailGenMap.get("queries")); //$NON-NLS-1$ //$NON-NLS-2$
+				.println("Number of Queries: " + passFailGenMap.get(MAP_QUERIES)); //$NON-NLS-1$ //$NON-NLS-2$
 		outputStream
-				.println("Number Passed    : " + passFailGenMap.get("pass")); //$NON-NLS-1$ //$NON-NLS-2$
+				.println("Number Passed    : " + passFailGenMap.get(MAP_PASS)); //$NON-NLS-1$ //$NON-NLS-2$
 		outputStream
-				.println("Number Failed    : " + passFailGenMap.get("fail")); //$NON-NLS-1$ //$NON-NLS-2$
-		//	outputStream.println("Number Generated : " + passFailGenMap.get("gen")); //$NON-NLS-1$ //$NON-NLS-2$
-
-//		ResponseTimes responseTimes = calcQueryResponseTimes(results);
-//		outputStream.println("QPS              : " + responseTimes.qps); //$NON-NLS-1$
-
-//		outputStream.println("Ave First Resp   : " + responseTimes.first); //$NON-NLS-1$
-
-//		outputStream.println("Ave Full Resp    : " + responseTimes.full); //$NON-NLS-1$
+				.println("Of Pass, Number Expected Failures: " + passFailGenMap.get(MAP_EXP_FAIL)); //$NON-NLS-1$ //$NON-NLS-2$
+		outputStream
+				.println("Number Failed    : " + passFailGenMap.get(MAP_FAIL)); //$NON-NLS-1$ //$NON-NLS-2$
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
@@ -306,13 +294,20 @@ public class TestResultsSummary {
 		}
 
 	}
+	
+	private static final String MAP_QUERIES = "queries";
+	private static final String MAP_PASS = "pass";
+	private static final String MAP_FAIL = "fail";
+	private static final String MAP_EXP_FAIL = "expfail";
+	
 
 	private static Map getPassFailGen(Collection results) {
-		Map passFailGenMap = new HashMap();
+		Map<String, String> passFailGenMap = new HashMap<String, String>();
 		int queries = 0;
 		int pass = 0;
 		int fail = 0;
 		int gen = 0;
+		int expected_fail = 0;
 
 		for (Iterator resultsItr = results.iterator(); resultsItr.hasNext();) {
 			TestResult stat = (TestResult) resultsItr.next();
@@ -326,12 +321,14 @@ public class TestResultsSummary {
 				break;
 			case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 				++pass;
+				++expected_fail;
 				break;
 			}
 		}
-		passFailGenMap.put("queries", Integer.toString(queries)); //$NON-NLS-1$
-		passFailGenMap.put("pass", Integer.toString(pass)); //$NON-NLS-1$
-		passFailGenMap.put("fail", Integer.toString(fail)); //$NON-NLS-1$
+		passFailGenMap.put(MAP_QUERIES, Integer.toString(queries)); //$NON-NLS-1$
+		passFailGenMap.put(MAP_PASS, Integer.toString(pass)); //$NON-NLS-1$
+		passFailGenMap.put(MAP_FAIL, Integer.toString(fail)); //$NON-NLS-1$
+		passFailGenMap.put(MAP_EXP_FAIL, Integer.toString(expected_fail)); //$NON-NLS-1$
 		//       passFailGenMap.put("gen", Integer.toString(gen)); //$NON-NLS-1$
 		return passFailGenMap;
 	}
@@ -467,12 +464,6 @@ public class TestResultsSummary {
 			printQueryTestResults(overwriteStream, starttest, endtest,
 					diffdate, numberOfClients, TestClient.TSFORMAT, testResults);
 
-			// HTML Vesion of output
-//			PrintStream htmlStream = getSummaryStream(outputDir, outputFileName
-//					+ ".html", true); //$NON-NLS-1$
-//			printHtmlQueryTestResults(htmlStream, testStartTS, endTS,
-//					numberOfClients, TestClient.TSFORMAT, testResults);
-//			htmlStream.close();
 
 			// Wiki Update
 			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, testResults); //$NON-NLS-1$ //$NON-NLS-2$

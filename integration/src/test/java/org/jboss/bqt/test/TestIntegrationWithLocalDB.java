@@ -45,7 +45,6 @@ public class TestIntegrationWithLocalDB {
 		
     }
 
-
 	@Test
 	public void testBQTClientExecutionResultSetModeSQL() {
 		

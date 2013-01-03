@@ -120,7 +120,7 @@ public interface TestResult {
 	 */
 	void setQuery(String query);
 
-/**
+	/**
     * Return the status of the execution of this query {@link #getQuery()};
     * @see TestResult.RESULT_STATE
     * @return int
@@ -219,5 +219,6 @@ public interface TestResult {
 	
 	String getResultMode();
 	
+	boolean isResultModeNone();
 	
 }

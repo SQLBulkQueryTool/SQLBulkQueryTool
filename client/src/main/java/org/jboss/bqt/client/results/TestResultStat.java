@@ -81,7 +81,6 @@ public class TestResultStat implements TestResult, Serializable {
 	 * 
 	 * @return String
 	 */
-	@Override
 	public String getResultStatusString() {
 		switch (resultStatus) {
 		case RESULT_STATE.TEST_SUCCESS:
@@ -99,7 +98,6 @@ public class TestResultStat implements TestResult, Serializable {
 	 * 
 	 * @return String is the query set id
 	 */
-	@Override
 	public String getQuerySetID() {
 		// TODO Auto-generated method stub
 		return this.querySetID;
@@ -113,7 +111,6 @@ public class TestResultStat implements TestResult, Serializable {
 	 * 
 	 * @since
 	 */
-	@Override
 	public String getQueryID() {
 		return queryID;
 	}
@@ -125,12 +122,10 @@ public class TestResultStat implements TestResult, Serializable {
 	 * 
 	 * @since
 	 */
-	@Override
 	public String getQuery() {
 		return query;
 	}
 	
-	@Override
 	public void setQuery(String query) {
 		this.query = query;
 	}
@@ -142,7 +137,6 @@ public class TestResultStat implements TestResult, Serializable {
 	    *
 	    * @since
 	    */
-	@Override
 	public int getStatus() {
 		return resultStatus;
 	}
@@ -153,50 +147,41 @@ public class TestResultStat implements TestResult, Serializable {
 	 * @see TestResult.RESULT_STATE
 	 * @param endStatus
 	 */
-	@Override
 	public void setStatus(int endStatus) {
 		resultStatus = endStatus;
 	}
 
-	@Override
 	public String getExceptionMsg() {
 		return (this.errorMsg != null ? this.errorMsg : (error != null ? error
 				.getMessage() : ""));
 	}
 
-	@Override
 	public void setException(Throwable error) {
 		this.error = error;
 	}
 
-	@Override
 	public void setExceptionMessage(String errorMsg) {
 		this.errorMsg = errorMsg;
 
 	}
 
-	@Override
 	public Throwable getException() {
 		return this.error;
 	}
 
-	@Override
 	public long getBeginTS() {
 		return beginTS;
 
 	}
 
-	@Override
 	public void setBeginTS(long beginTS) {
 		this.beginTS = beginTS;
 	}
 
-	@Override
 	public long getEndTS() {
 		return endTS;
 	}
 
-	@Override
 	public void setEndTS(long endts) {
 		this.endTS = endts;
 	}
@@ -204,53 +189,47 @@ public class TestResultStat implements TestResult, Serializable {
 	/**
 	 * @return Returns the errorfile.
 	 */
-	@Override
 	public String getErrorfile() {
 		return errorFile;
 	}
 
-	@Override
 	public void setErrorFile(String errorfile) {
 		this.errorFile = errorfile;
 	}
 
-	@Override
 	public long getRowCount() {
 		return rowCount;
 	}
 
-	@Override
 	public void setRowCount(long rowCount) {
 		this.rowCount = rowCount;
 	}
 
-	@Override
 	public long getUpdateCount() {
 		return updateCount;
 	}
 
-	@Override
 	public void setUpdateCount(long updateCount) {
 		this.updateCount = updateCount;
 	}
 
-	@Override
 	public long getExecutionTime() {
 		Date starttest = new Date(getBeginTS());
 		Date endtest = new Date(getEndTS());
 		return endtest.getTime() - starttest.getTime(); // diff in mills
 	}
 
-	@Override
 	public void setResultMode(String mode) {
 		this.resultMode = mode;
 		
 	}
 
-	@Override
 	public String getResultMode() {
 		return this.resultMode;
 	}
 
+	public boolean isResultModeNone() {
+		return (getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE));
+	}
 
 }

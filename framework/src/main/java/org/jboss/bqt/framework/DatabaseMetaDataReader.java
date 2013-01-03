@@ -31,6 +31,7 @@ public class DatabaseMetaDataReader {
 		this.selectcolumns = selectcolumns;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<String> getQueries() throws Exception {
 		if (queries != null)
 			return queries;

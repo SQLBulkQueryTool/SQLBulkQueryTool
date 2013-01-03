@@ -25,10 +25,10 @@ package org.jboss.bqt.framework;
 import java.util.ResourceBundle;
 
 import org.jboss.bqt.core.BundleUtil;
-import org.jboss.bqt.core.util.Logger;
+import org.jboss.bqt.core.Logger;
 
 /**
- * CorePlugin
+ * FrameworkPlugin
  */
 public class FrameworkPlugin {
 	//

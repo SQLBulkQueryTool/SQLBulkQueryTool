@@ -22,54 +22,56 @@
 
 package org.jboss.bqt.core.util;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.jboss.bqt.core.exception.FrameworkException;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 
 /**
  * @since 4.0
  */
-public final class TestFileUtils extends TestCase {
+public final class TestFileUtils  {
     
     private static final String FILE_NAME = UnitTestUtil.getTestDataPath() + File.separator + "fakeScript.txt"; //$NON-NLS-1$
     private static final String TEMP_FILE_PREFFIX = "mmtmp"; //$NON-NLS-1$
     
 
     private final static String TEMP_DIR_NAME = "tempdir"; //$NON-NLS-1$
-    File tempDir;
     private final static String TEMP_FILE_NAME = "tempfile.txt"; //$NON-NLS-1$
     private final static String TEMP_FILE_NAME2 = "tempfile2.txt"; //$NON-NLS-1$
+ 
+    private static File tempDir;
     
     // =========================================================================
     //                        F R A M E W O R K
     // =========================================================================
     /**
      * Constructor for TestJDBCRepositoryWriter.
-     * @param name
      */
-    public TestFileUtils(String name) {
-        super(name);
+    public TestFileUtils() {
     }
 
     // =========================================================================
     //                 S E T   U P   A N D   T E A R   D O W N
     // =========================================================================
 
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUp() throws Exception {
         
         //create a temp directory
         tempDir = new File(TEMP_DIR_NAME);
         tempDir.mkdir();
     }
 
-    public void tearDown() throws Exception {
-        super.tearDown();
+    @AfterClass
+    public static void tearDown() throws Exception {
         
         try {
             tempDir.delete();
@@ -89,6 +91,7 @@ public final class TestFileUtils extends TestCase {
         }
     }
 
+    @Test
     public void testWrite() throws Exception{
         File tmp = null;
         try {
@@ -106,6 +109,7 @@ public final class TestFileUtils extends TestCase {
         }
     }
     
+    @Test
     public void testWriteEmptyFile() throws Exception{
         File tmp = null;
         File emptyFile = null;
@@ -130,8 +134,8 @@ public final class TestFileUtils extends TestCase {
     /**
      * Tests FileUtils.testDirectoryPermissions()
      * @throws Exception 
-     * @since 4.3
      */
+    @Test
     public void testTestDirectoryPermissions() throws Exception {
         
         
@@ -151,8 +155,8 @@ public final class TestFileUtils extends TestCase {
     /**
      * Tests FileUtils.copy()
      * @throws Exception 
-     * @since 4.3
      */
+    @Test
     public void testCopy() throws Exception {
         String contents1 = ObjectConverterUtil.convertFileToString(new File(FILE_NAME));
         
@@ -182,8 +186,8 @@ public final class TestFileUtils extends TestCase {
     /**
      * Tests FileUtils.rename()
      * @throws Exception 
-     * @since 4.3
      */
+    @Test
     public void testRename() throws Exception {
         String contents1 = ObjectConverterUtil.convertFileToString(new File(FILE_NAME));
         
@@ -221,8 +225,8 @@ public final class TestFileUtils extends TestCase {
     /**
      * Tests FileUtils.remove()
      * @throws Exception 
-     * @since 4.3
      */
+    @Test
     public void testRemove() throws Exception {
         FileUtils.copy(FILE_NAME, TEMP_FILE_NAME, true);
         
@@ -239,8 +243,8 @@ public final class TestFileUtils extends TestCase {
      * Tests FileUtils.copyRecursively()
      * Should fail because a file is given for source dir
      * @throws Exception 
-     * @since 4.3
      */
+    @Test
     public void testCopyRecursivelyNull() throws Exception {
         File fileSource = new File(TEMP_FILE_NAME);
         fileSource.delete();

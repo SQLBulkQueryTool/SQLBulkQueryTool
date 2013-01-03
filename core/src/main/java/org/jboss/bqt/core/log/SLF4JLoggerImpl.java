@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.core.util.log;
+package org.jboss.bqt.core.log;
 
 import org.jboss.bqt.core.util.StringUtil;
 import org.slf4j.LoggerFactory;
@@ -27,9 +27,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Logger that delivers messages to a Log4J logger
  * 
- * @since 2.5
  */
-public class SLF4JLoggerImpl extends org.jboss.bqt.core.util.Logger {
+public class SLF4JLoggerImpl extends org.jboss.bqt.core.Logger {
     private final org.slf4j.Logger logger;
 
     public SLF4JLoggerImpl( String category ) {

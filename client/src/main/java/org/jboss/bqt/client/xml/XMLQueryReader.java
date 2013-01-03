@@ -37,7 +37,6 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.StringUtil;
 
 public class XMLQueryReader implements QueryReader {
@@ -67,14 +66,11 @@ public class XMLQueryReader implements QueryReader {
 	 *
 	 * @see org.jboss.bqt.client.api.QueryReader#getQueryFilesLocation()
 	 */
-	@Override
 	public String getQueryFilesLocation() {
 		return query_dir_loc;
 	}
 
 
-
-	@Override
 	public List<QueryTest> getQueries(String querySetID) {
 		String queryFile = querySetIDToFileMap.get(querySetID);
 
@@ -89,14 +85,13 @@ public class XMLQueryReader implements QueryReader {
 
 	}
 
-	@Override
 	public Collection<String> getQuerySetIDs() {
 		return new HashSet<String>(querySetIDToFileMap.keySet());
 	}
 
 	private void loadQuerySets() {
 
-		File files[] = BQTUtil.loadQuerySets(query_dir_loc);
+		File files[] = BQTUtil.getQuerySetFiles(query_dir_loc);
 
 		for (int i = 0; i < files.length; i++) {
 			String queryfile = files[i].getAbsolutePath();
@@ -108,11 +103,10 @@ public class XMLQueryReader implements QueryReader {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<QueryTest> loadQueries(String querySetID, String queryFileName)
 			throws IOException {
 
-		List<QueryTest> queries = null;
-		// Map<String, Object> queries = new HashMap<String, Object>();
 		File queryFile = new File(queryFileName);
 		if (!queryFile.exists() || !queryFile.canRead()) {
 			String msg = "Query file doesn't exist or cannot be read: "
@@ -142,7 +136,6 @@ public class XMLQueryReader implements QueryReader {
 			throw new IOException(msg, e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
-		// return queries;
 	}
 
 	private static String getQuerySetName(String queryFileName) {
@@ -150,43 +143,8 @@ public class XMLQueryReader implements QueryReader {
 		String querySet = queryFileName;
 		List<String> nameParts = StringUtil.split(querySet, "./\\"); //$NON-NLS-1$
 		if (nameParts.size() > 1) {
-			querySet = (String) nameParts.get(nameParts.size() - 2);
+			querySet = nameParts.get(nameParts.size() - 2);
 		}
 		return querySet;
 	}
-
-	public static void main(String[] args) {
-//		System.setProperty(ConfigPropertyNames.CONFIG_FILE,
-//				"ctc-bqt-test.properties");
-//
-//		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
-//		Properties p = _instance.getProperties();
-//		if (p == null || p.isEmpty()) {
-//			throw new RuntimeException("Failed to load config properties file");
-//
-//		}
-//
-//		_instance.setProperty(TestProperties.PROP_QUERY_FILES_ROOT_DIR, new File(
-//				"src/main/resources/").getAbsolutePath());
-//
-//		try {
-//			XMLQueryReader reader = new XMLQueryReader("scenario_id",
-//					_instance.getProperties());
-//			Iterator<String> it = reader.getQuerySetIDs().iterator();
-//			while (it.hasNext()) {
-//				String querySetID = it.next();
-//
-//				List<QueryTest> queries = reader.getQueries(querySetID);
-//
-//				if (queries.size() == 0l) {
-//					System.out.println("Failed, didn't load any queries ");
-//				}
-//			}
-//		} catch (QueryTestFailedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
-	}
-
 }

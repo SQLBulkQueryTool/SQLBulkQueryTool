@@ -21,9 +21,29 @@
  */
 package org.jboss.bqt.framework;
 
-import org.jboss.bqt.core.exception.TransactionRuntimeException;
+import org.jboss.bqt.core.exception.FrameworkException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.StringUtil;
 
+/**
+ * <p>
+ * The TransactionContainer represents the controller for the transaction boundaries.  
+ * This will enable different ways of controlling transaction behavior for testing
+ * local transactions, xa transactions, and auto transactions, for example.
+ * </p>
+ * <p>
+ * See {@link TransactionFactory.TRANSACTION_TYPES} for the types of transactions 
+ * that are supported.  The {@link TransactionFactory#TRANSACTION_TYPE} property will
+ * need to be set to control which transaction type to use.
+ * </p>
+ * <p>
+ * The instance will be called {@link #before(TransactionQueryTestCase) before} the
+ * transaction, so that any initialization can be done (i.e., set autocommit(..)) and then
+ * called {@link #after(TransactionQueryTestCase) after} the execution of the 
+ * {@link #runTest(TransactionQueryTestCase) logical} transaction is performed.
+ * 
+ * </p>
+ */
 public abstract class TransactionContainer {
 
 	private String testClassName = null;
@@ -38,7 +58,7 @@ public abstract class TransactionContainer {
 	protected void after(TransactionQueryTestCase test) {
 	}
 
-	public void runTransaction(TransactionQueryTestCase test) {
+	public void runTransaction(TransactionQueryTestCase test)  throws FrameworkException, QueryTestFailedException  {
 
 		this.testClassName = StringUtil.getLastToken(test.getClass().getName(),
 				".");
@@ -46,21 +66,7 @@ public abstract class TransactionContainer {
 		try {
 			debug("Start transaction test: " + test.getTestName());
 
-			try {
-
-				test.setup();
-
-			} catch (TransactionRuntimeException tre) {
-				if (!test.exceptionExpected()) {
-					tre.printStackTrace();
-				}
-				throw tre;
-			} catch (Throwable e) {
-				if (!test.exceptionExpected()) {
-					e.printStackTrace();
-				}
-				throw new TransactionRuntimeException(e.getMessage());
-			}
+			test.setup();
 
 			runTest(test);
 
@@ -75,7 +81,7 @@ public abstract class TransactionContainer {
 
 	}
 
-	protected void runTest(TransactionQueryTestCase test) {
+	protected void runTest(TransactionQueryTestCase test) throws FrameworkException {
 		debug("Start runTest: " + test.getTestName());
 
 		debug("	before(test)");
