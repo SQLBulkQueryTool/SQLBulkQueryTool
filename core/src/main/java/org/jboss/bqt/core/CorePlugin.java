@@ -24,7 +24,7 @@ package org.jboss.bqt.core;
 
 import java.util.ResourceBundle;
 
-import org.jboss.bqt.core.util.Logger;
+import org.jboss.bqt.core.Logger;
 
 /**
  * CorePlugin

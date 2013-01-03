@@ -34,6 +34,7 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ErrorWriter;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.FileUtils;
@@ -71,38 +72,47 @@ public class XMLErrorWriter implements ErrorWriter {
 		}
 		if (!d.exists()) {
 			d.mkdirs();
-		}
-		
+		}	
 	}
-	
-	
 
 	/**
 	 * {@inheritDoc}
 	 *
 	 * @see org.jboss.bqt.client.api.ErrorWriter#getErrorDirectory()
 	 */
-	@Override
 	public String getErrorDirectory() {
 		return errorDirectory;
 	}
+	
+	public 	String generateErrorFile(final String querySetID,
+			final String queryID, final Throwable error)
+				throws FrameworkException {
 
+		String errorFileName = null;
+			// write actual results to error file
+			errorFileName = generateErrorFileName(queryID, querySetID);
+			// configID, queryID, Integer.toString(clientID));
+			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
+			File errorFile = new File(getErrorDirectory(), errorFileName);
+			
+			generateErrorResults(querySetID, queryID,
+					 (String) null, errorFile, (ResultSet) null, (File) null, error);
+		
+		return errorFileName;
+	}
 
-
-	@Override
 	public String generateErrorFile(TestResult testResult, ResultSet resultSet,
-			Object results) throws FrameworkRuntimeException {
+			Object results) throws QueryTestFailedException, FrameworkException {
 		return generateErrorFile(testResult.getQuerySetID(),
 				testResult.getQueryID(), testResult.getQuery(), resultSet,
 				testResult.getException(), results);
 		
 		}
 
-	@Override
 	public String generateErrorFile(final String querySetID,
 			final String queryID, final String sql, final ResultSet resultSet,
 			final Throwable queryError, final Object expectedResultsFile)
-			throws FrameworkRuntimeException {
+			throws QueryTestFailedException, FrameworkException {
 
 		String errorFileName = null;
 		try {
@@ -119,33 +129,18 @@ public class XMLErrorWriter implements ErrorWriter {
 			generateErrorResults(querySetID, queryID, sql, errorFile,
 					resultSet, (File) expectedResultsFile, queryError);
 
-		} catch (FrameworkRuntimeException fre) {
+		} catch (SQLException sqle) {
+			throw new QueryTestFailedException(sqle);
+		} catch (FrameworkException fre) {
 			throw fre;
-		} catch (Throwable e) {
-			throw new FrameworkRuntimeException(e.getMessage());
+		} catch (FrameworkRuntimeException e) {
+			throw e;
 		}
 		return errorFileName;
 	}
-	 
-//		/**
-//		 * Generate an error file for a query that failed comparison. File should
-//		 * have the SQL, the actual results returned from the server and the results
-//		 * that were expected.
-//		 * @param querySetID 
-//		 * @param queryID 
-//		 * @param expectedResultFile 
-//		 * @param ex 
-//		 * @throws QueryTestFailedException 
-//
-//		 */
-//	 	public void generateErrorResults(String querySetID, String queryID,
-//				File expectedResultFile, Throwable ex)
-//				throws QueryTestFailedException {
-//	 	
-//	 	}
 
 		/**
-		 * Generate an error file for a query that failed comparison. File should
+		 * GenerateExpectedResults an error file for a query that failed comparison. File should
 		 * have the SQL, the actual results returned from the server and the results
 		 * that were expected.
 		 * @param querySetID 
@@ -155,18 +150,18 @@ public class XMLErrorWriter implements ErrorWriter {
 		 * @param actualResult
 		 * @param expectedResultFile
 		 * @param ex
-		 * @throws QueryTestFailedException
+		 * @throws FrameworkException
 		 */
 		private void generateErrorResults(String querySetID, String queryID,
 				String sql, File resultsFile, ResultSet actualResult,
 				File expectedResultFile, Throwable ex)
-				throws QueryTestFailedException {
+				throws FrameworkException {
 			OutputStream outputStream;
 			try {
 				FileOutputStream fos = new FileOutputStream(resultsFile);
 				outputStream = new BufferedOutputStream(fos);
 			} catch (IOException e) {
-				throw new QueryTestFailedException(
+				throw new FrameworkRuntimeException(
 						"Failed to open error results file: " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
@@ -269,16 +264,16 @@ public class XMLErrorWriter implements ErrorWriter {
 				outputter.output(new Document(rootElement), outputStream);
 
 			} catch (SQLException e) {
-				throw new QueryTestFailedException(
+				throw new FrameworkException(
 						"Failed to convert error results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 			} catch (JDOMException e) {
-				throw new QueryTestFailedException(
+				throw new FrameworkException(
 						"Failed to convert error results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 			} catch (IOException e) {
-				throw new QueryTestFailedException(
+				throw new FrameworkException(
 						"Failed to output error results to " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			} catch (Throwable e) {
-				throw new QueryTestFailedException(
+				throw new FrameworkException(
 						"Failed to convert error results to JDOM: " + StringUtil.getStackTrace(e)); //$NON-NLS-1$
 			} finally {
 				try {

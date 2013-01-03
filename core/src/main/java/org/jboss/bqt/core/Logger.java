@@ -19,11 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.core.util;
+package org.jboss.bqt.core;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
-import org.jboss.bqt.core.util.log.LogFactory;
+import org.jboss.bqt.core.log.LogFactory;
 
 /**
  * A simple logging interface that is fully compatible with multiple logging implementations. If no log4j implementation is found,

@@ -487,7 +487,6 @@ public class QueryResults implements Externalizable {
 	 *            Output stream to serialize to
 	 * @throws IOException 
 	 */
-	@Override
 	public void writeExternal(java.io.ObjectOutput s) throws IOException {
 		// Write column names and column information
 		int numFields = 0;

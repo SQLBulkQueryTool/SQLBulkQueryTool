@@ -57,7 +57,7 @@ public class QueryTest {
 		return this.isException;
 	}
 
-	public String geQuerySetID() {
+	public String getQuerySetID() {
 		return this.querySetID;
 	}
 

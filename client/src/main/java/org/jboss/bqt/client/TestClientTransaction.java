@@ -31,54 +31,40 @@ import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.framework.AbstractQueryTransaction;
+import org.jboss.bqt.framework.TransactionQueryTestCase;
 
 /**
  * TestClientTransaction
  * 
  */
-public class TestClientTransaction extends AbstractQueryTransaction {
+public class TestClientTransaction extends TransactionQueryTestCase {
 
-	private QueryScenario querySet = null;
-	private ExpectedResultsReader expectedResults = null;
+	private QueryScenario queryScenario = null;
+	
 	private QueryTest query = null;
-
-	private QuerySQL[] queries = null;
-
-	private boolean errorExpected = false;
 
 	private boolean resultFromQuery = false;
 	
 	private TestResult rs = null;
 
 	private TestResultsSummary testResultsSummary;
-	
-	private String originalResultMode = null;
 
 	public TestClientTransaction(QueryScenario querySet) {
 		super(querySet.getQueryScenarioIdentifier());
-		this.querySet = querySet;
+		this.queryScenario = querySet;
 		
-
-
 	}
 
 	public void init(TestResultsSummary testResultsSummary,
-			ExpectedResultsReader expectedResults, QueryTest query) {
+			QueryTest query) {
 		this.query = query;
 		this.testResultsSummary = testResultsSummary;
-		this.expectedResults = expectedResults;
 		
-		rs = new TestResultStat(query.geQuerySetID(), query.getQueryID());
-		rs.setResultMode(this.querySet.getResultsMode());
+		rs = new TestResultStat(query.getQuerySetID(), query.getQueryID());
+		rs.setResultMode(this.queryScenario.getResultsMode());
 		rs.setStatus(TestResult.RESULT_STATE.TEST_SUCCESS);
-		
-		this.originalResultMode = this.querySet.getResultsMode();
 
-		errorExpected = false;
 		resultFromQuery = false;
-		
-		queries = query.getQueries();
 	}
 
 	@Override
@@ -89,25 +75,17 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 	}
 
 	@Override
-	public void before() {
-		super.before();
-
-			this.errorExpected = expectedResults.isExceptionExpected(query
-					.getQueryID());
-	}
-
-	@Override
-	public void testCase() throws FrameworkRuntimeException {
+	public void testCase()  {
 		if (this.getApplicationException() != null) return;
-		
-		ClientPlugin.LOGGER.debug("expected error: " + this.errorExpected);
 
+		QuerySQL[] queries = query.getQueries();
+		
 		int l = queries.length;
 
 		try {
 			
 			// multiple queries cannot be processed as a single result
-			// therefore, the other options are not valid
+			// therefore, only the NONE result mode is valid
 			if (l > 1) {
 				this.rs.setResultMode(TestProperties.RESULT_MODES.NONE);
 			}
@@ -123,7 +101,7 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 
 				}
 				
-				ClientPlugin.LOGGER.debug("ID: " + query.geQuerySetID() + "  -  "
+				ClientPlugin.LOGGER.debug("ID: " + query.getQuerySetID() + "  -  "
 						+ query.getQueryID() + "ResultMode: " + this.rs.getResultMode() + ", numtimes: " +
 						qsql.getRunTimes() + " rowcount: "  + qsql.getRowCnt() + " updatecnt: " + 
 						qsql.getUpdateCnt());
@@ -132,55 +110,61 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 				for (int r = 0; r < qsql.getRunTimes(); r++) {
 				
 					resultFromQuery = execute(this.rs.getQuery(), qsql.getParms(), qsql.getPayLoad());
-					if (! querySet.isGenerate()) {
+					// check for NONE first, because it can be changed based on conditions
+					// NOTE: isSQL() isn't processed in this class and therefore isn't looked for
+					if (this.rs.isResultModeNone()) {
 						if (resultFromQuery) {
 							if (qsql.getRowCnt() >= 0) {
-								this.assertRowCount(qsql.getRowCnt());
-							} else if (this.rs.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE)) {
+								assertRowCount(qsql.getRowCnt());
+							} else if (this.rs.isResultModeNone()) {
 								// for the NONE option, read all the rows
-								this.getRowCount();
-							}							
-							
+								getRowCount();
+							}	
 						} else {
-							
-							this.rs.setResultMode(TestProperties.RESULT_MODES.NONE);
-							
 							if (qsql.getUpdateCnt() >= 0) {
 								this.assertUpdateCount(qsql.getUpdateCnt());
-							}							
-							
+							}		
 						}
-//						if (qsql.isSelect()) {
+
+					} else if (queryScenario.isCompare()) {
+						// on single queries, row count checks can still be specified and checked
+							if (qsql.getRowCnt() >= 0) {
+								this.assertRowCount(qsql.getRowCnt());
+							} else if (qsql.getUpdateCnt() >= 0) {
+								this.assertUpdateCount(qsql.getUpdateCnt());
+							}
+					} else if (queryScenario.isGenerate()) {
+						// do nothing
+					}
+
+						
+//					if (queryScenario.isNone() || queryScenario.isCompare() ) {
+//						if (resultFromQuery) {
 //							if (qsql.getRowCnt() >= 0) {
 //								this.assertRowCount(qsql.getRowCnt());
-//							} else if (this.rs.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE)) {
+//							} else if (this.rs.isResultModeNone()) {
 //								// for the NONE option, read all the rows
 //								this.getRowCount();
-//							}
+//							}							
+//							
 //						} else {
-//							// for cases where a SET statement, or other type is called, but not an update,
-//							// then allow it to continue
-//							// anything other than select (set, update,delete or insert) must be set to NONE, because no resultset will exists 
-//
+//							// if no results from query, and this isn't a GENERATE scenario
+//							//  
 //							this.rs.setResultMode(TestProperties.RESULT_MODES.NONE);
 //							
 //							if (qsql.getUpdateCnt() >= 0) {
 //								this.assertUpdateCount(qsql.getUpdateCnt());
 //							}							
+//							
 //						}
-//						if (qsql.getUpdateCnt() >= 0) {
-//							this.assertUpdateCount(qsql.getUpdateCnt());
-//							// any update,delete or insert must be set to NONE, because no resultset will exists 
-//							this.resultMode = TestProperties.RESULT_MODES.NONE;
-//		
-//						} else if (qsql.getRowCnt() >= 0) {
-//							this.assertRowCount(qsql.getRowCnt());
-//		
-//						} else if (this.resultMode.equalsIgnoreCase(TestProperties.RESULT_MODES.NONE)) {
-//							// for the NONE option, read all the rows
-//							this.getRowCount();
-//						}
-					}
+//
+////						if (qsql.getUpdateCnt() >= 0) {
+////							this.assertUpdateCount(qsql.getUpdateCnt());
+////							// any update,delete or insert must be set to NONE, because no resultset will exists 
+////							this.resultMode = TestProperties.RESULT_MODES.NONE;
+//
+//
+//					}
 				}
 			}
 
@@ -194,39 +178,53 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 
 	@Override
 	public void after() {
-		final Throwable resultException = (this.getLastException() != null ? this
-				.getLastException() : this.getApplicationException());
-
-		if (resultException != null) {
-			if (this.exceptionExpected()) {
-				rs.setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
+		FrameworkRuntimeException lastT = null;
+		try {
+			final Throwable resultException = (this.getLastException() != null ? this
+					.getLastException() : this.getApplicationException());
+	
+			if (resultException != null) {
+				if (this.exceptionExpected()) {
+					rs.setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
+				} else {
+					rs.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+				}
+			}
+	
+			rs.setBeginTS(beginTS);
+			rs.setEndTS(endTS);
+			rs.setException(resultException);
+			rs.setUpdateCount(this.updateCount);
+			
+			this.testResultsSummary.addTestResult(query.getQuerySetID(), rs);
+	
+			// if the test was NOT originally resultMode = NONE, but was changed because 
+			// of certain conditions, then need to handle the test results if an error occurs
+			if (this.rs.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) && 
+					! this.queryScenario.isNone()) {
+				if (this.rs.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+						this.queryScenario.getErrorWriter().generateErrorFile(rs.getQuerySetID(), rs.getQueryID(),
+								 rs.getQuery(), (ResultSet) null, rs.getException(), (Object) null);
+				}
 			} else {
-				rs.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+				this.queryScenario.handleTestResult(rs, this.internalResultSet);
 			}
-
-		}
-
-		rs.setBeginTS(beginTS);
-		rs.setEndTS(endTS);
-		rs.setException(resultException);
-		rs.setUpdateCount(this.updateCount);
-		
-		this.testResultsSummary.addTestResult(query.geQuerySetID(), rs);
-
-		// if the test was NOT originally resultMode = NONE, but was changed because 
-		// of certain conditions, then need to handle the test results if an error occurs
-		if (this.rs.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) && 
-				! this.originalResultMode.equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) )  {
-			if (this.rs.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
-				this.querySet.getErrorWriter().generateErrorFile(rs.getQuerySetID(), rs.getQueryID(),
-						 rs.getQuery(), (ResultSet) null, rs.getException(), (Object) null);
-			}
-		} else {
-			this.querySet.handleTestResult(rs, this.internalResultSet);
-		}
+		} catch (FrameworkRuntimeException t) {
+			lastT = t;
+			
+		} catch (Throwable t) {
+			
+			lastT = new FrameworkRuntimeException(t.getMessage());
+		} finally {
 		
 		// call at the end to close resultset and statements
-		super.after();
+			try {
+				super.after();
+			} catch (Throwable t) {
+				
+			}
+			if (lastT != null) throw lastT;
+		}
 
 	}
 
@@ -240,7 +238,14 @@ public class TestClientTransaction extends AbstractQueryTransaction {
 	// exceptions depends on this
 	@Override
 	public boolean exceptionExpected() {
-		return this.errorExpected;
+		boolean errorExpected = false;
+		ExpectedResultsReader expectedResults = this.queryScenario.getExpectedResults(query.getQuerySetID());
+		if (expectedResults != null) {
+			errorExpected = expectedResults.isExceptionExpected(query
+					.getQueryID());
+		}
+
+		return errorExpected;
 	}
 
 

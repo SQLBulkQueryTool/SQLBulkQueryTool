@@ -553,8 +553,7 @@ public final class FileUtils {
 		File modelsDirFile = new File(dir);
 		FileFilter fileFilter = new FileFilter() {
 
-			@Override
-			public boolean accept(File file) {
+			public boolean accept(java.io.File file) {
 				if (file.isDirectory()) {
 					return false;
 				}
@@ -591,7 +590,7 @@ public final class FileUtils {
 		// load them into the runtime metadata database.
 		File modelsDirFile = new File(dir);
 		FileFilter fileFilter = new FileFilter() {
-			@Override
+
 			public boolean accept(File file) {
 				if (file.isDirectory()) {
 					return false;

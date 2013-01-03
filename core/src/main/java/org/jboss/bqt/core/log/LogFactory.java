@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.core.util.log;
+package org.jboss.bqt.core.log;
 
-import org.jboss.bqt.core.util.Logger;
+import org.jboss.bqt.core.Logger;
 
 public abstract class LogFactory {
 
@@ -31,8 +31,6 @@ public abstract class LogFactory {
         try {
             loadClassStrict("org.apache.log4j.Logger");
             LOGFACTORY = new SLF4JLoggerFactory();
-            
-            
 
         } catch (ClassNotFoundException cnfe) {
             LOGFACTORY = new JdkLoggerFactory();

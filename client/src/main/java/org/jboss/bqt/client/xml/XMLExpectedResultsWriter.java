@@ -58,31 +58,11 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 	public XMLExpectedResultsWriter(String testname, Properties props) {
 		this.testname = testname;
 
-//		outputDir = props.getProperty(TestProperties.PROP_OUTPUT_DIR);
-//		if (outputDir == null) {
-//			BQTUtil.throwInvalidProperty(TestProperties.PROP_OUTPUT_DIR);
-//		}
-//
-//		outputDir = outputDir + File.separator + testname;
-//
-//		File d = new File(this.outputDir);
-//		this.outputDir = d.getAbsolutePath();
-//		d = new File(this.outputDir);
-//		if (d.exists()) {
-//			FileUtils.removeDirectoryAndChildren(d);
-//
-//		}
-//		if (!d.exists()) {
-//			d.mkdirs();
-//		}
-
 		generateDir = props.getProperty(TestProperties.PROP_GENERATE_DIR);
 		if (generateDir == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_GENERATE_DIR);
 		}
 
-//		d = new File(generateDir, testname);
-//		generateDir = d.getAbsolutePath();
 		File d = new File(generateDir);
 		if (d.exists()) {
 			FileUtils.removeDirectoryAndChildren(d);
@@ -94,14 +74,11 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 		ClientPlugin.LOGGER.info("XMLExpectedResultsWriter: " + this.testname + " creating expected results " + generateDir);
 	}
 
-	@Override
 	public String getGenerateDir() {
 		return this.generateDir;
 	}
 
 
-
-	@Override
 	public void generateQueryResultFile(TestResult testResult,
 			ResultSet resultSet) throws FrameworkRuntimeException {
 		generateQueryResultFile(testResult.getQuerySetID(), testResult.getQueryID(),
@@ -114,7 +91,7 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 
 
 	/**
-	 * Generate query results. These are actual results from the server and may
+	 * GenerateExpectedResults query results. These are actual results from the server and may
 	 * be used for comparing to results from a later test run.
 	 * @param querySetID 
 	 * @param queryID 
@@ -122,17 +99,10 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 	 * @param result 
 	 * @param ex 
 	 * @param testStatus 
+	 * @param testResult 
 	 * 
 	 * @throws FrameworkRuntimeException
 	 */
-	void generateQueryResultFile(String querySetID, String queryID,
-			String query, ResultSet result, Throwable ex, int testStatus)
-			throws FrameworkRuntimeException {
-
-		generateQueryResultFile(querySetID, queryID, query, result, ex, testStatus, null);
-	}
-	
-
 	private void generateQueryResultFile(String querySetID, String queryID,
 			String query, ResultSet result, Throwable ex, int testStatus, TestResult testResult)
 			throws FrameworkRuntimeException {

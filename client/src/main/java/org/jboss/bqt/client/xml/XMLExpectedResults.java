@@ -54,32 +54,37 @@ import org.jdom.JDOMException;
 public class XMLExpectedResults implements ExpectedResultsReader {
 	private static String newline = System.getProperty("line.separator"); //$NON-NLS-1$
 	
-	protected Properties props;
-	protected String resultMode = TestProperties.RESULT_MODES.NONE;
-	protected String querySetIdentifier = null;
-	protected String results_dir_loc = null;
+	private Properties props;
+	private String resultMode = TestProperties.RESULT_MODES.NONE;
+	private String querySetIdentifier = null;
+	private String results_dir_loc = null;
 	
-	protected double exceed_percent = -0.99999;
-	protected long exec_minumin_time = -1;
+	private double exceed_percent = -0.99999;
+	private long exec_minumin_time = -1;
 
-	protected Map<String, ResultsHolder> loadedResults = new HashMap<String, ResultsHolder>();
+	private Map<String, ResultsHolder> loadedResults = new HashMap<String, ResultsHolder>();
 
 	public XMLExpectedResults(String querySetIdentifier, Properties properties) {
 		this.props = properties;
 		this.querySetIdentifier = querySetIdentifier;
+				
+		resultMode = BQTUtil.getResultMode(this.props);
 
 		this.results_dir_loc = props.getProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
 		if (this.results_dir_loc == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
 		}
 		
-//		String expected_root_loc = this.props
-//				.getProperty(TestProperties.PROP_EXPECTED_RESULTS_ROOT_DIR);
-//
-//		if (expected_root_loc != null) {
-//			File dir = new File(expected_root_loc, results_dir_loc);
-//			this.results_dir_loc = dir.getAbsolutePath();
-//		}
+		File dir = new File(results_dir_loc + File.separator + querySetIdentifier);
+		if (!dir.exists()) {
+			if (this.isExpectedResultsNeeded()) {			
+				throw new FrameworkRuntimeException("Query results directory "
+						+ dir.getAbsolutePath() + " does not exist");
+			}
+		} else if (dir.list() == null) {
+			throw new FrameworkRuntimeException("Query results directory "
+					+ dir.getAbsolutePath() + " does not contain any files");
+		}
 		
 		String exceed_per = props.getProperty(TestProperties.PROP_EXECUTE_EXCEED_PERCENT);
 		String exec_min = props.getProperty(TestProperties.PROP_EXECUTE_TIME_MINEMUM);
@@ -95,12 +100,9 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		}		
 		// if exceed percent was set and exec time was not, set exec time to minimum of 1 mil
 		if (exceed_percent > 0 && exec_minumin_time < 0) exec_minumin_time = 1;
-		
-		resultMode = TestProperties.getResultMode(this.props);
 
 		ClientPlugin.LOGGER.debug("Expected results loc: " + this.results_dir_loc);
 	}
-	
 	
 
 	/**
@@ -108,23 +110,19 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 *
 	 * @see org.jboss.bqt.client.api.ExpectedResultsReader#getExpectResultsLocation()
 	 */
-	@Override
 	public String getExpectResultsLocation() {
 		return this.results_dir_loc;
 	}
 
 
-
-	@Override
 	public boolean isExpectedResultsNeeded() {
 		return (resultMode
 				.equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE));
 	}
 
-	@Override
 	public boolean isExceptionExpected(String queryidentifier)
 			throws FrameworkRuntimeException {
-		if (resultMode.equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
+		if (isExpectedResultsNeeded()) {
 
 			ResultsHolder expectedResults = getResults(queryidentifier);
 
@@ -133,12 +131,10 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return false;
 	}
 
-	@Override
 	public String getQuerySetID() {
 		return this.querySetIdentifier;
 	}
 
-	@Override
 	public synchronized File getResultsFile(String queryidentifier)
 			throws FrameworkRuntimeException {
 		return findExpectedResultsFile(queryidentifier, this.querySetIdentifier);
@@ -160,16 +156,21 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 
 		return rh;
 	}
+	
+	
 
 	/**
 	 * Compare the results of a query with those that were expected.
+	 * @param actualTestResults 
+	 * @param resultSet 
+	 * @param isOrdered 
+	 * 
 	 * 
 	 * @return The response time for comparing the first batch (sizes) of
 	 *         resutls.
 	 * @throws QueryTestFailedException
 	 *             If comparison fails.
 	 */
-	@Override
 	public Object compareResults(final TestResult actualTestResults,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
 	
@@ -281,46 +282,48 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 			throws QueryTestFailedException {
 
 		long firstBatchResponseTime = 0;
-		final List records = new ArrayList();
-		final List columnTypeNames = new ArrayList();
-		final List columnTypes = new ArrayList();
+		final List<List<Object>> records = new ArrayList<List<Object>>();
+		final List<String> columnTypeNames = new ArrayList<String>();
+		final List<String> columnTypes = new ArrayList<String>();
 
 		final ResultSetMetaData rsMetadata;
 		final int colCount;
 
-		// Get column info
-		try {
-			rsMetadata = results.getMetaData();
-			colCount = rsMetadata.getColumnCount();
-			// Read types of all columns
-			for (int col = 1; col <= colCount; col++) {
-				columnTypeNames.add(rsMetadata.getColumnName(col));
-				columnTypes.add(rsMetadata.getColumnTypeName(col));
-			}
-		} catch (SQLException qre) {
-			throw new QueryTestFailedException(
-					"Can't get results metadata: " + qre.getMessage()); //$NON-NLS-1$
-		}
-
-		// Get rows
-		try {
-			// Read all the rows
-			for (int row = 0; results.next(); row++) {
-				final List currentRecord = new ArrayList(colCount);
-				// Read values for this row
+		if (results != null) {
+			// Get column info
+			try {
+				rsMetadata = results.getMetaData();
+				colCount = rsMetadata.getColumnCount();
+				// Read types of all columns
 				for (int col = 1; col <= colCount; col++) {
-					currentRecord.add(results.getObject(col));
+					columnTypeNames.add(rsMetadata.getColumnName(col));
+					columnTypes.add(rsMetadata.getColumnTypeName(col));
 				}
-				records.add(currentRecord);
-				// If this row is the (fetch size - 1)th row, record first batch
-				// response time
-				if (row == batchSize) {
-					firstBatchResponseTime = System.currentTimeMillis();
-				}
+			} catch (SQLException qre) {
+				throw new QueryTestFailedException(
+						"Can't get results metadata: " + qre.getMessage()); //$NON-NLS-1$
 			}
-		} catch (SQLException qre) {
-			throw new QueryTestFailedException(
-					"Can't get results: " + qre.getMessage()); //$NON-NLS-1$
+	
+			// Get rows
+			try {
+				// Read all the rows
+				for (int row = 0; results.next(); row++) {
+					final List<Object> currentRecord = new ArrayList<Object>(colCount);
+					// Read values for this row
+					for (int col = 1; col <= colCount; col++) {
+						currentRecord.add(results.getObject(col));
+					}
+					records.add(currentRecord);
+					// If this row is the (fetch size - 1)th row, record first batch
+					// response time
+					if (row == batchSize) {
+						firstBatchResponseTime = System.currentTimeMillis();
+					}
+				}
+			} catch (SQLException qre) {
+				throw new QueryTestFailedException(
+						"Can't get results: " + qre.getMessage()); //$NON-NLS-1$
+			}
 		}
 
 		// Set info on resultsHolder
@@ -813,8 +816,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return text;
 	}
 
-	private ResultsHolder loadExpectedResults(File resultsFile)
-			throws FrameworkRuntimeException {
+	private ResultsHolder loadExpectedResults(File resultsFile) {
 		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
 		final ResultsHolder expectedResult;
 		try {
@@ -830,7 +832,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	}
 
 	private File findExpectedResultsFile(String queryIdentifier,
-			String querySetIdentifier) throws FrameworkRuntimeException {
+			String querySetIdentifier)  {
 		String resultFileName = queryIdentifier + ".xml"; //$NON-NLS-1$
 		File file = new File(results_dir_loc + File.separator + querySetIdentifier,
 				resultFileName);
@@ -843,113 +845,4 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return file;
 
 	}
-
-	public static void main(String[] args) {
-
-
-	}
-
-//	private long compareResults(final ResultsHolder expectedResults,
-//			final ResultSet results, final int testStatus,
-//			final Throwable actualException, final boolean isOrdered,
-//			final int batchSize) throws QueryTestFailedException {
-//
-//		ResultsHolder actualResults;
-//		long firstBatchResponseTime = 0;
-//		final String eMsg = "CompareResults Error: "; //$NON-NLS-1$
-//
-//		switch (testStatus) {
-//		case TestResult.RESULT_STATE.TEST_EXCEPTION:
-//			throw new QueryTestFailedException(
-//					eMsg
-//							+ "TestResult indicates test exception occured, the process should not have passed it in for comparison."); //$NON-NLS-1$
-//
-//			// break;
-//
-//		case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
-//			// String actualExceptionClass =
-//			// actualException.getClass().getName();
-//
-//			if (!expectedResults.isException()) {
-//				// The actual exception was expected, but the expected results
-//				// was not
-//				throw new QueryTestFailedException(
-//						eMsg
-//								+ "The actual result was an exception, but the Expected results wasn't an exception.  Actual exception: '" //$NON-NLS-1$
-//								+ actualException.getMessage() + "'"); //$NON-NLS-1$
-//			}
-//			// We got an exception that we expected - convert actual exception
-//			// to ResultsHolder
-//			actualResults = new ResultsHolder(TagNames.Elements.EXCEPTION);
-//			actualResults.setQueryID(expectedResults.getQueryID());
-//
-//			actualResults = convertException(actualException, actualResults);
-//
-//			compareExceptions(actualResults, expectedResults, eMsg);
-//
-//			return firstBatchResponseTime;
-//
-//			// break;
-//
-//		}
-//
-//		// if (results == null) {
-//		// // The result is an exception - compare exceptions
-//		//
-//		// String actualExceptionClass = null;
-//		// if (actualException != null) {
-//		// actualExceptionClass = actualException.getClass().getName();
-//		// } else {
-//		// // We didn't get results but there was no exception either
-//		// throw new QueryTestFailedException(eMsg
-//		//			+ "Didn't get results or exception '"); //$NON-NLS-1$
-//		// }
-//		//
-//		// if (!expectedResults.isException()) {
-//		// // We didn't get results but there was no expected exception
-//		// // either
-//		// throw new QueryTestFailedException(
-//		// eMsg
-//		//				+ "Expected results but didn't get results or exception '" //$NON-NLS-1$
-//		//				+ actualExceptionClass + "'"); //$NON-NLS-1$
-//		// }
-//		// // We got an exception that we expected - convert actual exception
-//		// // to ResultsHolder
-//		// actualResults = new ResultsHolder(TagNames.Elements.EXCEPTION);
-//		// actualResults.setQueryID(expectedResults.getQueryID());
-//		//
-//		// actualResults = convertException(actualException, actualResults);
-//		//
-//		// } else {
-//		// The result is a ResultSet - compare actual results with expected
-//
-//		if (expectedResults.isException()) {
-//			throw new QueryTestFailedException(eMsg
-//					+ "Expected exception " + expectedResults.getExceptionMsg() //$NON-NLS-1$
-//					+ " but got results"); //$NON-NLS-1$
-//		}
-//		// DEBUG:
-//		// debugOut.println("*** Expected Results (holder): " +
-//		// expectedResults);
-//		// DEBUG:
-//		// debugOut.println("*** Actual Results (ResultSet): " +
-//		// printResultSet(results));
-//
-//		// Convert results to ResultsHolder
-//		actualResults = new ResultsHolder(TagNames.Elements.QUERY_RESULTS);
-//		actualResults.setQueryID(expectedResults.getQueryID());
-//		firstBatchResponseTime = convertResults(results, batchSize,
-//				actualResults);
-//
-//		// DEBUG:
-//		// debugOut.println("*** Actual Results (holder): " +
-//		// actualResults);
-//		// } // end is resultSet
-//
-//		// Compare expected results with actual results, record by record
-//		compareResults(actualResults, expectedResults, eMsg, isOrdered);
-//
-//		return firstBatchResponseTime;
-//	}
-
 }

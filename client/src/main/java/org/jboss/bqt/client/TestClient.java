@@ -23,7 +23,6 @@
 package org.jboss.bqt.client;
 
 import java.io.File;
-import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,12 +35,10 @@ import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
-import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
-import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.jboss.bqt.framework.TransactionContainer;
 import org.jboss.bqt.framework.TransactionFactory;
 
@@ -85,8 +82,7 @@ public class TestClient {
 
 			List<File> scenarios = getScenarios();
 			for (File f:scenarios) {
-				String scenario_name = init(f);
-				runScenario(f, scenario_name);
+				runScenario(f);
 				
 				// reset for reloading cause there are points that call setProperty(..)
 				// on the ConfigurationProperties
@@ -127,9 +123,96 @@ public class TestClient {
 		return Arrays.asList(sfiles);
 
 	}	
+
+	public void runScenario(File scenarioFile) throws Exception {
+		
+		String scenario_name = init(scenarioFile);
+
+		ClientPlugin.LOGGER.info("Starting scenario " + scenario_name);
+		
+		QueryScenario scenario = QueryScenario.createInstance(scenario_name, CONFIG.getProperties());
+		
+		if (scenario.isSQL()) {
+			this.createSQL(scenario);
+			return;
+		}
+		
+		TransactionContainer tc = TransactionFactory.create(CONFIG);
+
+		String querySetID = null;
+
+		TestClientTransaction userTxn = new TestClientTransaction(scenario);
+
+		Iterator<String> qsetIt = scenario.getQuerySetIDs().iterator();
+		TestResultsSummary summary = new TestResultsSummary(
+				scenario.getResultsMode());
+
+		try {
+
+			// iterate over the query set ID's, which there
+			// should be 1 for each file to be processed
+			while (qsetIt.hasNext()) {
+				querySetID = qsetIt.next();
+
+				ClientPlugin.LOGGER.info("Start Test: " + new Date() + " - Query ID [" + querySetID + "]");
+
+				final List<QueryTest> queryTests = scenario.getQueries(querySetID);
+
+				// the iterator to process the query tests
+				Iterator<QueryTest> queryTestIt = queryTests.iterator();
+
+				long beginTS = System.currentTimeMillis();
+
+				while (queryTestIt.hasNext()) {
+					QueryTest q = queryTestIt.next();
+
+					userTxn.init(summary, q);
+
+					// run test
+					try {
+						tc.runTransaction(userTxn);
+					} catch (Throwable rme) {
+						ClientPlugin.LOGGER.error(rme,
+								"Test Error: " + q.getQuerySetID() + ":" + q.getQueryID() + ":" + rme.getMessage());
+						scenario.getErrorWriter().generateErrorFile(q.getQuerySetID(), q.getQueryID(), rme);
+						
+						TestResult tr = new TestResultStat(q.getQuerySetID(), q.getQueryID());
+						tr.setException(rme);
+						tr.setResultMode(scenario.getResultsMode());
+						tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+						
+						summary.addTestResult(q.getQuerySetID(), tr);
+	
+					} 
+
+				}
+
+				long endTS = System.currentTimeMillis();
+
+				ClientPlugin.LOGGER.info("End Test: " + new Date() + " - Query ID [" + querySetID + "]");
+
+				summary.printResults(scenario, querySetID, beginTS, endTS);
+
+			}
+
+		} finally {
+			try {
+				summary.printTotals(scenario);
+				summary.cleanup();	
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+
+			// userTxn.getConnectionStrategy().shutdown();
+			ConfigPropertyLoader.reset();
+		}
+		
+		ClientPlugin.LOGGER.info("Completed scenario " + scenario_name);
+
+	}
 	
 	private String init(File scenarioFile) throws Exception {
-
+		
 		Properties sc_props = PropertiesUtils.load(scenarioFile.getAbsolutePath());
 		
 		if (sc_props.isEmpty()) {
@@ -146,100 +229,8 @@ public class TestClient {
 		
 		return scenario_name;
 	}
-	
-
-
-	private void runScenario(File scenarioFile, String scenario_name) throws Exception {
-
-		ClientPlugin.LOGGER.info("Starting scenario " + scenario_name);
-
-		QueryScenario queryset = ClassFactory.createQueryScenario(scenario_name);
 		
-		if (queryset.isSQL()) {
-			this.createSQL(queryset);
-			return;
-		}
-		
-		TransactionContainer tc = TransactionFactory.create(CONFIG);
-
-		String querySetID = null;
-
-		TestClientTransaction userTxn = new TestClientTransaction(queryset);
-
-		Iterator<String> qsetIt = queryset.getQuerySetIDs().iterator();
-		TestResultsSummary summary = new TestResultsSummary(
-				queryset.getResultsMode());
-
-		try {
-
-			// iterate over the query set ID's, which there
-			// should be 1 for each file to be processed
-			while (qsetIt.hasNext()) {
-				querySetID = qsetIt.next();
-
-				ClientPlugin.LOGGER.info("Start Test: " + new Date() + " - Query ID [" + querySetID + "]");
-
-				final List<QueryTest> queryTests = queryset.getQueries(querySetID);
-
-				// the iterator to process the query tests
-				Iterator<QueryTest> queryTestIt = queryTests.iterator();
-
-				ExpectedResultsReader expectedResults = queryset
-						.getExpectedResults(querySetID);
-
-				long beginTS = System.currentTimeMillis();
-
-				while (queryTestIt.hasNext()) {
-					QueryTest q = queryTestIt.next();
-
-					userTxn.init(summary, expectedResults, q);
-
-					// run test
-					try {
-						tc.runTransaction(userTxn);
-					} catch (FrameworkRuntimeException rme) {
-						
-						queryset.getErrorWriter().generateErrorFile(q.geQuerySetID(), q.getQueryID(),
-								 (String) null, (ResultSet) null, rme, (Object) null);
-						
-						TestResult tr = new TestResultStat(q.geQuerySetID(), q.getQueryID());
-						tr.setException(rme);
-						tr.setResultMode(queryset.getResultsMode());
-						tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
-						
-						summary.addTestResult(q.geQuerySetID(), tr);
-	
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
-
-				}
-
-				long endTS = System.currentTimeMillis();
-
-				ClientPlugin.LOGGER.info("End Test: " + new Date() + " - Query ID [" + querySetID + "]");
-
-				summary.printResults(queryset, querySetID, beginTS, endTS);
-
-			}
-
-		} finally {
-			try {
-				summary.printTotals(queryset);
-				summary.cleanup();	
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-
-			// userTxn.getConnectionStrategy().shutdown();
-			ConfigPropertyLoader.reset();
-		}
-		
-		ClientPlugin.LOGGER.info("Completed scenario " + scenario_name);
-
-	}
-	
-	protected void createSQL(QueryScenario queryset) throws Exception {
+	private void createSQL(QueryScenario queryset) throws Exception {
 		ClientPlugin.LOGGER.debug("Start creating sql");
 
 		try {
