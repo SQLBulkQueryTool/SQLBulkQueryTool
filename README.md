@@ -17,6 +17,9 @@ PREREQUISITES:
 - Java JDK 6 or newer
 - Maven
 
+NOTE:  The distribution kit is the current means of using the tool to execute tests.  You cannot, currently, use maven,
+other than building and integration tests.   See the STEP-BY-STEP section below.
+
 The tool has been successfully testing on Windows XP and linux.
 
 
