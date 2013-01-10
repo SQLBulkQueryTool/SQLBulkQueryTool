@@ -180,4 +180,19 @@ public interface TestProperties {
 	public static final String PROP_EXECUTE_TIME_MINEMUM = "bqt.exectimemin";	 // milliseconds
 
 
+	public interface PRE1_0_SCENARIO_SUPPORT {
+		public static final String SUPPORT_PRE1_0_SCENARIO = "support.pre1.0.scenario";
+		
+		public static final String OLD_QUERYSET_DIR = "queryset.dir";
+		public static final String OLD_TEST_QUERIES_DIR = "test.queries.dir";
+		public static final String OLD_EXPECTED_RESULTS_DIR = "expected.results.dir";
+		
+		public static final String NEW_QUERYSET_DIR = "queryset.dirname";
+		public static final String NEW_TEST_QUERIES_DIR = "test.queries.dirname";
+		public static final String NEW_EXPECTED_RESULTS_DIR = "expected.results.dirname";
+		
+		
+	}
+	
+	
 }
