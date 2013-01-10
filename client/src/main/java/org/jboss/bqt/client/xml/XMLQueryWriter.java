@@ -36,8 +36,8 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
-import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -124,7 +124,7 @@ public class XMLQueryWriter implements QueryWriter {
 
 		} catch (Throwable e) {
 			throw new QueryTestFailedException(
-					"Failed to convert sql queries to JDOM: " + StringUtil.getStackTrace(e)); //$NON-NLS-1$
+					"Failed to convert sql queries to JDOM: " + ExceptionUtil.getStackTrace(e)); //$NON-NLS-1$
 		} finally {
 			try {
 				outputStream.close();

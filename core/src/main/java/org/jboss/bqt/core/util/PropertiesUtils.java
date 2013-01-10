@@ -1031,7 +1031,7 @@ public final class PropertiesUtils {
 				}
 				final Class<?> argType = method.getParameterTypes()[0];
 				try {
-					final Object[] params = new Object[] { StringUtil.valueOf(
+					final Object[] params = new Object[] { ObjectConverterUtil.valueOf(
 							propertyValue, argType) };
 					method.invoke(bean, params);
 				} catch (Throwable e) {
@@ -1065,7 +1065,7 @@ public final class PropertiesUtils {
 				try {
 					Object[] params = new Object[] { value };
 					if (!argType.isAssignableFrom(value.getClass())) {
-						params = new Object[] { StringUtil.valueOf(
+						params = new Object[] { ObjectConverterUtil.valueOf(
 								value.toString(), argType) };
 					}
 					method.invoke(bean, params);

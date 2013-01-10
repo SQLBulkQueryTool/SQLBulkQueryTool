@@ -37,7 +37,8 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.core.util.StringUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 public class XMLQueryReader implements QueryReader {
 
@@ -141,10 +142,10 @@ public class XMLQueryReader implements QueryReader {
 	private static String getQuerySetName(String queryFileName) {
 		// Get query set name
 		String querySet = queryFileName;
-		List<String> nameParts = StringUtil.split(querySet, "./\\"); //$NON-NLS-1$
-		if (nameParts.size() > 1) {
-			querySet = nameParts.get(nameParts.size() - 2);
-		}
+		String[] nameParts = StringUtils.split(querySet, "./\\"); //$NON-NLS-1$
+		if (nameParts != null && nameParts.length > 1) {
+			querySet = nameParts[nameParts.length - 2];
+		} 
 		return querySet;
 	}
 }

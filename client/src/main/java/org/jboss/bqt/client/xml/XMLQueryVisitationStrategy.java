@@ -49,7 +49,6 @@ import org.jboss.bqt.client.xml.QueryResults.ColumnInfo;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
-import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.SAXBuilderHelper;
 import org.jboss.bqt.jdbc.sql.lang.ElementSymbol;
 import org.jboss.bqt.jdbc.sql.lang.Select;
@@ -59,6 +58,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -322,7 +322,7 @@ public class XMLQueryVisitationStrategy {
                         msg = exceptionElement.getChild(TagNames.Elements.MESSAGE_CONTAINS).getTextTrim(); 
                         expectedResults.setExceptionContains(true);
                     }
-                    expectedResults.setExceptionMsg(StringUtil.removeChars(msg, new char[] {'\r'}));
+                    expectedResults.setExceptionMsg(StringUtils.remove(msg, '\r'));
                 }
             }
         }
@@ -363,7 +363,7 @@ public class XMLQueryVisitationStrategy {
                     Element messageElement = new Element(TagNames.Elements.MESSAGE);    
                     String msg = exceptionElement.getChild(TagNames.Elements.MESSAGE).getTextTrim();   
                     
-                    messageElement.setText(StringUtil.removeChars(msg, new char[] {'\r'}));
+                    messageElement.setText(StringUtils.remove(msg, '\r'));
                     parent.addContent(messageElement);
 
                     // -------------------------
@@ -426,7 +426,7 @@ public class XMLQueryVisitationStrategy {
  
         Element messageElement = new Element(TagNames.Elements.MESSAGE);       
         
-        messageElement.setText(StringUtil.removeChars( ExceptionUtil.getExceptionMessage(ex), new char[] {'\r'}));  
+        messageElement.setText(StringUtils.remove( ExceptionUtil.getExceptionMessage(ex), '\r'));  
         		
         exceptionElement.addContent(messageElement);
 
@@ -1799,7 +1799,7 @@ public class XMLQueryVisitationStrategy {
         // ---------------------------
         Element messageElement = new Element(TagNames.Elements.MESSAGE);
         
-        messageElement.setText(StringUtil.removeChars(ExceptionUtil.getExceptionMessage(exception), new char[] {'\r'}));
+        messageElement.setText(StringUtils.remove(ExceptionUtil.getExceptionMessage(exception), '\r'));
          
         exceptionElement.addContent(messageElement);
 

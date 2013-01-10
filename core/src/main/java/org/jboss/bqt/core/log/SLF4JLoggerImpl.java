@@ -21,7 +21,7 @@
  */
 package org.jboss.bqt.core.log;
 
-import org.jboss.bqt.core.util.StringUtil;
+import org.jboss.bqt.core.util.StringHelper;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -107,7 +107,7 @@ public class SLF4JLoggerImpl extends org.jboss.bqt.core.Logger {
                        Object... params ) {
         if (!isDebugEnabled()) return;
         if (message == null) return;
-        logger.debug(StringUtil.createString(message, params));
+        logger.debug(StringHelper.createString(message, params));
     }
 
     /**
@@ -131,7 +131,7 @@ public class SLF4JLoggerImpl extends org.jboss.bqt.core.Logger {
             logger.debug(null, t);
             return;
         }
-        logger.debug(StringUtil.createString(message, params), t);
+        logger.debug(StringHelper.createString(message, params), t);
     }
 
     /**
@@ -232,7 +232,7 @@ public class SLF4JLoggerImpl extends org.jboss.bqt.core.Logger {
                        Object... params ) {
         if (!isTraceEnabled()) return;
         if (message == null) return;
-        logger.trace(StringUtil.createString(message, params));
+        logger.trace(StringHelper.createString(message, params));
     }
 
     /**
@@ -256,7 +256,7 @@ public class SLF4JLoggerImpl extends org.jboss.bqt.core.Logger {
             logger.trace(null, t);
             return;
         }
-        logger.trace(StringUtil.createString(message, params), t);
+        logger.trace(StringHelper.createString(message, params), t);
     }
 
 }

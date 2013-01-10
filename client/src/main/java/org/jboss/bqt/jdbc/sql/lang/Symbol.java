@@ -22,8 +22,7 @@
 
 package org.jboss.bqt.jdbc.sql.lang;
 
-import org.jboss.bqt.core.util.StringUtil;
-
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This is the server's representation of a metadata symbol.  The only thing
@@ -175,7 +174,7 @@ public abstract class Symbol implements LanguageObject {
     
     private void computeCanonicalNameAndHash() {
         if (canonicalName == null) {
-            canonicalName = StringUtil.toUpperCase(name);
+            canonicalName = StringUtils.upperCase(name);
         }
     }
     

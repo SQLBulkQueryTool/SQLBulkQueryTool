@@ -37,8 +37,8 @@ import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
-import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -274,7 +274,7 @@ public class XMLErrorWriter implements ErrorWriter {
 						"Failed to output error results to " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			} catch (Throwable e) {
 				throw new FrameworkException(
-						"Failed to convert error results to JDOM: " + StringUtil.getStackTrace(e)); //$NON-NLS-1$
+						"Failed to convert error results to JDOM: " + ExceptionUtil.getStackTrace(e)); //$NON-NLS-1$
 			} finally {
 				try {
 					outputStream.close();

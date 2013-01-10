@@ -76,7 +76,6 @@ public interface TestProperties {
 	 */
 	public static final String PROP_TESTRUN_DIR = "bqt.testrun.dir";
 	
-	
 	/**
 	 * PROP_ERRORS_DIR indicates where error files will be written
 	 * for a given run.

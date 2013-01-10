@@ -38,8 +38,8 @@ import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
-import org.jboss.bqt.core.util.StringUtil;
 import org.jboss.bqt.core.xml.JdomHelper;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
@@ -47,6 +47,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.output.XMLOutputter;
+
+import org.apache.commons.lang.StringUtils;
 
 public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 //	private static final int MAX_COL_WIDTH = 65;
@@ -198,7 +200,7 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 					"Failed to output new results to " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (Throwable e) {
 			throw new FrameworkRuntimeException(
-					"Failed to convert results to JDOM: " + StringUtil.getStackTrace(e)); //$NON-NLS-1$
+					"Failed to convert results to JDOM: " + ExceptionUtil.getStackTrace(e)); //$NON-NLS-1$
 		} finally {
 			try {
 				outputStream.close();
