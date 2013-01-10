@@ -36,6 +36,7 @@ import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
@@ -64,6 +65,8 @@ public class TestClient {
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
 	private ConfigPropertyLoader CONFIG = ConfigPropertyLoader.getInstance();
+	
+	private QueryScenario scenario;
 
 	public TestClient() {
 
@@ -130,18 +133,18 @@ public class TestClient {
 
 		ClientPlugin.LOGGER.info("Starting scenario " + scenario_name);
 		
-		QueryScenario scenario = QueryScenario.createInstance(scenario_name, CONFIG.getProperties());
+		this.scenario = QueryScenario.createInstance(scenario_name, CONFIG.getProperties());
 		
 		if (scenario.isSQL()) {
 			this.createSQL(scenario);
 			return;
 		}
 		
-		TransactionContainer tc = TransactionFactory.create(CONFIG);
+		TransactionContainer tc = getTransactionContainer();
 
 		String querySetID = null;
 
-		TestClientTransaction userTxn = new TestClientTransaction(scenario);
+		TestClientTransaction userTxn = getClientTransaction(scenario);
 
 		Iterator<String> qsetIt = scenario.getQuerySetIDs().iterator();
 		TestResultsSummary summary = new TestResultsSummary(
@@ -211,6 +214,18 @@ public class TestClient {
 
 	}
 	
+	protected QueryScenario getScenario() {
+		return this.scenario;
+	}
+	
+	protected TransactionContainer getTransactionContainer() {
+		return TransactionFactory.create(CONFIG);
+	}
+	
+	protected TestClientTransaction getClientTransaction(QueryScenario scenario) {
+		return  new TestClientTransaction(scenario);
+	}
+	
 	private String init(File scenarioFile) throws Exception {
 		
 		Properties sc_props = PropertiesUtils.load(scenarioFile.getAbsolutePath());
@@ -222,8 +237,10 @@ public class TestClient {
 		}
 		
 		String scenario_name = FileUtils.getBaseFileNameWithoutExtension(scenarioFile.getName());
+		ArgCheck.isNotNull(scenario_name, "scenario_name came back null");
+		ArgCheck.isNotEmpty(scenario_name);
 		
-		sc_props.setProperty("scenario.name", scenario_name);		
+		sc_props.setProperty("scenario.name", scenario_name);	
 				
 		CONFIG.setProperties(sc_props);
 		

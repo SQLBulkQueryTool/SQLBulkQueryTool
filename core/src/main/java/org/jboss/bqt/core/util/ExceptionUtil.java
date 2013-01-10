@@ -22,14 +22,15 @@
 
 package org.jboss.bqt.core.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import javax.naming.ConfigurationException;
 
-import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 
 /**
@@ -98,6 +99,14 @@ public class ExceptionUtil {
 
 	public static String getLinkedMessages(Throwable exception) {
 		return getLinkedMessages(exception, 0);
+	}
+	
+	public static String getStackTrace(final Throwable t) {
+		final ByteArrayOutputStream bas = new ByteArrayOutputStream();
+		final PrintWriter pw = new PrintWriter(bas);
+		t.printStackTrace(pw);
+		pw.close();
+		return bas.toString();
 	}
 
 	/**

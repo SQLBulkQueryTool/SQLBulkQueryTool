@@ -149,6 +149,24 @@ public final class TestFileUtils  {
         } catch (FrameworkException e) {
         }
     }
+    
+    /**
+     * Tests FileUtils.testDirectoryPermissions()
+     * @throws Exception 
+     */
+    @Test
+    public void testGetBaseNameWithoutExt() throws Exception {
+        
+    	String n =FileUtils.getBaseFileNameWithoutExtension(TEMP_DIR_NAME + File.separator +  TEMP_FILE_NAME);
+
+    	assertEquals("tempfile", n);
+    	
+    	n =FileUtils.getBaseFileNameWithoutExtension("mysql50_vqt.properties");
+
+    	assertEquals("mysql50_vqt", n);
+    	
+    	
+    }
 
     
     

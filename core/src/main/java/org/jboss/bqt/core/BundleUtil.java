@@ -29,7 +29,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.jboss.bqt.core.util.ArgCheck;
-import org.jboss.bqt.core.util.StringUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 public class BundleUtil {
 	/**
@@ -158,7 +159,7 @@ public class BundleUtil {
 	private String getProductValue(String theKey) {
 		String result = null;
 
-		if ((productProps != null) && !StringUtil.isEmpty(theKey)) {
+		if ((productProps != null) && !StringUtils.isEmpty(theKey)) {
 			String key = this.pluginId + '.' + theKey;
 
 			try {

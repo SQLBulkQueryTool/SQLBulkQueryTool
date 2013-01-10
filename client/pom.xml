@@ -32,8 +32,13 @@
             <artifactId>bqt-core</artifactId>
             <type>test-jar</type>
             <version>${project.version}</version>
-        </dependency>			
-		
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+                            				
 		<dependency>
 			<groupId>jdom</groupId>
 			<artifactId>jdom</artifactId>
@@ -43,6 +48,11 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
+		
+	    <dependency>
+	      <groupId>org.mockito</groupId>
+	      <artifactId>mockito-all</artifactId>
+	    </dependency>		
 
 		<dependency>
 			<groupId>log4j</groupId>

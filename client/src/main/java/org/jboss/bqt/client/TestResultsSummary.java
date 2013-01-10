@@ -44,7 +44,8 @@ import java.util.Map;
 
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.TestResult;
-import org.jboss.bqt.core.util.StringUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 public class TestResultsSummary {
 
@@ -359,8 +360,13 @@ public class TestResultsSummary {
 			case TestResult.RESULT_STATE.TEST_EXCEPTION:
 				++fail;
 
-				String msg = StringUtil.removeChars(stat.getExceptionMsg(),
-						new char[] { '\r', '\n' });
+				String msg = 
+					StringUtils.remove(
+					StringUtils.remove(stat.getExceptionMsg(), '\r'),
+										'\n');
+				
+//				removeChars(stat.getExceptionMsg(),
+//						new char[] { '\r', '\n' });
 
 				this.failed_queries.add(stat.getQueryID() + "~" + msg);
 				break;
