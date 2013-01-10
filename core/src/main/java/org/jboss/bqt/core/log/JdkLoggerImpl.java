@@ -22,7 +22,7 @@
 package org.jboss.bqt.core.log;
 
 import java.util.logging.Logger;
-import org.jboss.bqt.core.util.StringUtil;
+import org.jboss.bqt.core.util.StringHelper;
 
 /**
  * Logger that delivers messages to a JDK logger
@@ -91,57 +91,57 @@ public class JdkLoggerImpl extends org.jboss.bqt.core.Logger {
     
     @Override
     public void debug( String message) {
-        log(java.util.logging.Level.FINE, StringUtil.createString(message, null), null);
+        log(java.util.logging.Level.FINE, StringHelper.createString(message, null), null);
     }    
 
     @Override
     public void debug( String message,
                        Object... params ) {
-        log(java.util.logging.Level.FINE, StringUtil.createString(message, params), null);
+        log(java.util.logging.Level.FINE, StringHelper.createString(message, params), null);
     }
 
     @Override
     public void debug( Throwable t,
                        String message,
                        Object... params ) {
-        log(java.util.logging.Level.FINE, StringUtil.createString(message, params), t);
+        log(java.util.logging.Level.FINE, StringHelper.createString(message, params), t);
     }
 
     @Override
     public void error( String message,
                        Object... params ) {
-        log(java.util.logging.Level.SEVERE, StringUtil.createString(message, params), null);
+        log(java.util.logging.Level.SEVERE, StringHelper.createString(message, params), null);
     }
 
     @Override
     public void error( Throwable t,
                        String message,
                        Object... params ) {
-        log(java.util.logging.Level.SEVERE, StringUtil.createString(message, params), t);
+        log(java.util.logging.Level.SEVERE, StringHelper.createString(message, params), t);
     }
     
     @Override
     public void info( String message) {
-        log(java.util.logging.Level.INFO, StringUtil.createString(message, null), null);
+        log(java.util.logging.Level.INFO, StringHelper.createString(message, null), null);
     }    
 
     @Override
     public void info( String message,
                       Object... params ) {
-        log(java.util.logging.Level.INFO, StringUtil.createString(message, params), null);
+        log(java.util.logging.Level.INFO, StringHelper.createString(message, params), null);
     }
 
     @Override
     public void info( Throwable t,
                       String message,
                       Object... params ) {
-        log(java.util.logging.Level.INFO, StringUtil.createString(message, params), t);
+        log(java.util.logging.Level.INFO, StringHelper.createString(message, params), t);
     }
 
     @Override
     public void trace( String message,
                        Object... params ) {
-        log(java.util.logging.Level.FINER, StringUtil.createString(message, params), null);
+        log(java.util.logging.Level.FINER, StringHelper.createString(message, params), null);
     }
 
     @Override
@@ -149,21 +149,21 @@ public class JdkLoggerImpl extends org.jboss.bqt.core.Logger {
                        String message,
                        Object... params ) {
         // TODO Auto-generated method stub
-        log(java.util.logging.Level.FINER, StringUtil.createString(message, params), t);
+        log(java.util.logging.Level.FINER, StringHelper.createString(message, params), t);
 
     }
 
     @Override
     public void warn( String message,
                       Object... params ) {
-        log(java.util.logging.Level.WARNING, StringUtil.createString(message, params), null);
+        log(java.util.logging.Level.WARNING, StringHelper.createString(message, params), null);
     }
 
     @Override
     public void warn( Throwable t,
                       String message,
                       Object... params ) {
-        log(java.util.logging.Level.WARNING, StringUtil.createString(message, params), t);
+        log(java.util.logging.Level.WARNING, StringHelper.createString(message, params), t);
 
     }
 }

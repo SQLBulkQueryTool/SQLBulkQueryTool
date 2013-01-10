@@ -23,7 +23,8 @@ package org.jboss.bqt.framework;
 
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.util.StringUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * <p>
@@ -60,7 +61,7 @@ public abstract class TransactionContainer {
 
 	public void runTransaction(TransactionQueryTestCase test)  throws FrameworkException, QueryTestFailedException  {
 
-		this.testClassName = StringUtil.getLastToken(test.getClass().getName(),
+		this.testClassName = StringUtils.substringAfterLast(test.getClass().getName(),
 				".");
 
 		try {

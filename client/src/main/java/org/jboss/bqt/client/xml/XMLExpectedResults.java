@@ -48,8 +48,9 @@ import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
-import org.jboss.bqt.core.util.StringUtil;
 import org.jdom.JDOMException;
+
+import org.apache.commons.lang.StringUtils;
 
 public class XMLExpectedResults implements ExpectedResultsReader {
 	private static String newline = System.getProperty("line.separator"); //$NON-NLS-1$
@@ -473,12 +474,12 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	}
 
 	private boolean compareStrTokens(String expectedStr, String gotStr) {
+		String[] expectedTokens = StringUtils.split(expectedStr, newline);
+		String[] gotTokens = StringUtils.split(gotStr, newline);
 		
-		List expectedTokens = StringUtil.split(expectedStr, newline);
-		List gotTokens = StringUtil.split(gotStr, newline);
-		for (int i = 0; i < expectedTokens.size(); i++) {
-			String expected = (String) expectedTokens.get(i);
-			String got = (String) gotTokens.get(i);
+		for (int i = 0; i < expectedTokens.length; i++) {
+			String expected = expectedTokens[i];
+			String got = gotTokens[i];
 			if (!expected.equals(got)) {
 				return false;
 			}

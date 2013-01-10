@@ -36,6 +36,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.jboss.bqt.core.CorePlugin;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
@@ -79,8 +81,7 @@ public final class FileUtils {
 
 	static {
 		String tempDirPath = System.getProperty(JAVA_IO_TEMP_DIR);
-		TEMP_DIRECTORY = (tempDirPath.endsWith(File.separator) ? tempDirPath
-				: tempDirPath + File.separator);
+		TEMP_DIRECTORY = (tempDirPath.endsWith(File.separator) ? tempDirPath : (tempDirPath + File.separator));
 	}
 
 	private FileUtils() {
@@ -553,7 +554,7 @@ public final class FileUtils {
 		File modelsDirFile = new File(dir);
 		FileFilter fileFilter = new FileFilter() {
 
-			public boolean accept(java.io.File file) {
+			public boolean accept(File file) {
 				if (file.isDirectory()) {
 					return false;
 				}
@@ -644,8 +645,10 @@ public final class FileUtils {
 	}
 
 	public static String getBaseFileNameWithoutExtension(String path) {
-		return StringUtil
-				.getFirstToken(StringUtil.getLastToken(path, "/"), "."); //$NON-NLS-1$ //$NON-NLS-2$
+		String name = StringUtils.substringAfterLast(path, File.separator);
+		if (name == null || name.length() == 0) name = path;
+		
+		return StringUtils.substringBefore(name, ".");
 	}
 
 	/**

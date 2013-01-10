@@ -42,10 +42,11 @@ import java.sql.Statement;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ArgCheck;
-import org.jboss.bqt.core.util.StringUtil;
+import org.jboss.bqt.core.util.StringHelper;
 import org.jboss.bqt.framework.resultsreaders.MetadataReader;
 import org.jboss.bqt.framework.resultsreaders.ResultSetReader;
 import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
+
 
 /**
  * This class the base class that provides the core logic around using
@@ -371,7 +372,7 @@ public abstract class AbstractQuery {
 
 	protected void compareResults(BufferedReader resultReader,
 			BufferedReader expectedReader) throws IOException {
-		ArgCheck.isTrue (StringUtil.isEqual(
+		ArgCheck.isTrue (StringHelper.isEqual(
 				read(expectedReader, compareCaseSensitive()),
 				read(resultReader, compareCaseSensitive( ))
 				                                )

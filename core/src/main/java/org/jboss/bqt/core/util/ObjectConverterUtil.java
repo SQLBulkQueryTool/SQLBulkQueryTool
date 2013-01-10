@@ -37,7 +37,15 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.lang.reflect.Array;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -340,5 +348,66 @@ public class ObjectConverterUtil {
 		write(sb, reader, length);
 		return sb.toString().toCharArray();
 	}
+	
+	/**
+	 * Convert the given value to specified type.
+	 * @param <T> 
+	 * @param value
+	 * @param type
+	 * @return T
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> T valueOf(String value, Class type) {
+
+		if (type == String.class) {
+			return (T) value;
+		} else if (type == Boolean.class || type == Boolean.TYPE) {
+			return (T) Boolean.valueOf(value);
+		} else if (type == Integer.class || type == Integer.TYPE) {
+			return (T) Integer.decode(value);
+		} else if (type == Float.class || type == Float.TYPE) {
+			return (T) Float.valueOf(value);
+		} else if (type == Double.class || type == Double.TYPE) {
+			return (T) Double.valueOf(value);
+		} else if (type == Long.class || type == Long.TYPE) {
+			return (T) Long.decode(value);
+		} else if (type == Short.class || type == Short.TYPE) {
+			return (T) Short.decode(value);
+		} else if (type.isAssignableFrom(List.class)) {
+			return (T) new ArrayList<String>(Arrays.asList(value.split(","))); //$NON-NLS-1$
+		} else if (type.isArray()) {
+			String[] values = value.split(","); //$NON-NLS-1$
+			Object array = Array.newInstance(type.getComponentType(),
+					values.length);
+			for (int i = 0; i < values.length; i++) {
+				Array.set(array, i, valueOf(values[i], type.getComponentType()));
+			}
+			return (T) array;
+		} else if (type == Void.class) {
+			return null;
+		} else if (type.isEnum()) {
+			return (T) Enum.valueOf(type, value);
+		} else if (type == URL.class) {
+			try {
+				return (T) new URL(value);
+			} catch (MalformedURLException e) {
+				// fall through and end up in error
+			}
+		} else if (type.isAssignableFrom(Map.class)) {
+			List<String> l = Arrays.asList(value.split(",")); //$NON-NLS-1$
+			Map m = new HashMap<String, String>();
+			for (String key : l) {
+				int index = key.indexOf('=');
+				if (index != -1) {
+					m.put(key.substring(0, index), key.substring(index + 1));
+				}
+			}
+			return (T) m;
+		}
+
+		throw new IllegalArgumentException(
+				"Conversion from String to " + type.getName() + " is not supported"); //$NON-NLS-1$ //$NON-NLS-2$
+	}
+
 
 }
