@@ -45,7 +45,7 @@ import org.jboss.bqt.framework.TransactionFactory;
 
 /**
  * TestClient is the starter class for running bulk sql testing against a JDBC database
- * server. The bulk testing is about testing a lot of queries against a
+ * data source. The bulk testing is about testing a lot of queries against a
  * predefined set of expected results and providing error files when comparisons
  * don't match. The process The bulk testing, in its simplicity, will do the
  * following: <li>use a {@link QueryReader} to read the queries that it will
@@ -61,6 +61,9 @@ import org.jboss.bqt.framework.TransactionFactory;
  */
 public class TestClient {
 
+	// if PRE1 scenario properties are supported, then map the old properties to the new.
+	private static boolean PRE1_SUPPORTED = false;
+	
 	public static final SimpleDateFormat TSFORMAT = new SimpleDateFormat(
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
@@ -78,9 +81,23 @@ public class TestClient {
 		tc.runTest();
 
 	}
+	
+	/**
+	 * An alternate method for running one test run.  These properties will
+	 * be added to the System properties.
+	 * @param properties 
+	 */
+	public void runTest(Properties properties) {
+		Properties props = System.getProperties();
+		props.putAll(properties);
+		
+		System.setProperties(props);
+		runTest();
+	}
 
 	public void runTest() {
-
+		PRE1_SUPPORTED = PropertiesUtils.getBooleanProperty(System.getProperties(), 
+				TestProperties.PRE1_0_SCENARIO_SUPPORT.SUPPORT_PRE1_0_SCENARIO, false);
 		try {
 
 			List<File> scenarios = getScenarios();
@@ -241,6 +258,18 @@ public class TestClient {
 		ArgCheck.isNotEmpty(scenario_name);
 		
 		sc_props.setProperty("scenario.name", scenario_name);	
+		
+		// if PRE1 scenario properties are supported, then map the old properties to the new.
+		if (PRE1_SUPPORTED) {
+			ClientPlugin.LOGGER.debug("Support for PRE1.0 ScenarioProperties");
+			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_QUERYSET_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR));
+			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_TEST_QUERIES_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR));
+			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_EXPECTED_RESULTS_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR));
+
+			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR);
+			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR);
+			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR);
+		}
 				
 		CONFIG.setProperties(sc_props);
 		

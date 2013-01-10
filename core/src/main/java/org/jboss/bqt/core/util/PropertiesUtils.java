@@ -432,7 +432,7 @@ public final class PropertiesUtils {
 			return Boolean.valueOf(stringVal);
 		} catch (NumberFormatException e) {
 			throw new InvalidPropertyException(propName, stringVal,
-					Float.class, e);
+					Boolean.class, e);
 		}
 	}
 

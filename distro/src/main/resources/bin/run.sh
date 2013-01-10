@@ -163,6 +163,11 @@ then
     ARGS="${ARGS} -Dpassword=${PASSWORD}"
 fi
 
+if [ ! -z "${SUPPORT_PRE10_SCENARIO}" ] 
+then
+    ARGS="${ARGS} -Dsupport.pre1.0.scenario=${SUPPORT_PRE10_SCENARIO}"
+fi
+
 
 if [ ! -x "${ROOTDIR}/log" ]; then
     echo "Create ${ROOTDIR}/log directory"
