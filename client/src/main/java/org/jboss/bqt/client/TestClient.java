@@ -128,7 +128,11 @@ public class TestClient {
 				
 				// reset for reloading cause there are points that call setProperty(..)
 				// on the ConfigurationProperties
-				CONFIG.clearOverrides();
+
+				ConfigPropertyLoader.reset();
+				
+				CONFIG = ConfigPropertyLoader.getInstance();
+				
 			}
 
 
@@ -245,8 +249,6 @@ public class TestClient {
 				t.printStackTrace();
 			}
 
-			// userTxn.getConnectionStrategy().shutdown();
-			ConfigPropertyLoader.reset();
 		}
 		
 		ClientPlugin.LOGGER.info("Completed scenario " + scenario_name);
