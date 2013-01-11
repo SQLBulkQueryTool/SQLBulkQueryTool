@@ -75,12 +75,32 @@ public class TestClient {
 
 	}
 
+	/**
+	 * Arguments must be passed in as pairs, that will be 
+	 * loaded as properties.
+	 *
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
 		TestClient tc = new TestClient();
-		tc.runTest();
-
+		
+		if (args != null && args.length > 0) {
+			int i = 0;
+			Properties props = new Properties();
+			
+			while (i < args.length) {
+				props.setProperty(args[i], args[i+1]);
+				i=i+2;
+			}
+			tc.runTest(props);
+			
+		} else {
+			tc.runTest();
+		}
 	}
+	
+	
 	
 	/**
 	 * An alternate method for running one test run.  These properties will
