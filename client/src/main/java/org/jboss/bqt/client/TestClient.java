@@ -67,7 +67,7 @@ public class TestClient {
 	public static final SimpleDateFormat TSFORMAT = new SimpleDateFormat(
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
-	private ConfigPropertyLoader CONFIG = ConfigPropertyLoader.getInstance();
+	private ConfigPropertyLoader CONFIG = null;
 	
 	private QueryScenario scenario;
 
@@ -116,6 +116,8 @@ public class TestClient {
 	}
 
 	public void runTest() {
+		CONFIG = ConfigPropertyLoader.getInstance();
+		
 		PRE1_SUPPORTED = PropertiesUtils.getBooleanProperty(System.getProperties(), 
 				TestProperties.PRE1_0_SCENARIO_SUPPORT.SUPPORT_PRE1_0_SCENARIO, false);
 		try {
