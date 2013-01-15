@@ -111,16 +111,19 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 *
 	 * @see org.jboss.bqt.client.api.ExpectedResultsReader#getExpectResultsLocation()
 	 */
+	@Override
 	public String getExpectResultsLocation() {
 		return this.results_dir_loc;
 	}
 
 
+	@Override
 	public boolean isExpectedResultsNeeded() {
 		return (resultMode
 				.equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE));
 	}
 
+	@Override
 	public boolean isExceptionExpected(String queryidentifier)
 			throws FrameworkRuntimeException {
 		if (isExpectedResultsNeeded()) {
@@ -132,10 +135,12 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return false;
 	}
 
+	@Override
 	public String getQuerySetID() {
 		return this.querySetIdentifier;
 	}
 
+	@Override
 	public synchronized File getResultsFile(String queryidentifier)
 			throws FrameworkRuntimeException {
 		return findExpectedResultsFile(queryidentifier, this.querySetIdentifier);
@@ -172,6 +177,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 * @throws QueryTestFailedException
 	 *             If comparison fails.
 	 */
+	@Override
 	public Object compareResults(final TestResult actualTestResults,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
 	
