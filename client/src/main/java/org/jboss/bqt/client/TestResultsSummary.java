@@ -111,12 +111,6 @@ public class TestResultsSummary {
 		return new PrintStream(os);
 	}
 
-	// private static Writer getOverallSummaryStream(String outputDir) throws
-	// IOException {
-	// return createOverallSummaryFile(outputDir);
-	//
-	// }
-
 	/**
 	 * Overloaded to overwrite the already existing files
 	 * @param outputDir 
@@ -216,7 +210,8 @@ public class TestResultsSummary {
 			overallsummary.write("================== \n"); //$NON-NLS-1$
 
 			overallsummary
-					.write("Scenario \t\t\t" + "Pass" + "\t" + "Fail" + "\t" + "Total \n"); //$NON-NLS-1$
+					.write(pad("Scenario", 42, ' ') +
+							"\t" + "Pass" + "\t" + "Fail" + "\t" + "Total \n\n"); //$NON-NLS-1$
 
 			overallsummary.flush();
 
@@ -256,7 +251,8 @@ public class TestResultsSummary {
 			overallsummary.write("Test Summary Errors \n"); //$NON-NLS-1$
 			overallsummary.write("================== \n"); //$NON-NLS-1$
 
-			overallsummary.write("Scenario \t" + "Error \n"); //$NON-NLS-1$
+			overallsummary.write(pad("Scenario", 42, ' ') +
+					"\t" + "Error \n\n"); //$NON-NLS-1$
 
 			overallsummary.flush();
 
@@ -385,8 +381,8 @@ public class TestResultsSummary {
 		
 		avg = (succeed > 0 ? totalFullMilliSecs / succeed: -1.0);	
 
-		this.query_sets.add("\t" + queryset + "\t\t" + pass + "\t" + fail
-				+ "\t" + queries + "\t" + (lengthTime.getTime() / 1000) + "\t" + avg);
+		this.query_sets.add("\t" + pad(queryset, 42, ' ') + "\t" + pass + "\t" + fail
+				+ "\t" + queries + "\t" + (lengthTime.getTime() / 1000) + "\t\t" + avg);
 
 		total_fail = total_fail + fail;
 		total_pass = total_pass + pass;
@@ -548,15 +544,15 @@ public class TestResultsSummary {
 
 		outputStream
 				.println("Scenario " + scenario_name + " Summary [" + this.resultMode + "]"); //$NON-NLS-1$
-		outputStream.println("Query Set Name " + querysetname); //$NON-NLS-1$
+		outputStream.println("Query Set Name: " + querysetname); //$NON-NLS-1$
 		outputStream.println("=================="); //$NON-NLS-1$
 
-		outputStream.println("Number of Test Query Sets: " + total_querysets); //$NON-NLS-1$ //$NON-NLS-2$
+		outputStream.println("Number of test sets: " + total_querysets); //$NON-NLS-1$ //$NON-NLS-2$
 
 		outputStream.println("=================="); //$NON-NLS-1$
-		outputStream.println("Test Query Set"); //$NON-NLS-1$
 		outputStream
-				.println("\t" + "Name" + "\t\t\t\t" + "Pass" + "\t" + "Fail" + "\t" + "Total" + "\t" + "Time(sec)" + "\t"+ " Avg(mils)"); //$NON-NLS-1$
+				.println("\t" + pad("Name", 42, ' ') +  
+						"\t" + "Pass" + "\t" + "Fail" + "\t" + "Total" + "\t" + "Time(sec)" + "\t"+ " Avg(mils)"); //$NON-NLS-1$
 
 		if (!this.query_sets.isEmpty()) {
 			// sort so that like failed queries are show together
@@ -569,12 +565,12 @@ public class TestResultsSummary {
 		}
 		outputStream.println("=================="); //$NON-NLS-1$
 
-		outputStream.println("\t" + "Totals" + "\t\t\t\t" + total_pass + "\t"
-				+ total_fail + "\t" + total_queries + "\t" + total_seconds
-				/ 1000);
+		outputStream.println("\t" + pad("Totals", 42, ' ')
+				+ "\t" + total_pass + "\t"
+				+ total_fail + "\t" + total_queries + "\t" +  (total_seconds / 1000) );
 
 		try {
-			overallsummary.write(pad(scenario_name, 30, ' ') + " \t"
+			overallsummary.write(pad(scenario_name, 42, ' ') + " \t"
 					+ total_pass + "\t" + total_fail + "\t" + total_queries
 					+ "\n");
 			overallsummary.flush();
