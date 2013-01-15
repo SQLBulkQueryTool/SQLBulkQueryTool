@@ -130,29 +130,7 @@ public abstract class QueryScenario {
 	 * will be required that instance of QueryScenario.
 	 */
 	protected abstract void setUp();
-//	{
-//		validateResultsMode(this.props);
-//		
-//		Collection<Object> args = new ArrayList<Object>(2);
-//		args.add(scenarioName);
-//		args.add(props);
-//		
-//		if (!this.isSQL()) {			
-//			reader = ClassFactory.createQueryReader(args);
-//	
-//			if (reader.getQuerySetIDs() == null
-//					|| reader.getQuerySetIDs().isEmpty()) {
-//				throw new FrameworkRuntimeException(
-//						"The queryreader did not return any queryset ID's to process");
-//			}
-//		} 
-//		if (this.isGenerate()) {
-//			this.resultsGen = ClassFactory.createExpectedResultsWriter(args);
-//		}
-//		
-//		this.errorWriter = ClassFactory.createErrorWriter(args);
-//	}
-//	
+
 	public String getOutputDir() {
 		return this.rootOutputDir;
 	}
