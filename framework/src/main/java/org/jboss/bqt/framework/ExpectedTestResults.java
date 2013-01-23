@@ -19,43 +19,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.client.api;
-
-import org.jboss.bqt.framework.ExpectedTestResults;
-
+package org.jboss.bqt.framework;
 
 /**
- * ExpectedResults represent the expected outcome from the execution of one query.
+ * @author vhalbert
+ *
  */
-public abstract class ExpectedResults extends ExpectedTestResults {
-	// Identifier
-	private String queryID;
-	
-	private String querySetID;
-	
-	public ExpectedResults(String querySetID, String queryID) {
-		this.querySetID = querySetID;
-		this.queryID = queryID;
-	}
+public abstract class ExpectedTestResults {
 
-	public String getQuerySetID() {
-		return querySetID;
-		
-	}
-	public String getQueryID() {
-		return queryID;
-	}	
-
-	/**
-	 * @return Returns the query.
-	 */
-	public abstract String getQuery();
+	private boolean exceptionExpected = false;
+	
 	
 	/**
-	 * Returns the execution time the query ran when the expected results were captured.
-	 * @return long is the execution time
+	 * Will return true if the test that is being run is expected
+	 * to have an exception
+	 * @return boolean true if test is expected to have an exception
 	 */
-	public abstract long getExecutionTime();
-
+	public boolean isExceptionExpected() {
+		return exceptionExpected;
+	}
+	
+	public void setExceptionExpected(boolean expected) {
+		this.exceptionExpected = expected;
+	}
+	
 
 }

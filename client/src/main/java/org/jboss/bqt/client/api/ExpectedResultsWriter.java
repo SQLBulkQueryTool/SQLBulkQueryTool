@@ -28,13 +28,14 @@ import java.util.Properties;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 
 /**
  * The ExpectedResultsWriter represents how a new set of expected results will be written for
- * a given {@link Test}. The
+ * a given {@link TestResult}. The
  * implementor should write out one result file for each call that is made to
- * {@link #generateQueryResultFile(Test, ResultSet)  }.  The location should be
+ * {@link #generateQueryResultFile(TestCase, ResultSet)  }.  The location should be
  * based on {@link TestProperties#PROP_GENERATE_DIR generateDirectory}.
  * 
  * When a test is run, it will only trigger the generation of a new result file when the result mode
@@ -82,12 +83,12 @@ public abstract class ExpectedResultsWriter {
 	 * based on the result should be able to be used as the expected result when
 	 * query tests are run with in the resultmode of "compare".
 	 * 
-	 * @param test
+	 * @param testcase
 	 * @param resultSet 
 	 * @throws FrameworkRuntimeException is thrown to stop processing
 	 */
 	
-	public abstract void generateQueryResultFile(final Test test,
+	public abstract void generateQueryResultFile(final TestCase testcase,
 			final ResultSet resultSet) throws FrameworkRuntimeException;	
 	
 	

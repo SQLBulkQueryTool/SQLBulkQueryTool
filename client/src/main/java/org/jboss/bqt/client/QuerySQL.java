@@ -25,7 +25,7 @@ import java.io.Serializable;
 
 /**
  * The QuerySQL represents a single sql statement to be executed in a given
- * {@link QueryTest Test}. The {@link #rowCnt} and {@link #updateCnt}, when set,
+ * {@link QueryTest TestResult}. The {@link #rowCnt} and {@link #updateCnt}, when set,
  * provide validation checks after the execution of the query.
  * 
  * @author vanhalbert

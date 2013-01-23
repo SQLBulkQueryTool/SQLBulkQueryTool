@@ -24,13 +24,16 @@ package org.jboss.bqt.client.resultmode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.jboss.bqt.client.ClientPlugin;
+import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 
 /**
  * The Compare Result Mode controls the process for comparing actual results against the expected
@@ -73,34 +76,32 @@ public class Compare extends QueryScenario {
 	}
 
 	/**
-	 * {@inheritDoc}
 	 * @throws QueryTestFailedException 
 	 * @throws  FrameworkException
 	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(Test, java.sql.ResultSet)
 	 */
 	@Override
-	public void handleTestResult(Test tr, ResultSet resultSet) throws FrameworkException, QueryTestFailedException {
-		
-		if (tr.isFailure()) {
+	public void handleTestResult(TestCase testCase, ResultSet resultSet) throws FrameworkException, QueryTestFailedException {
+
+		TestResult tr = testCase.getTestResult();
+		if (tr.getStatus() != TestResult.RESULT_STATE.TEST_EXCEPTION) {
 			Throwable resultException = tr.getException();
 			try {
-				this.getExpectedResultsReader(tr.getQuerySetID())
-						.compareResults(tr, resultSet,
-								isOrdered(tr.getQuery()));
+				this.getExpectedResultsReader(tr.getQuerySetID()).compareResults(testCase, resultSet, isOrdered(tr.getQuery()));
 
 			} catch (QueryTestFailedException qtf) {
 				resultException = (resultException != null ? resultException
 						: qtf);
 				tr.setException(resultException);
+				tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
 
 			}
 		}
 
 		// create an error file that also contains the expected results
-		if (tr.isFailure()) {
+		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
 			this.getErrorWriter().generateErrorFile(tr, resultSet,
-					this.getExpectedResultsReader(tr.getQuerySetID()).getResultsFile(tr));
+					this.getExpectedResultsReader(tr.getQuerySetID()).getResultsFile((QueryTest)testCase.getActualTest()));
 
 		}
 	}

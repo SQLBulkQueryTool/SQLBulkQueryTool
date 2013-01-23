@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <query><![CDATA[Select ACCOUNT_ID, SSN, STATUS, TYPE, DATEOPENED, DATECLOSED From ACCOUNT]]></query>
-  <queryResults name="h2_other_scenario_Query1" exectime="9">
+  <queryResults name="h2_scenario_Query1" exectime="0">
     <select>
       <dataElement type="INTEGER">ACCOUNT_ID</dataElement>
       <dataElement type="CHAR">SSN</dataElement>

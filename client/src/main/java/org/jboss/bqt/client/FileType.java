@@ -22,7 +22,7 @@
 package org.jboss.bqt.client;
 
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 
 
 /**
@@ -65,17 +65,17 @@ public interface FileType {
 	/** 
 	 * Returns the name of the file (excluding path)
 	 * @param scenario
-	 * @param test
+	 * @param test to be performed
 	 * @return String expected results file name
 	 */
-	String getExpectedResultsFileName(QueryScenario scenario, Test test);
+	String getExpectedResultsFileName(QueryScenario scenario, QueryTest test);
 	
 	/**
 	 * Returns the name of the error file (excluding path)
 	 * @param scenario
-	 * @param test
+	 * @param testResult
 	 * @return String error file name
 	 */
-	String getErrorFileName(QueryScenario scenario, Test test);
+	String getErrorFileName(QueryScenario scenario, TestResult testResult);
 
 }

@@ -24,8 +24,6 @@ package org.jboss.bqt.client.resultmode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import junit.framework.TestResult;
-
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
@@ -33,7 +31,8 @@ import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.util.ArgCheck;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 
 /**
  * The None Result Mode controls the process for executing the queries, but not perform any post execution
@@ -80,12 +79,12 @@ public class None extends QueryScenario {
 	}	
 
 	@Override
-	public void handleTestResult(Test tr, ResultSet resultSet) throws FrameworkException {
+	public void handleTestResult(TestCase testCase, ResultSet resultSet) throws FrameworkException {
 		// create error files for any query that doesn't execute successfully
-		ArgCheck.isNotNull(tr, "TestResult must be passed in");
+		ArgCheck.isNotNull(testCase, "TestResult must be passed in");
 
-		if (tr.isFailure()) {
-				this.getErrorWriter().generateErrorFile(tr,tr.getException());
+		if (testCase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+				this.getErrorWriter().generateErrorFile(testCase.getTestResult(),testCase.getTestResult().getException());
 		}
 	}
 

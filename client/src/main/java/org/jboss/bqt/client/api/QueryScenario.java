@@ -45,7 +45,7 @@ import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.ReflectionHelper;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
 
 /**
@@ -185,6 +185,13 @@ public abstract class QueryScenario {
 		return (isCompare());
 	}
 	
+	public ExpectedResults getExpectedResults(QueryTest test) {
+		if (isExpectedResultsNeeded()) {
+			return this.getExpectedResultsReader(test.getQuerySetID()).getExpectedResults(test);
+		}
+		return null;
+	}
+	
 	/**
 	 * Return the name that identifies this query set. It should use the
 	 * {@link TestProperties#QUERY_SET_NAME} property to obtain the name.
@@ -253,14 +260,14 @@ public abstract class QueryScenario {
 	public abstract String getResultsMode();
 	
 	/**
-	 * Will be called to handle the {@link Test} and the implementor will be responsible
+	 * Will be called to handle the {@link TestCase} and the implementor will be responsible
 	 * for determining how to perform that task.
-	 * @param tr
+	 * @param testcase
 	 * @param resultSet
 	 * @throws QueryTestFailedException 
 	 * @throws FrameworkException 
 	 */
-	public abstract void handleTestResult(Test tr, ResultSet resultSet) throws QueryTestFailedException, FrameworkException;
+	public abstract void handleTestResult(TestCase testcase, ResultSet resultSet) throws QueryTestFailedException, FrameworkException;
 
 	/**
 	 * Return the {@link ExpectedResultsReader} for the specified
@@ -347,15 +354,15 @@ public abstract class QueryScenario {
 		return this.summary;
 	}
 
-	public boolean exceptionExpected(Test test) {
-		boolean errorExpected = false;
-		ExpectedResultsReader expectedResults = getExpectedResultsReader(test.getQuerySetID());
-		if (expectedResults != null) {
-			errorExpected = expectedResults.isExceptionExpected(test);
-		}
-
-		return errorExpected;
-	}
+//	public boolean exceptionExpected(TestResult testResult) {
+//		boolean errorExpected = false;
+//		ExpectedResultsReader expectedResults = getExpectedResultsReader(testResult.getQuerySetID());
+//		if (expectedResults != null) {
+//			errorExpected = expectedResults.isExceptionExpected(testResult);
+//		}
+//
+//		return errorExpected;
+//	}
 	
 	/* ************
 	 * 
@@ -365,21 +372,21 @@ public abstract class QueryScenario {
 	
 	protected QueryReader createQueryReader() {
 		Collection<Object> args = new ArrayList<Object>(2);
-		args.add((QueryScenario)this);
+		args.add(this);
 		args.add(props);
 		return (QueryReader) createInstance(fileType.getQueryReaderClassName(), args);
 	}	
 	 
 	protected QueryWriter createQueryWriter() {
 		Collection<Object> args = new ArrayList<Object>(2);
-		args.add((QueryScenario)this);
+		args.add(this);
 		args.add(props);
 		return (QueryWriter) createInstance(fileType.getQueryWriterClassName(), args);
 	}
 	
 	protected ErrorWriter createErrorWriter() {
 		Collection<Object> args = new ArrayList<Object>(2);
-		args.add((QueryScenario)this);
+		args.add(this);
 		args.add(props);
 		return (ErrorWriter) createInstance(fileType.getErrorWriterClassName(), args);
 	}	
@@ -393,7 +400,7 @@ public abstract class QueryScenario {
 	
 	protected ExpectedResultsWriter createExpectedResultsWriter() {
 		Collection<Object> args = new ArrayList<Object>(2);
-		args.add((QueryScenario)this);
+		args.add(this);
 		args.add(props);
 		return (ExpectedResultsWriter) createInstance(fileType.getExpectedResultsWriterClassName(), args);
 	}

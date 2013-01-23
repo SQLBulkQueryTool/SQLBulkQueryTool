@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.core.util.ExceptionUtil;
-import org.jboss.bqt.framework.Test;
 
 /**
  * ResultsHolder
@@ -35,17 +35,10 @@ import org.jboss.bqt.framework.Test;
  * Data structure. Holder of expected results and metadata.
  * </p>
  */
-public class ExpectedResultsHolder implements ExpectedResults {
+public class ExpectedResultsHolder extends ExpectedResults {
 
 	// either TagNames.Elements.QUERY_RESULTS or TagNames.Elements.EXCEPTION
 	private String resultType;
-	
-	private Test actualTestResult;
-
-	// Identifier
-	private String queryID;
-	
-	private String querySetID;
 
 	// The SQl query if available.
 	private String query;
@@ -62,37 +55,18 @@ public class ExpectedResultsHolder implements ExpectedResults {
 	private boolean exceptionStartsWith = false;
 	
 	private long executionTime = -1;
-
-
-	public ExpectedResultsHolder(final String type) {
-		this.resultType = type;
-	}
 	
-	public ExpectedResultsHolder(final String type, Test testResult) {
+	public ExpectedResultsHolder(final String type, QueryTest test) {
+		super(test.getQuerySetID(), test.getQueryID());
 		this.resultType = type;
-		this.actualTestResult = testResult;
-	}
-	
-	public Test getActualTestResult() {
-		return this.actualTestResult;
-	}
-
-	public String getQuerySetID() {
-		return querySetID;
 		
-	}
-	public String getQueryID() {
-		return queryID;
-	}
-
-	public void setQueryID(final String queryID) {
-		this.queryID = queryID;
+		if (resultType.equals(TagNames.Elements.EXCEPTION)) {
+			this.setExceptionExpected(true);
+		}
 	}
 	
-	public void setQuerySetID(final String querySetID) {
-		this.querySetID = querySetID;
-	}	
 	
+	@Override
 	public long getExecutionTime() {
 		return executionTime;
 	}
@@ -105,6 +79,7 @@ public class ExpectedResultsHolder implements ExpectedResults {
 	/**
 	 * @return Returns the query.
 	 */
+	@Override
 	public String getQuery() {
 		return query;
 	}
@@ -119,10 +94,6 @@ public class ExpectedResultsHolder implements ExpectedResults {
 
 	public boolean isResult() {
 		return resultType.equals(TagNames.Elements.QUERY_RESULTS);
-	}
-
-	public boolean isException() {
-		return resultType.equals(TagNames.Elements.EXCEPTION);
 	}
 
 	public String getResultType() {
