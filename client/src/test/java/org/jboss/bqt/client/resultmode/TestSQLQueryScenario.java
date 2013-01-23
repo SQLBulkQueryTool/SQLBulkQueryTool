@@ -83,6 +83,9 @@ public class TestSQLQueryScenario {
 		}
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
+		
+		assertTrue(set instanceof CreateSQLQuery);
+
 
 		assertTrue(set.getQuerySetIDs()==null);
 		
@@ -92,7 +95,7 @@ public class TestSQLQueryScenario {
 		
 		assertTrue(set.getExpectedResultsGenerator() == null);
 
-		assertTrue(set.getExpectedResults("") == null);
+		assertTrue(set.getExpectedResultsReader("") == null);
 
 	}
 

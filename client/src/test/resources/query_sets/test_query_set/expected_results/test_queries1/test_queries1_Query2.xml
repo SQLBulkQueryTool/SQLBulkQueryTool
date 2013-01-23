@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <queryResults name="test_queries_Query2" value="NULL">
+    <actual_exception>
+      <exceptionType>FrameworkRuntimeException</exceptionType>
+      <message>Query results file /Users/vhalbert/RedHat/github/SQLBulkQueryTool/integration/src/test/resources/query_sets/h2_queries/expected_results/h2_errors/h2_errors_h2_errors_Query1.xml cannot be found</message>
+      <class>org.jboss.bqt.core.exception.FrameworkRuntimeException</class>
+    </actual_exception>
+    <exception>
+      <exceptionType>NullPointerException</exceptionType>
+      <message />
+      <class>java.lang.NullPointerException</class>
+    </exception>
+  </queryResults>
+</root>
+

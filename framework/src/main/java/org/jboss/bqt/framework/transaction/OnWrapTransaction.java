@@ -21,76 +21,65 @@
  */
 package org.jboss.bqt.framework.transaction;
 
-import java.sql.SQLException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
-import org.jboss.bqt.framework.TransactionContainer;
-import org.jboss.bqt.framework.TransactionQueryTestCase;
-import org.jboss.bqt.framework.ConfigPropertyNames.CONNECTION_STRATEGY_PROPS;
-import org.jboss.bqt.framework.ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS;
+import org.jboss.bqt.framework.AbstractQuery;
+import org.jboss.bqt.framework.Test;
 
 /**
  * This transction is only valid when AutoCommit = ON txnAutoWrap = ON
  */
-public class OnWrapTransaction extends TransactionContainer {
+public class OnWrapTransaction extends AbstractQuery {
 	public OnWrapTransaction() {
 		super();
 	}
 
 	@Override
-	public void before(TransactionQueryTestCase test) {
-//		test.getConnectionStrategy().setEnvironmentProperty(
-//				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-//				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_ON);
-        
+	public void before(Test test) { 
+		super.before(test);
         try {
-			debug("Autocommit: " + test.getConnectionStrategy().getAutocommit());
-			test.getConnection().setAutoCommit(false);
-                                           //    test.getConnectionStrategy().getAutocommit());
-		} catch (SQLException e) {
+			debug("Autocommit: " + getConnectionStrategy().getAutocommit());
+			getConnectionStrategy().getConnection().setAutoCommit(false);
+
+		} catch (Exception e) {
 			throw new TransactionRuntimeException(e);
 		}
 
 	}
 
 	@Override
-	protected void after(TransactionQueryTestCase test) {
-		boolean exception = false;
-        System.out.println("OnWrapTransaction:  After");
+	public void after() {
 		try {
-			if (test.rollbackAllways() || test.exceptionOccurred()) {
-				test.getConnection().rollback();
+			if (getTest().rollbackAlways() || getTest().isExceptionExpected()) {
+				getConnectionStrategy().getConnection().rollback();
                 
 			} else {
-				test.getConnection().commit();
+				getConnectionStrategy().getConnection().commit();
                 System.out.println("OnWrapTransaction:  Commit");
 
                 debug("OnWrapTrnsaction:After: commit");
 			}
 			
-		} catch (SQLException se) {
+		} catch (Exception se) {
 			se.printStackTrace();
-			exception = true;
 			// if exception, try to trigger the rollback
 			try {
-				test.getConnection().rollback();
+				getConnectionStrategy().getConnection().rollback();
 			} catch (Exception e) {
 				// do nothing
 			}
-			throw new TransactionRuntimeException(se);
+			this.setApplicationException(se);
             
 		} finally {
 			// if an exception occurs and the autocommit is set to true - while
 			// doing a transaction
 			// will generate a new exception overriding the first exception
-			if (!exception) {
 				try {
-					test.getConnection().setAutoCommit(true);
-				} catch (SQLException e) {
-					throw new TransactionRuntimeException(e);
+					getConnectionStrategy().getConnection().setAutoCommit(true);
+				} catch (Exception e) {
+					this.setApplicationException(e);
 				}
-			}
+				super.after();
 		}
-        System.out.println("OnWrapTransaction:  Return");
 
         debug("OnWrapTrnsaction:After: return");
 

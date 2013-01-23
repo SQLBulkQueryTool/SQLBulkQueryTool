@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import javax.sql.XAConnection;
 
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.PropertiesUtils;
 
@@ -51,9 +52,9 @@ public abstract class ConnectionStrategy {
 	 * Returns a connection
 	 * 
 	 * @return Connection
-	 * @throws QueryTestFailedException
+	 * @throws FrameworkException
 	 */
-	public abstract Connection getConnection() throws QueryTestFailedException;
+	public abstract Connection getConnection() throws FrameworkException;
 
 
 	/**
@@ -76,8 +77,9 @@ public abstract class ConnectionStrategy {
 	/**
 	 * @return XAConnection
 	 * @throws QueryTestFailedException
+	 * @throws FrameworkException 
 	 */
-	public XAConnection getXAConnection() throws QueryTestFailedException {
+	public XAConnection getXAConnection() throws QueryTestFailedException, FrameworkException {
 		return null;
 	}
 

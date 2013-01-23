@@ -27,6 +27,7 @@ import java.util.Properties;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 
@@ -46,7 +47,7 @@ public class JEEConnection extends ConnectionStrategy {
 	}
 
 	@Override
-	public Connection getConnection() throws QueryTestFailedException {
+	public Connection getConnection() throws FrameworkException {
 		validate();
 		try {
 			InitialContext ctx = new InitialContext();
@@ -60,10 +61,9 @@ public class JEEConnection extends ConnectionStrategy {
 			}
 			Connection conn = source.getConnection();
 			return conn;
-		} catch (QueryTestFailedException qtfe) {
-			throw qtfe;
+
 		} catch (Exception e) {
-			throw new QueryTestFailedException(e);
+			throw new FrameworkException(e);
 		}
 	}
 

@@ -23,29 +23,24 @@
 package org.jboss.bqt.framework;
 
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.lang.StringUtils;
+import org.jboss.bqt.core.exception.FrameworkException;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ArgCheck;
-import org.jboss.bqt.core.util.StringHelper;
-import org.jboss.bqt.framework.resultsreaders.MetadataReader;
-import org.jboss.bqt.framework.resultsreaders.ResultSetReader;
-import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
+import org.jboss.bqt.framework.connection.ConnectionStrategy;
+import org.jboss.bqt.framework.connection.ConnectionStrategyFactory;
+import org.jboss.bqt.framework.util.AssertResults;
+import org.jboss.bqt.framework.util.PrintResults;
 
 
 /**
@@ -55,32 +50,83 @@ import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
  * The connection is not closed by this class, only lent to this class for
  * query processing.
  */
-public abstract class AbstractQuery {
+public abstract class AbstractQuery implements TransactionAPI {
 
 	// NOTE not all tests will pass with this set to true, only those with
 	// scrollable resultsets
 	static boolean WRITE_ACTUAL = false;
+	
+	protected ConnectionStrategy connStrategy;
+
 
 	protected Connection internalConnection = null;
 	protected ResultSet internalResultSet = null;
 	protected Statement internalStatement = null;
 	private SQLException internalException = null;
-	protected int updateCount = -1;
-	protected String DELIMITER = "    "; //$NON-NLS-1$ 
+	private Throwable applicationException = null;
 	
-	protected long endTS = 0;
-	protected long beginTS = 0;
-
+	
+	private String testClassName = "n/a";
+	
+	private Test test = null;
 
 	public AbstractQuery() {
-		super();
+		
+		this.testClassName = StringUtils.substringAfterLast(this.getClass().getName(),
+		".");
+
+		connStrategy = ConnectionStrategyFactory
+					.createConnectionStrategy();
+
+	}
+	
+	/*************************  
+	 * LifeCycle Methods
+	 *************************/
+
+	/**
+	 * @param test 
+	 * 
+	 */
+	public void before(Test test) {
+		this.test = test;
+		
+		this.applicationException = null;
+		this.internalException = null;
+		
+		try {
+			this.setConnection(this.connStrategy.getConnection());
+		} catch (FrameworkException e) {
+			throw new FrameworkRuntimeException(e.getMessage());
+		}
+
+	}
+	
+	public void after() {
+		test.setException(this.getException());
 	}
 
-	public AbstractQuery(Connection conn) {
-		super();
-		this.internalConnection = conn;
+	
 
+	/**
+	 * Call after each query has completed and fully processed. Meaning all the
+	 * rows have been read, that need to be, and any commit or rollback has been
+	 * performed.
+	 */
+	public void cleanup()  {
+		closeStatement();
+		// don't clear connection, it will be reused,
+		// just clear it out
+		this.internalConnection = null;
+		this.internalException = null;
+		this.applicationException = null;
 	}
+	
+	public ConnectionStrategy getConnectionStrategy() {
+		return this.connStrategy;
+	}
+	
+	/* ********** End Of LifeCycle Methods  ************ */
 
 	public void setConnection(Connection c) {
 		this.internalConnection = c;
@@ -89,7 +135,22 @@ public abstract class AbstractQuery {
 	public Connection getConnection() {
 		return this.internalConnection;
 	}
-
+	
+	public Test getTest() {
+		return this.test;
+	}
+	
+	public ResultSet getResultSet() {
+		return this.internalResultSet;
+	}
+	
+		
+	/**
+	 * @param sql 
+	 * @return boolean
+	 * @throws QueryTestFailedException 
+	 * 
+	 */
 	public boolean execute(String sql) throws QueryTestFailedException {
 		return execute(sql, new Object[] {});
 	}
@@ -101,14 +162,15 @@ public abstract class AbstractQuery {
 	
 	public boolean execute(String sql, Object[] params, Serializable payload) throws QueryTestFailedException {
 		closeStatement();
-		this.updateCount = -1;
-		endTS = 0;
-		beginTS = 0;
+		long endTS = 0;
+		long beginTS = 0;
+
+		boolean result = false;
 
 		try {
 			ArgCheck.isNotNull(this.internalConnection, "Unable to execute, connection is null");
 			ArgCheck.isTrue(!this.internalConnection.isClosed(), "Connection is closed");
-			boolean result = false;
+			
 			if (params != null && params.length > 0) {
 				if (sql.toLowerCase().startsWith("exec ")) { //$NON-NLS-1$
 					sql = sql.substring(5);
@@ -125,9 +187,9 @@ public abstract class AbstractQuery {
 				beginTS = System.currentTimeMillis();
 
 				result = ((PreparedStatement) this.internalStatement).execute();
-				
+								
 				endTS = System.currentTimeMillis();
-
+				
 			} else {
 				this.internalStatement = createStatement();
 				assignExecutionProperties(this.internalStatement);
@@ -138,25 +200,29 @@ public abstract class AbstractQuery {
 				result = this.internalStatement.execute(sql);
 				
 				endTS = System.currentTimeMillis();
-
+								
 			}
-			
+
 			if (result) {
 				this.internalResultSet = this.internalStatement.getResultSet();
+				
 			} else {
-				this.updateCount = this.internalStatement.getUpdateCount();
+				
+				this.test.setRowCount(0);
+				this.test.setUpdateCount( this.internalStatement.getUpdateCount() );			
 			}
-			return result;
+
+			
 		} catch (SQLException e) {
 			endTS = -1;
 			beginTS = -1;
 
 			this.internalException = e;
-			if (!exceptionExpected()) {
-				throw new QueryTestFailedException(e);
-			}
+			throw new QueryTestFailedException(e);
 		}
-		return false;
+		this.test.setBeginTS(beginTS);
+		this.test.setEndTS(endTS);
+		return result;
 	}
 	
 	protected Statement createPrepareCallStatement(String sql)
@@ -168,8 +234,15 @@ public abstract class AbstractQuery {
 		return this.internalConnection.prepareStatement(sql);
 	}
 
+//	protected Statement createStatement() throws SQLException {
+//		return this.internalConnection.createStatement();
+//	}
+//	
+
+//	@Override
 	protected Statement createStatement() throws SQLException {
-		return this.internalConnection.createStatement();
+		return this.internalConnection.createStatement(
+				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 	}
 
 	private void setParameters(PreparedStatement stmt, Object[] params)
@@ -218,12 +291,12 @@ public abstract class AbstractQuery {
 
 		} catch (SQLException e) {
 			this.internalException = e;
-			if (!exceptionExpected()) {
+//			if (!exceptionExpected()) {
 				throw new QueryTestFailedException(e);
-			}
+//			}
 		}
 
-		return null;
+//		return null;
 
 	}
 
@@ -250,151 +323,62 @@ public abstract class AbstractQuery {
 	public boolean exceptionOccurred() {
 		return this.internalException != null;
 	}
-
-	public boolean exceptionExpected() {
-		return false;
+	
+	/**
+	 * Called by the testing process to capture the exception to be exposed
+	 * when {@link #getException()} is called.
+	 * @param t
+	 */
+	public void setApplicationException(Throwable t) {
+		// keep the first one set, which is most like the exception closest
+		// to the problem that we need to know about
+		if (this.applicationException == null) this.applicationException = t;
 	}
 
-	public SQLException getLastException() {
-		return this.internalException;
-	}
-
-	public void assertResultsSetEquals(File expected) throws QueryTestFailedException {
-		assertResultsSetEquals(this.internalResultSet, expected);
-	}
-
-	public void assertResultsSetEquals(ResultSet resultSet, File expected) throws QueryTestFailedException {
-		ArgCheck.isNotNull(resultSet, "Unable to compare ResultSet to expected file results, ResultSet is null");
-		try {
-			writeResultSet(expected, new BufferedReader(new ResultSetReader(
-					resultSet, DELIMITER)));
-			if (resultSet.getType() != ResultSet.TYPE_FORWARD_ONLY) {
-				resultSet.beforeFirst();
+	private Throwable getException() {
+		if (this.internalException != null) return this.internalException;
+		
+		if (this.applicationException != null) {
+			if (this.applicationException instanceof SQLException) {
+				return this.applicationException;
 			}
-			assertReaderEquals(new ResultSetReader(resultSet, DELIMITER),
-					new FileReader(expected));
-		} catch (IOException e) {
-			throw new TransactionRuntimeException(e);
-		} catch (SQLException e) {
-			throw new QueryTestFailedException(e);
+
+			SQLException mm = new SQLException(
+					this.applicationException.getMessage());
+			return mm;
+
 		}
+
+		return null;
+	}
+	
+	public void assertResultsSetEquals(Object expected) throws QueryTestFailedException {
+		if (expected instanceof File) {
+			AssertResults.assertResultsSetEquals(this.internalResultSet, (File) expected, this.compareCaseSensitive());
+		} else 
+		if (expected instanceof String) {
+			AssertResults.assertResultsSetEquals(this.internalResultSet, (String) expected, this.compareCaseSensitive());
+		} else {	
+			AssertResults.assertResultsSetEquals(this.internalResultSet, (String[]) expected, this.compareCaseSensitive());
+		}		
 	}
 
-	private void writeResultSet(File expected, BufferedReader resultReader)
-			throws IOException {
-		if (WRITE_ACTUAL) {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(expected));
-			String s = null;
-			while ((s = resultReader.readLine()) != null) {
-				bw.write(s);
-				bw.write("\n"); //$NON-NLS-1$
-			}
-			bw.close();
-		}
-	}
 
-	public void assertResultsSetEquals(String expected) {
-		assertResultsSetEquals(this.internalResultSet, expected);
-	}
-
-	public void assertResultsSetEquals(ResultSet resultSet, String expected) {
-		ArgCheck.isNotNull(resultSet, "Unable to compare ResultSet to expected results, ResultSet is null");
-		assertReaderEquals(new ResultSetReader(resultSet, DELIMITER),
-				new StringReader(expected));
-	}
-
-	public void assertResults(String[] expected) {
-		assertResultsSetEquals(expected);
-	}
-
-	public void assertResultsSetEquals(String[] expected) {
-		assertResultsSetEquals(this.internalResultSet, expected);
-	}
-
-	public void assertResultsSetEquals(ResultSet resultSet, String[] expected) {
-		ArgCheck.isNotNull(resultSet, "Unable to compare ResultSet to expected results, ResultSet is null");
-		assertReaderEquals(new ResultSetReader(resultSet, DELIMITER),
-				new StringArrayReader(expected));
-	}
-
-	public void assertReaderEquals(Reader expected, Reader reader) {
-		BufferedReader resultReader = new BufferedReader(expected);
-		BufferedReader expectedReader = new BufferedReader(reader);
-		try {
-			compareResults(resultReader, expectedReader);
-		} catch (Exception e) {
-			throw new TransactionRuntimeException(e);
-		} finally {
-			try {
-				resultReader.close();
-				expectedReader.close();
-			} catch (IOException e) {
-				throw new TransactionRuntimeException(e);
-			}
-		}
-	}
-
-	public void assertResultsSetMetadataEquals(ResultSetMetaData metadata,
-			File expected) {
-		ArgCheck.isNotNull(metadata, "Unable to compare ResultSetMetaData to expected results, ResultSetMetaData is null");
-		try {
-			writeResultSet(expected, new BufferedReader(new MetadataReader(
-					metadata, DELIMITER)));
-			assertReaderEquals(new MetadataReader(metadata, DELIMITER),
-					new FileReader(expected));
-		} catch (IOException e) {
-			throw new TransactionRuntimeException(e);
-		}
-	}
-
-	public void assertResultsSetMetadataEquals(ResultSetMetaData metadata,
-			String[] expected) {
-		ArgCheck.isNotNull(metadata, "Unable to compare ResultSetMetaData to expected results, ResultSetMetaData is null");
-		assertReaderEquals(new MetadataReader(metadata, DELIMITER),
-				new StringArrayReader(expected));
-	}
-
-	protected static String read(BufferedReader r, boolean casesensitive)
-			throws IOException {
-		StringBuffer result = new StringBuffer();
-		String s = null;
-		try {
-			while ((s = r.readLine()) != null) {
-				result.append((casesensitive ? s.trim() : s.trim()
-						.toLowerCase()));
-				result.append("\n"); //$NON-NLS-1$
-			}
-		} finally {
-			r.close();
-		}
-		return result.toString();
-	}
-
-	protected void compareResults(BufferedReader resultReader,
-			BufferedReader expectedReader) throws IOException {
-		ArgCheck.isTrue (StringHelper.isEqual(
-				read(expectedReader, compareCaseSensitive()),
-				read(resultReader, compareCaseSensitive( ))
-				                                )
-			                );
-	}
 
 	protected boolean compareCaseSensitive() {
 		return true;
 	}
 
 	public void printResults() {
-		printResults(this.internalResultSet);
+		PrintResults.printResults(this.internalResultSet);
 	}
-
-	public void printResults(ResultSet results) {
-		printResults(results, false);
-	}
-
-	public void printResults(boolean comparePrint) {
+	
+	public  void printResults(boolean comparePrint) {
 		ArgCheck.isNotNull(this.internalResultSet, "Unable to printResults, ResultSet it null");
-		printResults(this.internalResultSet, comparePrint);
-	}
+		PrintResults.printResults(this.internalResultSet, comparePrint);
+	}	
+	
+
 
 	public void walkResults() throws QueryTestFailedException {
 		ArgCheck.isNotNull(this.internalResultSet, "Unable to walk results, ResultSet is null");
@@ -413,46 +397,6 @@ public abstract class AbstractQuery {
 		}
 	}
 
-	void printResults(ResultSet results, boolean comparePrint) {
-		if (results == null) {
-			System.out.println("ResultSet is null"); //$NON-NLS-1$
-			return;
-		}
-		int row;
-		try {
-			row = -1;
-			BufferedReader in = new BufferedReader(new ResultSetReader(results,
-					DELIMITER));
-			String line = in.readLine();
-			while (line != null) {
-				row++;
-				if (comparePrint) {
-					line = line.replaceAll("\"", "\\\\\""); //$NON-NLS-1$ //$NON-NLS-2$
-					System.out.println("\"" + line + "\","); //$NON-NLS-1$ //$NON-NLS-2$
-				} else {
-					System.out.println(line);
-				}
-				line = in.readLine();
-			}
-			System.out.println("Fetched " + row + " rows\n"); //$NON-NLS-1$ //$NON-NLS-2$
-		} catch (IOException e) {
-			throw new TransactionRuntimeException(e);
-		}
-	}
-
-	public void assertUpdateCount(int expected) throws QueryTestFailedException {
-		if (expected != updateCount) {
-			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.updateCountNotCorrect", new Object[] { String.valueOf(expected), String.valueOf( updateCount) }));
-		}
-	}
-
-	public void assertRowCount(int expected) throws QueryTestFailedException {
-		int count = getRowCount();
-		if (expected != count) {
-			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( count) }));
-		}
-	}
-
 	public int getRowCount() throws QueryTestFailedException {
 		if (this.internalResultSet == null) return 0;
 		// Count all
@@ -467,7 +411,25 @@ public abstract class AbstractQuery {
 		}
 	}
 
-	public void closeStatement() {
+	public void cancelQuery() throws SQLException {
+		ArgCheck.isNotNull(this.internalConnection, "Unable to cancel query, result set is null");
+		ArgCheck.isTrue(!this.internalConnection.isClosed());
+		ArgCheck.isNotNull(this.internalStatement, "Unable to close statement, its null");
+		this.internalStatement.cancel();
+	}
+
+
+	protected void executeAndAssertResults(String query, String[] expected) throws QueryTestFailedException {
+		execute(query);
+		if (expected != null) {
+			assertResultsSetEquals(expected);
+		} else {
+			printResults(true);
+		}
+	}
+	
+
+	private void closeStatement() {
 		closeResultSet();
 
 		if (this.internalStatement != null) {
@@ -481,7 +443,7 @@ public abstract class AbstractQuery {
 		}
 	}
 
-	public void closeResultSet() {
+	private void closeResultSet() {
 		this.internalException = null;
 
 		if (this.internalResultSet != null) {
@@ -493,48 +455,18 @@ public abstract class AbstractQuery {
 				this.internalResultSet = null;
 			}
 		}
+		
+		
+	}
+	
+	protected void debug(String message) {
+		FrameworkPlugin.LOGGER.debug("[" + this.testClassName + "] " + message);
 	}
 
-	public void closeConnection() {
-		closeStatement();
-		try {
-			if (this.internalConnection != null) {
-				try {
-					this.internalConnection.close();
-				} catch (SQLException e) {
-					throw new TransactionRuntimeException(e);
-				}
-			}
-		} finally {
-			this.internalConnection = null;
-		}
+	protected void detail(String message) {
+		FrameworkPlugin.LOGGER.info("[" + this.testClassName + "] " + message);
 	}
 
-	public void cancelQuery() throws SQLException {
-		ArgCheck.isNotNull(this.internalConnection, "Unable to cancel query, result set is null");
-		ArgCheck.isTrue(!this.internalConnection.isClosed());
-		ArgCheck.isNotNull(this.internalStatement, "Unable to close statement, its null");
-		this.internalStatement.cancel();
-
-
-	}
-
-	public void print(String msg) {
-		System.out.println(msg);
-	}
-
-	public void print(Throwable e) {
-		e.printStackTrace();
-	}
-
-	protected void executeAndAssertResults(String query, String[] expected) throws QueryTestFailedException {
-		execute(query);
-		if (expected != null) {
-			assertResults(expected);
-		} else {
-			printResults(true);
-		}
-	}
 	
 	
 }

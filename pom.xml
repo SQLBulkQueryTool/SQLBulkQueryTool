@@ -28,10 +28,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/vhalbert/SQLBulkQueryTool.git</connection>
-		<developerConnection>scm:git:git@github.com:vhalbert/SQLBulkQueryTool.git</developerConnection>
-		<url>http://github.com/vhalbert/SQLBulkQueryTool</url>
-	<!-- url>http://github.com/ModeShape/modeshape</url -->
+		<connection>scm:git:git://github.com/SQLBulkQueryTool/SQLBulkQueryTool.git</connection>
+		<developerConnection>scm:git:git@github.com:SQLBulkQueryTool/SQLBulkQueryTool.git</developerConnection>
+		<url>http://github.com/SQLBulkQueryTool</url>
 	</scm>
 
 	<developers>
@@ -116,12 +115,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
-			<dependency>
-				<groupId>org.jboss.teiid</groupId>
-				<artifactId>teiid-client</artifactId>
-				<version>7.7.0</version>
-			</dependency>
 
 			<dependency>
 				<groupId>org.jboss.bqt</groupId>

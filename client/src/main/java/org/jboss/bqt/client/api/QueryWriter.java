@@ -22,6 +22,8 @@
 
 package org.jboss.bqt.client.api;
 
+import java.util.Properties;
+
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 
@@ -33,7 +35,23 @@ import org.jboss.bqt.client.TestProperties;
  * @author vhalbert
  *
  */
-public interface QueryWriter {
+public abstract class QueryWriter {
+	
+	private Properties properties;
+	private QueryScenario scenario;
+	
+	public QueryWriter(QueryScenario scenario, Properties props) {
+		this.properties = props;
+		this.scenario = scenario;
+	}
+	
+	protected Properties getProperties() {
+		return properties;
+	}
+	
+	protected QueryScenario getQueryScenario() {
+		return scenario;
+	}
 	
 	/**
 	 * Returns the full path to the location the query files will be persisted to.
@@ -41,13 +59,13 @@ public interface QueryWriter {
 	 * 
 	 * @see TestProperties#PROP_SQL_DIR
 	 */
-	String getSQlFileOutputLocation();
+	public abstract String getSQlFileOutputLocation();
 	
 	/**
 	 * Called to write the <code>tests</code> to the {@link #getSQlFileOutputLocation() output} location.
 	 * @param tests contains the SQL queries to write.
 	 * @throws Exception
 	 */
-	void writeQueryTest(QueryTest tests) throws Exception;
+	public abstract void writeQueryTest(QueryTest tests) throws Exception;
 
 }

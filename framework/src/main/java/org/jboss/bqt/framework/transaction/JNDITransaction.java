@@ -25,21 +25,23 @@ import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
+import org.jboss.bqt.framework.AbstractQuery;
 import org.jboss.bqt.framework.ConfigPropertyNames;
-import org.jboss.bqt.framework.TransactionContainer;
-import org.jboss.bqt.framework.TransactionQueryTestCase;
+import org.jboss.bqt.framework.Test;
 
-public class JNDITransaction extends TransactionContainer {
+public class JNDITransaction extends AbstractQuery  {
 	UserTransaction userTxn = null;
 
 	public JNDITransaction() {
 		super();
 	}
-
+	
+	
 	@Override
-	protected void before(TransactionQueryTestCase test) {
-		String jndi = test
-				.getConnectionStrategy()
+	public void before(Test test) {
+		super.before(test);
+		
+		String jndi = getConnectionStrategy()
 				.getEnvironment()
 				.getProperty(
 						ConfigPropertyNames.CONNECTION_STRATEGY_PROPS.JNDINAME_USERTXN);
@@ -47,6 +49,9 @@ public class JNDITransaction extends TransactionContainer {
 			throw new TransactionRuntimeException(
 					"No JNDI name found for the User Transaction to look up in application server");
 		}
+		
+		debug("JNDITransaction - UserTxn: " + jndi);
+
 
 		try {
 
@@ -60,10 +65,10 @@ public class JNDITransaction extends TransactionContainer {
 	}
 
 	@Override
-	protected void after(TransactionQueryTestCase test) {
+	public void after() {
 		try {
 			if (this.userTxn != null) {
-				if (test.rollbackAllways() || test.exceptionOccurred()) {
+				if (getTest().rollbackAlways() || getTest().isExceptionExpected()) {
 					this.userTxn.rollback();
 				} else {
 					this.userTxn.commit();
@@ -71,7 +76,33 @@ public class JNDITransaction extends TransactionContainer {
 				this.userTxn = null;
 			}
 		} catch (Exception e) {
-			throw new TransactionRuntimeException(e);
+			this.setApplicationException(e);
+		} finally {
+			super.after();
 		}
 	}
+
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @see org.jboss.bqt.framework.AbstractQuery#cleanup()
+	 */
+	@Override
+	public void cleanup() {
+		super.cleanup();
+		
+		// if not null, an exception might have occurred in which after(..) method was not called
+		// therefore, force rollback
+		if (this.userTxn != null) {
+			try {
+				this.userTxn.rollback();
+			} catch (Exception e) {
+				
+			}
+		}
+		this.userTxn=null;
+	}
+	
+	
 }

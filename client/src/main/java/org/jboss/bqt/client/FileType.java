@@ -21,10 +21,13 @@
  */
 package org.jboss.bqt.client;
 
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.framework.Test;
+
 
 /**
  * An instance of FileType represents a set of classes that work together to process a common file format
- * when reading or writing files.
+ * when reading or writing query files.
  *  
  * @author vhalbert
  *
@@ -49,5 +52,30 @@ public interface FileType {
 	String getQueryWriterClassName();
 	
 	String getQueryReaderClassName();
+	
+	/** 
+	 * Returns the name of the query file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String query file name
+	 */
+	String getQueryFileName(QueryScenario scenario, QueryTest test);
+
+	
+	/** 
+	 * Returns the name of the file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String expected results file name
+	 */
+	String getExpectedResultsFileName(QueryScenario scenario, Test test);
+	
+	/**
+	 * Returns the name of the error file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String error file name
+	 */
+	String getErrorFileName(QueryScenario scenario, Test test);
 
 }

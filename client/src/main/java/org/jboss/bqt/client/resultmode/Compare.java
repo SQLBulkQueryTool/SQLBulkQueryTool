@@ -28,9 +28,9 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
-import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.Test;
 
 /**
  * The Compare Result Mode controls the process for comparing actual results against the expected
@@ -50,14 +50,6 @@ public class Compare extends QueryScenario {
 
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#setUp()
-	 */
-	@Override
-	protected void setUp() {
-	}	
 	
 	@Override
 	public boolean isCompare() {
@@ -85,15 +77,15 @@ public class Compare extends QueryScenario {
 	 * @throws QueryTestFailedException 
 	 * @throws  FrameworkException
 	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(org.jboss.bqt.client.api.TestResult, java.sql.ResultSet)
+	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(Test, java.sql.ResultSet)
 	 */
 	@Override
-	public void handleTestResult(TestResult tr, ResultSet resultSet) throws FrameworkException, QueryTestFailedException {
+	public void handleTestResult(Test tr, ResultSet resultSet) throws FrameworkException, QueryTestFailedException {
 		
-		if (tr.getStatus() != TestResult.RESULT_STATE.TEST_EXCEPTION) {
+		if (tr.isFailure()) {
 			Throwable resultException = tr.getException();
 			try {
-				this.getExpectedResults(tr.getQuerySetID())
+				this.getExpectedResultsReader(tr.getQuerySetID())
 						.compareResults(tr, resultSet,
 								isOrdered(tr.getQuery()));
 
@@ -101,20 +93,20 @@ public class Compare extends QueryScenario {
 				resultException = (resultException != null ? resultException
 						: qtf);
 				tr.setException(resultException);
-				tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
 
 			}
 		}
 
 		// create an error file that also contains the expected results
-		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+		if (tr.isFailure()) {
 			this.getErrorWriter().generateErrorFile(tr, resultSet,
-					this.getExpectedResults(tr.getQuerySetID()).getResultsFile(tr.getQueryID()));
+					this.getExpectedResultsReader(tr.getQuerySetID()).getResultsFile(tr));
 
 		}
 	}
 	
 	private boolean isOrdered(String sql) {
+		if (sql == null) return false;
 
 		if (sql.toLowerCase().indexOf(" order by ") > 0) {
 			return true;

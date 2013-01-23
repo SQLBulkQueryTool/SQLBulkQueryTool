@@ -24,25 +24,61 @@ package org.jboss.bqt.client.api;
 
 import java.io.File;
 import java.sql.ResultSet;
+import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.Test;
 
 /**
  * An ExpectedResultsReader represents one set of expected results (referred to as the
- * queryset) that will be read when the result mode is either {@link TestProperties.RESULT_MODES#NONE none} or
- * {@link TestProperties.RESULT_MODES#COMPARE compare} or {@link TestProperties.RESULT_MODES#GENERATE generate}.  
- * The query files should be found in the {@link TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC executedResultsDir}
- * and identified by the {@link #getQuerySetID}. The
- * <code>queryidentifier</code> identify a unique query and corresponds to the
+ * queryset) that will be read when expected results are needed in the testing process.  
+ * The query files should be found in the {@link TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC executedResultsDir}. The
+ * <code>queryID</code> identify a unique query and corresponds to the
  * expected results file.
  * 
  * 
  * @author vanhalbert
  * 
  */
-public interface ExpectedResultsReader {
+public abstract class ExpectedResultsReader {
+	
+	private Properties properties;
+	private QueryScenario scenario;
+	private String querySetID;
+	private String results_dir_loc = null;
+
+	
+	public ExpectedResultsReader(QueryScenario scenario, String querySetID, Properties props) {
+		this.properties = props;
+		this.scenario = scenario;
+		this.querySetID = querySetID;
+		
+		this.results_dir_loc = props.getProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
+		if (this.results_dir_loc == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
+		}
+
+	}
+	
+	protected Properties getProperties() {
+		return properties;
+	}
+	
+	protected QueryScenario getQueryScenario() {
+		return scenario;
+	}
+	
+	/**
+	 * Return the unique identifier for this query set.
+	 * 
+	 * @return QuerySetID
+	 */
+	public String getQuerySetID() {
+		return this.querySetID;
+	}
 
 	/**
 	 * Returns the full path to the expected results location.
@@ -50,58 +86,48 @@ public interface ExpectedResultsReader {
 	 * 
 	 * @see TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC
 	 */
-	String getExpectResultsLocation();
-
-	/**
-	 * Return the unique identifier for this query set.
-	 * 
-	 * @return QuerySetID
-	 */
-	String getQuerySetID();
+	public String getExpectResultsLocation() {
+		return this.results_dir_loc;
+	}
 
 	/**
 	 * Returns the <code>File</code> location for the actual results for the
 	 * specified query identifier.
 	 * 
-	 * @param queryidentifier
+	 * @param test
 	 * @return File location for actual results for the specified query
 	 * @throws FrameworkRuntimeException
 	 * 
 	 * @since
 	 */
-	File getResultsFile(String queryidentifier) throws FrameworkRuntimeException;
-
-	/**
-	 * 
-	 *      Return true if the expected results file is needed in the test.
-	 *      Either for comparison or generation. It will return false when the
-	 *      option <code>TestProperties.RESULT_MODES.NONE</code>
-	 * @return boolean true if expected results are needed for the test
-	 */
-	boolean isExpectedResultsNeeded();
+	public abstract File getResultsFile(Test test) throws FrameworkRuntimeException;
 
 	/**
 	 * Indicates if a query expects to have an <code>Exception</code> to be
 	 * thrown when the query is executed.
 	 * 
-	 * @param queryidentifier
+	 * @param test
 	 * @return boolean true if the query expects an exception to be thrown
 	 * @throws FrameworkRuntimeException
 	 */
-	boolean isExceptionExpected(String queryidentifier)
+	public abstract boolean isExceptionExpected(Test test)
 			throws FrameworkRuntimeException;
+	
+	
+	public abstract ExpectedResults getExpectedResults(Test test);
+	
 
 	/**
 	 * Called to compare the <code>ResultSet</code> from the executed query to
 	 * the expected results and return the errors.
-	 * @param testresults 
+	 * @param test 
 	 * @param resultSet 
 	 * @param isOrdered 
 	 * @return Object identifying the errors in the comparison
 	 * @throws QueryTestFailedException
 	 */
 	
-	Object compareResults(final TestResult testresults,
+	public abstract Object compareResults(final Test test,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException;
 
 	

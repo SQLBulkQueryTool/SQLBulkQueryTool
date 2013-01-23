@@ -61,12 +61,13 @@ public class TestXMLExpectedResults {
 	 * @throws Exception
 	 */
 	@Test
-	@Ignore
 	public void testEmptyFolders() throws Exception {
 		//  the following 3 properties are what's normally found in the scenario.properties file
 		System.setProperty("queryset.dirname", "test_query_set");
 		System.setProperty("test.queries.dirname", "test_queries");
 		System.setProperty("expected.results.dirname", "expected_results");	
+		
+		System.setProperty("result.mode", "compare");	
 	
 		//
 		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
@@ -96,20 +97,21 @@ public class TestXMLExpectedResults {
 				System.out.println("Failed, didn't load any queries ");
 			}
 
-			ExpectedResultsReader er = set.getExpectedResults(querySetID);
+			ExpectedResultsReader er = set.getExpectedResultsReader(querySetID);
 
 			ExpectedResultsWriter gr = set.getExpectedResultsGenerator();
 
 			Iterator<QueryTest> qIt = queries.iterator();
 			while (qIt.hasNext()) {
 				QueryTest q = qIt.next();
+				org.jboss.bqt.framework.Test t = new org.jboss.bqt.framework.Test(q.getQuerySetID(), q.getQueryID());
 				// String qId = (String) qIt.next();
 				// String sql = (String) queries.get(qId);
 
 				// System.out.println("SetID #: " + cnt + "  Qid: " + qId +
 				// "   sql: " + sql);
 
-				File resultsFile = er.getResultsFile(q.getQueryID());
+				File resultsFile = er.getResultsFile(t);
 				if (resultsFile == null) {
 					System.out
 							.println("Failed to get results file for queryID "
