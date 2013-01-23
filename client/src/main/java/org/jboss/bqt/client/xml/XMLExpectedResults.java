@@ -39,51 +39,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
-import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
+import org.jboss.bqt.framework.Test;
 import org.jdom.JDOMException;
 
-import org.apache.commons.lang.StringUtils;
-
-public class XMLExpectedResults implements ExpectedResultsReader {
+public class XMLExpectedResults extends ExpectedResultsReader {
 	private static String newline = System.getProperty("line.separator"); //$NON-NLS-1$
-	
-	private Properties props;
-	private String resultMode = TestProperties.RESULT_MODES.NONE;
-	private String querySetIdentifier = null;
-	private String results_dir_loc = null;
 	
 	private double exceed_percent = -0.99999;
 	private long exec_minumin_time = -1;
 
-	private Map<String, ResultsHolder> loadedResults = new HashMap<String, ResultsHolder>();
+	private Map<String, ExpectedResultsHolder> loadedResults = new HashMap<String, ExpectedResultsHolder>();
 
-	public XMLExpectedResults(String querySetIdentifier, Properties properties) {
-		this.props = properties;
-		this.querySetIdentifier = querySetIdentifier;
-				
-		resultMode = BQTUtil.getResultMode(this.props);
+	public XMLExpectedResults(QueryScenario scenario, String querySetID, Properties props) {
+		super(scenario, querySetID, props);
 
-		this.results_dir_loc = props.getProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
-		if (this.results_dir_loc == null) {
-			BQTUtil.throwInvalidProperty(TestProperties.PROP_EXPECTED_RESULTS_DIR_LOC);
-		}
-		
-		File dir = new File(results_dir_loc + File.separator + querySetIdentifier);
+		File dir = new File(this.getExpectResultsLocation() + File.separator + querySetID);
 		if (!dir.exists()) {
-			if (this.isExpectedResultsNeeded()) {			
-				throw new FrameworkRuntimeException("Query results directory "
+			if (this.getQueryScenario().isExpectedResultsNeeded()) {			
+				throw new FrameworkRuntimeException("Query expected results directory "
 						+ dir.getAbsolutePath() + " does not exist");
 			}
 		} else if (dir.list() == null) {
-			throw new FrameworkRuntimeException("Query results directory "
+			throw new FrameworkRuntimeException("Query expected results directory "
 					+ dir.getAbsolutePath() + " does not contain any files");
 		}
 		
@@ -102,7 +90,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		// if exceed percent was set and exec time was not, set exec time to minimum of 1 mil
 		if (exceed_percent > 0 && exec_minumin_time < 0) exec_minumin_time = 1;
 
-		ClientPlugin.LOGGER.debug("Expected results loc: " + this.results_dir_loc);
+		ClientPlugin.LOGGER.debug("Expected results loc: " + dir.getAbsolutePath());
 	}
 	
 
@@ -111,53 +99,44 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 *
 	 * @see org.jboss.bqt.client.api.ExpectedResultsReader#getExpectResultsLocation()
 	 */
-	@Override
-	public String getExpectResultsLocation() {
-		return this.results_dir_loc;
-	}
 
 
 	@Override
-	public boolean isExpectedResultsNeeded() {
-		return (resultMode
-				.equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE));
-	}
-
-	@Override
-	public boolean isExceptionExpected(String queryidentifier)
+	public boolean isExceptionExpected(Test test)
 			throws FrameworkRuntimeException {
-		if (isExpectedResultsNeeded()) {
+		if (this.getQueryScenario().isExpectedResultsNeeded()) {
 
-			ResultsHolder expectedResults = getResults(queryidentifier);
+			ExpectedResultsHolder expectedResults = getResultsFromCache(test);
 
 			return (expectedResults.getExceptionMsg() == null ? false : true);
 		}
 		return false;
 	}
-
+	
 	@Override
-	public String getQuerySetID() {
-		return this.querySetIdentifier;
+	public ExpectedResults getExpectedResults(Test test) {
+			ExpectedResultsHolder expectedResults = getResultsFromCache(test);
+			return expectedResults;
 	}
 
-	@Override
-	public synchronized File getResultsFile(String queryidentifier)
+
+	public synchronized File getResultsFile(Test test)
 			throws FrameworkRuntimeException {
-		return findExpectedResultsFile(queryidentifier, this.querySetIdentifier);
+		return findExpectedResultsFile(test, this.getQuerySetID());
 
 	}
 
-	private ResultsHolder getResults(String queryidentifier)
+	private ExpectedResultsHolder getResultsFromCache(Test test)
 			throws FrameworkRuntimeException {
-		ResultsHolder rh = null;
+		ExpectedResultsHolder rh = null;
 
-		if (!loadedResults.containsKey(queryidentifier)) {
-			File er = findExpectedResultsFile(queryidentifier, this.querySetIdentifier);
+		if (!loadedResults.containsKey(test.getQueryID())) {
+			File er = findExpectedResultsFile(test, this.getQuerySetID());
 			rh = loadExpectedResults(er);
 			
-			loadedResults.put(queryidentifier, rh);
+			loadedResults.put(test.getQueryID(), rh);
 		} else {
-			rh = loadedResults.get(queryidentifier);
+			rh = loadedResults.get(test.getQueryID());
 		}
 
 		return rh;
@@ -178,22 +157,22 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 *             If comparison fails.
 	 */
 	@Override
-	public Object compareResults(final TestResult actualTestResults,
+	public Object compareResults(final Test actualTestResults,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
 	
 		final String eMsg = "CompareResults Error: "; //$NON-NLS-1$
 
-		ResultsHolder expectedResults =  getResults(actualTestResults.getQueryID());
+		ExpectedResultsHolder expectedResults =  getResultsFromCache(actualTestResults);
 
-		ResultsHolder actualResults;
+		ExpectedResultsHolder actualResults;
 
 		switch (actualTestResults.getStatus()) {
-		case TestResult.RESULT_STATE.TEST_EXCEPTION:
+		case Test.RESULT_STATE.TEST_EXCEPTION:
 			throw new QueryTestFailedException(
 					eMsg
 							+ "Test resulted in unexpected exception " + actualTestResults.getExceptionMsg()); //$NON-NLS-1$
 
-		case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+		case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 
 			if (!expectedResults.isException()) {
 				// The actual exception was expected, but the expected results
@@ -205,7 +184,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 			}
 			// We got an exception that we expected - convert actual exception
 			// to ResultsHolder
-			actualResults = new ResultsHolder(TagNames.Elements.EXCEPTION, actualTestResults);
+			actualResults = new ExpectedResultsHolder(TagNames.Elements.EXCEPTION, actualTestResults);
 			actualResults.setQueryID(expectedResults.getQueryID());
 
 			actualResults = convertException(actualTestResults.getException(), actualResults);
@@ -224,7 +203,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 			// printResultSet(results));
 
 			// Convert results to ResultsHolder
-			actualResults = new ResultsHolder(TagNames.Elements.QUERY_RESULTS, actualTestResults);
+			actualResults = new ExpectedResultsHolder(TagNames.Elements.QUERY_RESULTS, actualTestResults);
 			actualResults.setQueryID(expectedResults.getQueryID());
 			actualResults.setExecutionTime(actualTestResults.getExecutionTime());
 
@@ -261,8 +240,8 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 * @return ResultsHolder
 	 */
 	
-	private ResultsHolder convertException(final Throwable actualException,
-			final ResultsHolder actualResults) {
+	private ExpectedResultsHolder convertException(final Throwable actualException,
+			final ExpectedResultsHolder actualResults) {
 		actualResults.setExceptionClassName(actualException.getClass()
 				.getName());
 		
@@ -285,7 +264,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 *             replaced SQLException.
 	 */
 	private final long convertResults(final ResultSet results,
-			final long batchSize, ResultsHolder resultsHolder)
+			final long batchSize, ExpectedResultsHolder resultsHolder)
 			throws QueryTestFailedException {
 
 		long firstBatchResponseTime = 0;
@@ -350,8 +329,8 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 	 * @param isOrdered
 	 * @throws QueryTestFailedException
 	 */
-	protected void compareResults(final ResultsHolder actualResults,
-			final ResultsHolder expectedResults, final String eMsg,
+	protected void compareResults(final ExpectedResultsHolder actualResults,
+			final ExpectedResultsHolder expectedResults, final String eMsg,
 			boolean isOrdered) throws QueryTestFailedException {
 		// if (actualResults.isException() && expectedResults.isException()) {
 		// // Compare exceptions
@@ -400,7 +379,7 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 					
 					actualResults.getActualTestResult().setException(f);
 					actualResults.getActualTestResult().setExceptionMessage(msg);							
-					actualResults.getActualTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXECUTION_TIME_EXCEEDED_EXCEPTION);
+					actualResults.getActualTestResult().setStatus(Test.RESULT_STATE.TEST_EXECUTION_TIME_EXCEEDED_EXCEPTION);
 				}			
 		
 		}
@@ -427,8 +406,8 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		}
 	}
 
-	private void compareExceptions(final ResultsHolder actualResults,
-			final ResultsHolder expectedResults, String eMsg)
+	private void compareExceptions(final ExpectedResultsHolder actualResults,
+			final ExpectedResultsHolder expectedResults, String eMsg)
 			throws QueryTestFailedException {
 
 		final String expectedExceptionClass = expectedResults
@@ -823,11 +802,11 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return text;
 	}
 
-	private ResultsHolder loadExpectedResults(File resultsFile) {
+	private ExpectedResultsHolder loadExpectedResults(File resultsFile) {
 		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
-		final ResultsHolder expectedResult;
+		final ExpectedResultsHolder expectedResult;
 		try {
-			expectedResult = jstrat.parseXMLResultsFile(resultsFile);
+			expectedResult = jstrat.parseXMLResultsFile(this.getQueryScenario().getQueryScenarioIdentifier(), resultsFile);
 		} catch (IOException e) {
 			throw new FrameworkRuntimeException(
 					"Unable to load expected results: " + e.getMessage()); //$NON-NLS-1$
@@ -838,12 +817,13 @@ public class XMLExpectedResults implements ExpectedResultsReader {
 		return expectedResult;
 	}
 
-	private File findExpectedResultsFile(String queryIdentifier,
+	private File findExpectedResultsFile(Test test,
 			String querySetIdentifier)  {
-		String resultFileName = queryIdentifier + ".xml"; //$NON-NLS-1$
-		File file = new File(results_dir_loc + File.separator + querySetIdentifier,
+		String resultFileName = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), test);
+			//queryIdentifier + ".xml"; //$NON-NLS-1$
+		File file = new File(this.getExpectResultsLocation() + File.separator + this.getQuerySetID(),
 				resultFileName);
-		if (!file.exists() && this.isExpectedResultsNeeded()) {
+		if (!file.exists() && this.getQueryScenario().isExpectedResultsNeeded()) {
 			FrameworkRuntimeException fre = new FrameworkRuntimeException("Query results file "
 					+ file.getAbsolutePath() + " cannot be found");
 			throw fre;

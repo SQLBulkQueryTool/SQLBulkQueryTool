@@ -24,6 +24,7 @@ package org.jboss.bqt.client.api;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
@@ -41,7 +42,23 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * @author vanhalbert
  * 
  */
-public interface QueryReader  {
+public abstract class QueryReader  {
+			
+		private Properties properties;
+		private QueryScenario scenario;
+		
+		public QueryReader(QueryScenario scenario, Properties props) {
+			this.properties = props;
+			this.scenario = scenario;
+		}
+		
+		protected Properties getProperties() {
+			return properties;
+		}
+		
+		protected QueryScenario getQueryScenario() {
+			return scenario;
+		}
 	
 	/**
 	 * Returns the full path to the query files location.
@@ -49,7 +66,7 @@ public interface QueryReader  {
 	 * 
 	 * @see TestProperties#PROP_QUERY_FILES_DIR_LOC
 	 */
-	String getQueryFilesLocation();
+	public abstract String getQueryFilesLocation();
 
 	/**
 	 * Return the <code>querySetID</code>s that identifies all the query sets
@@ -57,7 +74,7 @@ public interface QueryReader  {
 	 * 
 	 * @return QuerySetIDs
 	 */
-	Collection<String> getQuerySetIDs();
+	public abstract Collection<String> getQuerySetIDs();
 
 	/**
 	 * Return a <code>List</code> containing {@link QueryTest}
@@ -67,7 +84,7 @@ public interface QueryReader  {
 	 * 
 	 * @since
 	 */
-	List<QueryTest> getQueries(String querySetID)
+	public abstract List<QueryTest> getQueries(String querySetID)
 			throws QueryTestFailedException;
 
 

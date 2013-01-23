@@ -22,23 +22,20 @@
 
 package org.jboss.bqt.client;
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.util.Properties;
 
-import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.client.testcase.ProcessResults;
 import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
-import org.jboss.bqt.framework.TransactionContainer;
+import org.jboss.bqt.framework.TransactionAPI;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Tests primarily the various cloning scenarios available with PropertiesUtils
@@ -46,10 +43,10 @@ import org.junit.Test;
 public class TestTestClient {
 	
 	@Mock
-	private TestClientTransaction tct;
+	private ProcessResults tct;
 	
 	@Mock
-	private TransactionContainer tc;
+	private TransactionAPI tc;
 	
 	@Mock
 	private TestClient testclient;
@@ -65,8 +62,8 @@ public class TestTestClient {
     	MockitoAnnotations.initMocks(this);
     	
     	
-    	when(testclient.getTransactionContainer()).thenReturn(tc);
-    	when(testclient.getClientTransaction(testclient.getScenario())).thenReturn(tct);
+    	when(testclient.getTransactionContainer(new Properties())).thenReturn(tc);
+ //   	when(testclient.getClientTransaction(testclient.getScenario())).thenReturn(tct);
     }
 
 	// ===================================================================

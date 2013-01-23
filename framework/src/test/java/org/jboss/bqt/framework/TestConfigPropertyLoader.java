@@ -25,6 +25,7 @@ package org.jboss.bqt.framework;
 import static org.junit.Assert.*;
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -35,6 +36,12 @@ public class TestConfigPropertyLoader {
  
     public TestConfigPropertyLoader() {
     
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        
+    	ConfigPropertyLoader.reset();
     }
 	
     //===================================================================
@@ -89,7 +96,6 @@ public class TestConfigPropertyLoader {
     public void testEachConfigProperty() throws Exception {
     	System.setProperty(ConfigPropertyNames.CONFIG_FILE, "configtest.properties");
  
-    	ConfigPropertyLoader.reset();
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		assertNotNull(_instance);
 

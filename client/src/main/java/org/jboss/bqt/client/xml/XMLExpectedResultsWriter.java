@@ -33,14 +33,13 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
-import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
-import org.jboss.bqt.client.api.TestResult;
-import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
+import org.jboss.bqt.framework.Test;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
 import org.jdom.Document;
@@ -48,24 +47,14 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.output.XMLOutputter;
 
-import org.apache.commons.lang.StringUtils;
-
-public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
+public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 //	private static final int MAX_COL_WIDTH = 65;
 
-//	private String outputDir = "";
-	private String generateDir = "";
-	private String testname;
 
-	public XMLExpectedResultsWriter(String testname, Properties props) {
-		this.testname = testname;
+	public XMLExpectedResultsWriter(QueryScenario scenario, Properties props) {
+		super(scenario, props);
 
-		generateDir = props.getProperty(TestProperties.PROP_GENERATE_DIR);
-		if (generateDir == null) {
-			BQTUtil.throwInvalidProperty(TestProperties.PROP_GENERATE_DIR);
-		}
-
-		File d = new File(generateDir);
+		File d = new File(getGenerateDir());
 		if (d.exists()) {
 			FileUtils.removeDirectoryAndChildren(d);
 		}
@@ -73,41 +62,17 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 			d.mkdirs();
 		}
 
-		ClientPlugin.LOGGER.info("XMLExpectedResultsWriter: " + this.testname + " creating expected results " + generateDir);
+		ClientPlugin.LOGGER.info("XMLExpectedResultsWriter: creating expected results " + d.getAbsolutePath());
 	}
 
-	public String getGenerateDir() {
-		return this.generateDir;
-	}
-
-
-	public void generateQueryResultFile(TestResult testResult,
-			ResultSet resultSet) throws FrameworkRuntimeException {
-		generateQueryResultFile(testResult.getQuerySetID(), testResult.getQueryID(),
-				testResult.getQuery(),
-				resultSet,
-				testResult.getException(),
-				testResult.getStatus(), testResult );
-
-	}
-
-
-	/**
-	 * GenerateExpectedResults query results. These are actual results from the server and may
-	 * be used for comparing to results from a later test run.
-	 * @param querySetID 
-	 * @param queryID 
-	 * @param query 
-	 * @param result 
-	 * @param ex 
-	 * @param testStatus 
-	 * @param testResult 
-	 * 
-	 * @throws FrameworkRuntimeException
-	 */
-	private void generateQueryResultFile(String querySetID, String queryID,
-			String query, ResultSet result, Throwable ex, int testStatus, TestResult testResult)
-			throws FrameworkRuntimeException {
+	@Override
+	public void generateQueryResultFile(Test testResult,
+			ResultSet result) throws FrameworkRuntimeException {
+		
+		String querySetID = testResult.getQuerySetID();
+		String queryID = testResult.getQueryID();
+		String query = testResult.getQuery();
+		Throwable ex = testResult.getException();
 
 		try {
 			if (result != null)
@@ -115,8 +80,9 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		File resultsFile = createNewResultsFile(queryID, querySetID,
-				getGenerateDir());
+		String filename = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), testResult);
+		
+		File resultsFile = createNewResultsFile(querySetID, getGenerateDir(), filename);
 		OutputStream outputStream;
 		try {
 			FileOutputStream fos = new FileOutputStream(resultsFile);
@@ -211,15 +177,19 @@ public class XMLExpectedResultsWriter implements ExpectedResultsWriter{
 
 
 
-	private File createNewResultsFile(String queryID, String querySetID, String genDir) {
-		String resultFileName = queryID + ".xml"; //$NON-NLS-1$
+	private File createNewResultsFile(String querySetID, String genDir, String filename) {
 
 //		String targetDirname = genDir + File.separator + "expected_results" + File.separator + querySetID; //$NON-NLS-1$
 		String targetDirname = genDir + File.separator + querySetID; //$NON-NLS-1$
-		File targetDir = new File(targetDirname);
-		targetDir.mkdirs();
 
-		return new File(targetDir, resultFileName);
+		File dir = new File(targetDirname);
+		if (!dir.exists()) {
+			dir.mkdirs();
+			ClientPlugin.LOGGER.info("XMLExpectedResultsWriter: creating query set directory " + dir.getAbsolutePath());
+		}
+
+		
+		return new File(targetDirname, filename);
 	}
 
 }

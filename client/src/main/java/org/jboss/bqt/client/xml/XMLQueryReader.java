@@ -27,37 +27,38 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryReader;
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
-public class XMLQueryReader implements QueryReader {
+public class XMLQueryReader extends QueryReader {
 
-	private Properties props = null;
-	private String queryScenarioIdentifier;
 	private String query_dir_loc = null;
 
-	private Map<String, String> querySetIDToFileMap = new HashMap<String, String>();
+	private Map<String, File> querySetIDToFileMap = new HashMap<String, File>();
 
-	public XMLQueryReader(String queryScenarioID, Properties properties) {
-		this.props = properties;
-		this.queryScenarioIdentifier = queryScenarioID;
+	public XMLQueryReader(QueryScenario scenario, Properties props) {
+		super(scenario, props);
 		
 		query_dir_loc = props.getProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC);
 		if (query_dir_loc == null) {
 				BQTUtil.throwInvalidProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC);
 		}
 
-		loadQuerySets();
+		loadQuerySetIDtoFileMap();
 	}
 	
 	
@@ -67,13 +68,15 @@ public class XMLQueryReader implements QueryReader {
 	 *
 	 * @see org.jboss.bqt.client.api.QueryReader#getQueryFilesLocation()
 	 */
+	@Override
 	public String getQueryFilesLocation() {
 		return query_dir_loc;
 	}
 
 
+	@Override
 	public List<QueryTest> getQueries(String querySetID) {
-		String queryFile = querySetIDToFileMap.get(querySetID);
+		File queryFile = querySetIDToFileMap.get(querySetID);
 
 		try {
 			return loadQueries(querySetID, queryFile);
@@ -86,32 +89,30 @@ public class XMLQueryReader implements QueryReader {
 
 	}
 
+	@Override
 	public Collection<String> getQuerySetIDs() {
 		return new HashSet<String>(querySetIDToFileMap.keySet());
 	}
 
-	private void loadQuerySets() {
+	private void loadQuerySetIDtoFileMap() {
 
 		File files[] = BQTUtil.getQuerySetFiles(query_dir_loc);
 
 		for (int i = 0; i < files.length; i++) {
-			String queryfile = files[i].getAbsolutePath();
 			// Get query set name
-			String querySet = getQuerySetName(queryfile); //$NON-NLS-1$
-			querySetIDToFileMap.put(querySet, queryfile);
-			// queryFiles.add(files[i].getAbsolutePath());
+			String querySet = getQuerySetName(files[i].getName()); //$NON-NLS-1$
+			querySetIDToFileMap.put(querySet, files[i]);
 		}
 
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<QueryTest> loadQueries(String querySetID, String queryFileName)
+	private List<QueryTest> loadQueries(String querySetID, File queryFile)
 			throws IOException {
 
-		File queryFile = new File(queryFileName);
 		if (!queryFile.exists() || !queryFile.canRead()) {
 			String msg = "Query file doesn't exist or cannot be read: "
-					+ queryFileName + ", ignoring and continuing";
+					+ queryFile.getName() + ", ignoring and continuing";
 			ClientPlugin.LOGGER.error(msg);
 			throw new IOException(msg); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -119,33 +120,43 @@ public class XMLQueryReader implements QueryReader {
 		//			String querySet = getQuerySetName(queryFileName) ; //$NON-NLS-1$
 
 		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
+		List<QueryTest> tests = null;
 		try {
-			return jstrat.parseXMLQueryFile(this.queryScenarioIdentifier,
+			tests = jstrat.parseXMLQueryFile(this.getQueryScenario().getQueryScenarioIdentifier(),
 					queryFile, querySetID);
-			// Iterator iter = queryMap.keySet().iterator();
-			// while (iter.hasNext()) {
-			// String queryID = (String) iter.next();
-			// String query = (String) queryMap.get(queryID);
-			//
-			// String uniqueID = querySetID + "_" + queryID;
-			// queries.put(uniqueID, query);
-			// }
-
 		} catch (Exception e) {
-			String msg = "Error reading query file: " + queryFileName; //$NON-NLS-1$ //$NON-NLS-2$
+			String msg = "Error reading query file: " + queryFile.getName(); //$NON-NLS-1$ //$NON-NLS-2$
 			ClientPlugin.LOGGER.error(e, msg);
 			throw new IOException(msg, e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+		}			
+		// perform logic to test for duplicate queries with the same name
+		 Set<String> s = new HashSet<String>();
+
+		 for (QueryTest t : tests)  {
+			 if (s.contains(t.getQueryID())) {
+						throw new FrameworkRuntimeException((new StringBuilder())
+								.append("Duplicate queries with the same name of: ")
+								.append(t.getQueryID())
+								.toString());
+			 }
+			 s.add(t.getQueryID());
+		 }
+		 return tests;
 
 	}
 
+	/* 
+	 * Used to parse the file name to get the query set name 
+	 */
 	private static String getQuerySetName(String queryFileName) {
 		// Get query set name
-		String querySet = queryFileName;
-		String[] nameParts = StringUtils.split(querySet, "./\\"); //$NON-NLS-1$
-		if (nameParts != null && nameParts.length > 1) {
-			querySet = nameParts[nameParts.length - 2];
-		} 
+		String querySet =  FileUtils.getFilenameWithoutExtension(queryFileName);
+			
+//			queryFileName;
+//		String[] nameParts = StringUtils.split(queryFileName, "./\\"); //$NON-NLS-1$
+//		if (nameParts != null && nameParts.length > 1) {
+//			querySet = nameParts[nameParts.length - 2];
+//		} 
 		return querySet;
 	}
 }

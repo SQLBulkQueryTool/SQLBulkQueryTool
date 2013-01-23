@@ -32,7 +32,7 @@ import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ErrorWriter;
-import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
@@ -40,6 +40,7 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
+import org.jboss.bqt.framework.Test;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -50,16 +51,14 @@ import org.jdom.output.XMLOutputter;
  * @author vhalbert
  *
  */
-public class XMLErrorWriter implements ErrorWriter {
+public class XMLErrorWriter extends ErrorWriter {
 	
 	private String errorDirectory = null;
 	
-	/**
-	 * @param testname 
-	 * @param props 
-	 * 
-	 */
-	public XMLErrorWriter(String testname, Properties props) {
+	
+	
+	public XMLErrorWriter(QueryScenario scenario, Properties props) {
+		super(scenario, props);
 
 		errorDirectory = props.getProperty(TestProperties.PROP_ERRORS_DIR);
 		if (errorDirectory == null) {
@@ -75,49 +74,50 @@ public class XMLErrorWriter implements ErrorWriter {
 		}	
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.ErrorWriter#getErrorDirectory()
-	 */
+
+	@Override
 	public String getErrorDirectory() {
 		return errorDirectory;
 	}
 	
-	public 	String generateErrorFile(final String querySetID,
-			final String queryID, final Throwable error)
+	@Override
+	public 	String generateErrorFile(final Test test, final Throwable error)
 				throws FrameworkException {
 
 		String errorFileName = null;
 			// write actual results to error file
-			errorFileName = generateErrorFileName(queryID, querySetID);
+			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), test);
+				//generateErrorFileName(queryID, querySetID);
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
 			File errorFile = new File(getErrorDirectory(), errorFileName);
 			
-			generateErrorResults(querySetID, queryID,
+			generateErrorResults(test,
 					 (String) null, errorFile, (ResultSet) null, (File) null, error);
 		
 		return errorFileName;
 	}
 
-	public String generateErrorFile(TestResult testResult, ResultSet resultSet,
+	@Override
+	public String generateErrorFile(Test test, ResultSet resultSet,
 			Object results) throws QueryTestFailedException, FrameworkException {
-		return generateErrorFile(testResult.getQuerySetID(),
-				testResult.getQueryID(), testResult.getQuery(), resultSet,
-				testResult.getException(), results);
-		
-		}
-
-	public String generateErrorFile(final String querySetID,
-			final String queryID, final String sql, final ResultSet resultSet,
-			final Throwable queryError, final Object expectedResultsFile)
-			throws QueryTestFailedException, FrameworkException {
+//		return generateErrorFile(testResult.getQuerySetID(),
+//				testResult.getQueryID(), testResult.getQuery(), resultSet,
+//				testResult.getException(), results);
+//		
+//		}
+//
+//	@Override
+//	public String generateErrorFile(final String querySetID,
+//			final String queryID, final String sql, final ResultSet resultSet,
+//			final Throwable queryError, final Object expectedResultsFile)
+//			throws QueryTestFailedException, FrameworkException {
 
 		String errorFileName = null;
 		try {
 			// write actual results to error file
-			errorFileName = generateErrorFileName(queryID, querySetID);
+			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), test);
+
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
 			File errorFile = new File(getErrorDirectory(), errorFileName);
@@ -126,8 +126,8 @@ public class XMLErrorWriter implements ErrorWriter {
 			if (resultSet != null) {
 				resultSet.beforeFirst();
 			}
-			generateErrorResults(querySetID, queryID, sql, errorFile,
-					resultSet, (File) expectedResultsFile, queryError);
+			generateErrorResults(test, test.getQuery(), errorFile,
+					resultSet, (File) results, test.getException());
 
 		} catch (SQLException sqle) {
 			throw new QueryTestFailedException(sqle);
@@ -143,8 +143,7 @@ public class XMLErrorWriter implements ErrorWriter {
 		 * GenerateExpectedResults an error file for a query that failed comparison. File should
 		 * have the SQL, the actual results returned from the server and the results
 		 * that were expected.
-		 * @param querySetID 
-		 * @param queryID
+		 * @param test
 		 * @param sql
 		 * @param resultsFile
 		 * @param actualResult
@@ -152,7 +151,7 @@ public class XMLErrorWriter implements ErrorWriter {
 		 * @param ex
 		 * @throws FrameworkException
 		 */
-		private void generateErrorResults(String querySetID, String queryID,
+		private void generateErrorResults(Test test,
 				String sql, File resultsFile, ResultSet actualResult,
 				File expectedResultFile, Throwable ex)
 				throws FrameworkException {
@@ -175,7 +174,7 @@ public class XMLErrorWriter implements ErrorWriter {
 				Element resultElement = new Element(TagNames.Elements.QUERY_RESULTS);
 				// set the queryIDAttr on the exception element
 				resultElement.setAttribute(new Attribute(TagNames.Attributes.NAME,
-						queryID));
+						test.getQueryID()));
 				// set the querySQLAttr on the exception element
 				resultElement.setAttribute(new Attribute(TagNames.Attributes.VALUE,
 						(sql != null ? sql : "NULL")));
@@ -283,18 +282,5 @@ public class XMLErrorWriter implements ErrorWriter {
 			}
 		}
 
-
-		private String generateErrorFileName(String queryID, String querySetID) {
-			// String errorFileName = "ERROR_"
-			// configID + "_" //$NON-NLS-1$ //$NON-NLS-2$
-			//                               + querySetID + "_" //$NON-NLS-1$
-			// String errorFileName = queryID +
-			//		+ "_" //$NON-NLS-1$
-			// + FILE_NAME_DATE_FORMATER.format(new Date(System
-			//			.currentTimeMillis())) + ".xml"; //$NON-NLS-1$
-			// return errorFileName;
-
-			return queryID + ".err";
-		}
 
 }

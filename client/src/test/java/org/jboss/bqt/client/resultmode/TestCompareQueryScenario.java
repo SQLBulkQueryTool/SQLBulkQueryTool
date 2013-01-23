@@ -23,6 +23,7 @@
 package org.jboss.bqt.client.resultmode;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.util.Properties;
@@ -84,16 +85,24 @@ public class TestCompareQueryScenario {
 		}
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
-
-		assertTrue(set.getQuerySetIDs()!=null);
 		
-		assertTrue(set.getQueryReader()!=null);
+		assertTrue(set instanceof Compare);
+
+		assertTrue(set.getQuerySetIDs().size() == 1);
+		
+		assertTrue(set.getQueryReader().getQueries("test_queries1").size() == 2);
 		
 		assertTrue(set.getQueryWriter()==null);
 		
 		assertTrue(set.getExpectedResultsGenerator() == null);
 
-		assertTrue(set.getExpectedResults("test_queries") != null);
+		org.jboss.bqt.framework.Test testGood = new org.jboss.bqt.framework.Test("test_queries1", "Query1");
+
+		org.jboss.bqt.framework.Test testError = new org.jboss.bqt.framework.Test("test_queries1", "Query2");
+		assertTrue(set.exceptionExpected(testError));
+		assertFalse(set.exceptionExpected(testGood));
+
+		assertTrue(set.getExpectedResultsReader("test_queries1").getExpectedResults(testError) != null);
 
 	}
 	
@@ -157,7 +166,7 @@ public class TestCompareQueryScenario {
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
-		set.getExpectedResults("test_queries");
+		set.getExpectedResultsReader("test_queries");
 
 	}
 }

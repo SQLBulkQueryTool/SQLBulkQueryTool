@@ -33,8 +33,10 @@ import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
@@ -43,21 +45,17 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
-public class XMLQueryWriter implements QueryWriter {
-
-	private Properties props = null;
-	private String queryScenarioIdentifier;
+public class XMLQueryWriter extends QueryWriter {
 	
 	private String queryFileDir = null;
 
-	public XMLQueryWriter(String queryScenarioID, Properties properties) {
-		this.props = properties;
-		this.queryScenarioIdentifier = queryScenarioID;
+	public XMLQueryWriter(QueryScenario scenario, Properties props) {
+		super(scenario, props);
 		init();
 	}	
 	
 	private void init()  {	
-		queryFileDir = this.props.getProperty(TestProperties.PROP_SQL_DIR);
+		queryFileDir = this.getProperties().getProperty(TestProperties.PROP_SQL_DIR);
 		if (queryFileDir == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_SQL_DIR);
 		}
@@ -67,6 +65,9 @@ public class XMLQueryWriter implements QueryWriter {
 		}
 		if (!d.exists()) {
 			d.mkdirs();
+			
+			ClientPlugin.LOGGER.info("XMLQueryWriter: creating directory " + d.getAbsolutePath());
+
 		}
 				
 		
@@ -78,29 +79,26 @@ public class XMLQueryWriter implements QueryWriter {
 	 *
 	 * @see org.jboss.bqt.client.api.QueryWriter#getSQlFileOutputLocation()
 	 */
+	@Override
 	public String getSQlFileOutputLocation() {
 		return this.queryFileDir;
 	}
 
 
+	@Override
 	public void writeQueryTest(QueryTest tests) throws Exception {
 		OutputStream outputStream=null;
-		try {
 			
-			File targetDir = new File(queryFileDir);
-			targetDir.mkdirs();
-			File f = new File(targetDir, this.queryScenarioIdentifier + ".xml");
-			
-			ClientPlugin.LOGGER.info("XMLQueryWriter: Writing query file: " + f.getAbsolutePath());
+		File targetDir = new File(getSQlFileOutputLocation());
+		targetDir.mkdirs();
+		String fileName = this.getQueryScenario().getFileType().getQueryFileName(this.getQueryScenario(), tests);
+		File f = new File(targetDir, fileName);
+		
+		ClientPlugin.LOGGER.info("XMLQueryWriter: Writing query file: " + f.getAbsolutePath());
 
-			FileOutputStream fos = new FileOutputStream(f);
-			outputStream = new BufferedOutputStream(fos);
+		FileOutputStream fos = new FileOutputStream(f);
+		outputStream = new BufferedOutputStream(fos);
 
-
-		} catch (Exception e) {
-		    e.printStackTrace();
-		    throw new RuntimeException(e);
-		} 
 		
 		try {
 

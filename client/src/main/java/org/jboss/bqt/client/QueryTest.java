@@ -22,7 +22,7 @@
 package org.jboss.bqt.client;
 
 /**
- * The QueryTest represents a group of test to be executed. This test can consist of one
+ * The QueryTest represents a logical test execution.  This test can consist of one
  * or more {@link QuerySQL SQL} queries required to perform the test.
  * 
  * @author vanhalbert

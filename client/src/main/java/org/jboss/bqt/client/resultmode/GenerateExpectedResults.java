@@ -28,10 +28,10 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
-import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ArgCheck;
+import org.jboss.bqt.framework.Test;
 
 /**
  * The Generate Result Mode controls the process for generating the expected results files based on the
@@ -50,15 +50,6 @@ public class GenerateExpectedResults extends QueryScenario {
 		super(scenarioName, queryProperties);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#setUp()
-	 */
-	@Override
-	protected void setUp() {
-	}
-	
 	@Override
 	public boolean isGenerate() {
 		return true;
@@ -71,7 +62,7 @@ public class GenerateExpectedResults extends QueryScenario {
 	}
 	
 	@Override
-	public ExpectedResultsReader getExpectedResults(String querySetID) {
+	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
 		return null;
 	}
 	
@@ -80,22 +71,16 @@ public class GenerateExpectedResults extends QueryScenario {
 		return null;
 	}		
 
-	/**
-	 * {@inheritDoc}
-	 * @throws FrameworkException 
-	 * @throws QueryTestFailedException 
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(org.jboss.bqt.client.api.TestResult, java.sql.ResultSet)
-	 */
+
 	@Override
-	public void handleTestResult(TestResult tr, ResultSet resultSet) throws QueryTestFailedException, FrameworkException {
-		ArgCheck.isNotNull(tr, "TestResult must be passed in");
+	public void handleTestResult(Test tr, ResultSet resultSet) throws QueryTestFailedException, FrameworkException {
+		ArgCheck.isNotNull(tr, "Test must be passed in");
 
 		// generate the expected results
 		this.getExpectedResultsGenerator().generateQueryResultFile(tr, resultSet);
 	
 		// If there was an exeception in the test results, create the error file
-		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+		if (tr.isFailure()) {
 				this.getErrorWriter().generateErrorFile(tr, resultSet, null);	
 		}
 	}

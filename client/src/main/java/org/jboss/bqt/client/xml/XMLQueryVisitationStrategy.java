@@ -110,7 +110,7 @@ public class XMLQueryVisitationStrategy {
 					ClientPlugin.LOGGER.debug("=======  Creating Single QueryTest " + queryName);
 	        	    QuerySQL sql = createQuerySQL(queryElement);
 	         	    
-	        	    QueryTest q = new QueryTest(queryScenarioID, uniqueID, querySetID, new QuerySQL[] {sql}, false);
+	        	    QueryTest q = new QueryTest(queryScenarioID, queryName, querySetID, new QuerySQL[] {sql}, false);
 	        	    queries.add(q);
 	        	} else {
 	        		ClientPlugin.LOGGER.debug("=======  Creating QueryTest has multiple sql statements " + queryName);
@@ -266,15 +266,16 @@ public class XMLQueryVisitationStrategy {
      * Consume an XML results File and produce a Map containing query results
      * as List objects, with resultNames/IDs as Keys.
      * <br>
+     * @param querySetID Identifies the query set
      * @param resultsFile the XML file object that is to be parsed
      * @return the Map containig results.
      * @throws IOException 
      * @exception JDOMException if there is an error consuming the message.
      */
-    public ResultsHolder parseXMLResultsFile(final File resultsFile) throws IOException, JDOMException {
+    public ExpectedResultsHolder parseXMLResultsFile(final String querySetID, final File resultsFile) throws IOException, JDOMException {
 
         QueryResults queryResults;
-        ResultsHolder expectedResults = null;
+        ExpectedResultsHolder expectedResults = null;
 
         final SAXBuilder builder = SAXBuilderHelper.createSAXBuilder(false);
         final Document resultsDocument = builder.build(resultsFile);
@@ -292,7 +293,8 @@ public class XMLQueryVisitationStrategy {
                 //
                 // We've got a ResultSet
                 //
-                expectedResults = new ResultsHolder( TagNames.Elements.QUERY_RESULTS );
+                expectedResults = new ExpectedResultsHolder( TagNames.Elements.QUERY_RESULTS );
+                expectedResults.setQuerySetID(querySetID);
                 expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
                 if (execTime != null) expectedResults.setExecutionTime( Long.parseLong(execTime) );
@@ -305,7 +307,8 @@ public class XMLQueryVisitationStrategy {
                 //
                 // We've got an exception
                 //
-                expectedResults = new ResultsHolder( TagNames.Elements.EXCEPTION );
+                expectedResults = new ExpectedResultsHolder( TagNames.Elements.EXCEPTION );
+                expectedResults.setQuerySetID(querySetID);
                 expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
 

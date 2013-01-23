@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <query><![CDATA[Select ACCOUNT.ACCOUNT_ID, ACCOUNTX.SSN From ACCOUNT]]></query>
+  <queryResults name="Query3">
+    <exception>
+      <exceptionType>QueryTestFailedException</exceptionType>
+      <message>Column "ACCOUNTX.SSN" not found; SQL statement:
+Select ACCOUNT.ACCOUNT_ID, ACCOUNTX.SSN From ACCOUNT [42122-124]</message>
+      <class>org.jboss.bqt.core.exception.QueryTestFailedException</class>
+    </exception>
+  </queryResults>
+</root>
+

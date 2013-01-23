@@ -21,15 +21,17 @@
  */
 package org.jboss.bqt.framework;
 
+import java.util.Properties;
+
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.framework.transaction.JNDITransaction;
 import org.jboss.bqt.framework.transaction.LocalTransaction;
 import org.jboss.bqt.framework.transaction.OnWrapTransaction;
-import org.jboss.bqt.framework.transaction.TxnAutoTransaction;
+import org.jboss.bqt.framework.transaction.UseDefaultTransaction;
 
 
 /**
- * TransactionFactory is used so that the type of {@link TransactionContainer }
+ * TransactionFactory is used so that the type of {@link TransactionAPI }
  * can be dynamically loaded based on a property.
  * 
  * Specify the property {@link #TRANSACTION_TYPE} in order to set the
@@ -48,22 +50,22 @@ public class TransactionFactory {
 	public static final String TRANSACTION_TYPE = "transaction-option"; //$NON-NLS-1$
 	public static interface TRANSACTION_TYPES {
 		public static final String LOCAL_TRANSACTION = "local"; //$NON-NLS-1$
-		public static final String XATRANSACTION = "xa"; //$NON-NLS-1$
+//		public static final String XATRANSACTION = "xa"; //$NON-NLS-1$
 		public static final String JNDI_TRANSACTION = "jndi"; //$NON-NLS-1$
-		public static final String OFFWRAP_TRANSACTION = "off"; //$NON-NLS-1$
+//		public static final String OFFWRAP_TRANSACTION = "off"; //$NON-NLS-1$
 		public static final String ONWRAP_TRANSACTION = "on"; //$NON-NLS-1$
-		public static final String AUTOWRAP_TRANSACTION = "auto"; //$NON-NLS-1$
+		public static final String USEDEFAULT_TRANSACTION = "auto"; //$NON-NLS-1$
 	}
 	private TransactionFactory() {
 	}
 
-	public static TransactionContainer create(ConfigPropertyLoader config)  {
-		TransactionContainer transacton = null;
+	public static TransactionAPI create(Properties props)  {
+		TransactionAPI transacton = null;
 
-		String type = config.getProperty(TRANSACTION_TYPE);
+		String type = props.getProperty(TRANSACTION_TYPE);
 		if (type == null) {
-            transacton = new TxnAutoTransaction();
-            FrameworkPlugin.LOGGER.debug("====  Create Transaction-Option: not defined");
+            transacton = new UseDefaultTransaction();
+            FrameworkPlugin.LOGGER.debug("====  Create UseDefaultTransaction-Option: not defined");
 		} else {
 
             FrameworkPlugin.LOGGER.debug("====  Create Transaction-Option: " + type);
@@ -74,24 +76,16 @@ public class TransactionFactory {
     //			transacton = new XATransaction();
             } else if (type.equalsIgnoreCase(TRANSACTION_TYPES.JNDI_TRANSACTION)) {
                 transacton = new JNDITransaction();
-            } else if (type.equalsIgnoreCase(TRANSACTION_TYPES.OFFWRAP_TRANSACTION)) {
-                transacton = new TxnAutoTransaction(
-                		ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
             } else if (type.equalsIgnoreCase(TRANSACTION_TYPES.ONWRAP_TRANSACTION)) {
                 transacton = new OnWrapTransaction();
-            } else if (type
-                    .equalsIgnoreCase(TRANSACTION_TYPES.AUTOWRAP_TRANSACTION)) {
-                transacton = new TxnAutoTransaction(
-                		ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_AUTO);
 
             } else {
-                throw new FrameworkRuntimeException("Invalid property value of "
-                        + type + " for " + TRANSACTION_TYPE);
+            	 transacton = new UseDefaultTransaction();
             }
         }
 		
-		FrameworkPlugin.LOGGER.info("====  TransactionContainer: "
-				+ transacton.getClass().getName() + " option:" + type);
+		FrameworkPlugin.LOGGER.info("====  TransactionFactory: "
+				+ transacton.getClass().getName() + " option:" + (type==null?TRANSACTION_TYPES.USEDEFAULT_TRANSACTION:type));
 		return transacton;
 	}
 

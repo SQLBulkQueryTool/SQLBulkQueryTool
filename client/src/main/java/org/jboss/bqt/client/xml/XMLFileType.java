@@ -22,6 +22,9 @@
 package org.jboss.bqt.client.xml;
 
 import org.jboss.bqt.client.FileType;
+import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.framework.Test;
 
 /**
  * @author vhalbert
@@ -73,5 +76,39 @@ public class XMLFileType implements FileType {
 	public String getQueryReaderClassName() {
 		return XMLQueryReader.class.getName();
 	}
+	
+	/** 
+	 * Returns the name of the query file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String query file name
+	 */
+	public String getQueryFileName(QueryScenario scenario, QueryTest test) {
+		return test.getQuerySetID() + ".xml";
+	}
+
+	
+	/** 
+	 * Returns the name of the file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String expected results file name
+	 */
+	
+	public String getExpectedResultsFileName(QueryScenario scenario, Test test) {
+		return test.getQuerySetID() + "_" + test.getQueryID() + ".xml"; //$NON-NLS-1$
+	}
+	
+	/**
+	 * Returns the name of the error file (excluding path)
+	 * @param scenario
+	 * @param test
+	 * @return String error file name
+	 */
+	public String getErrorFileName(QueryScenario scenario, Test test) {
+		return test.getQuerySetID() + "_" + test.getQueryID() + ".err";
+
+	}
+	
 
 }

@@ -23,10 +23,12 @@
 package org.jboss.bqt.client.api;
 
 import java.sql.ResultSet;
+import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.Test;
 
 
 /**
@@ -36,7 +38,23 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
  * @author vhalbert
  *
  */
-public interface ErrorWriter {
+public abstract class ErrorWriter {
+	
+	private Properties properties;
+	private QueryScenario scenario;
+	
+	public ErrorWriter(QueryScenario scenario, Properties props) {
+		this.properties = props;
+		this.scenario = scenario;
+	}
+	
+	protected Properties getProperties() {
+		return properties;
+	}
+	
+	protected QueryScenario getQueryScenario() {
+		return scenario;
+	}
 	
 	/**
 	 * Returns the full path to the current location that error files
@@ -45,53 +63,32 @@ public interface ErrorWriter {
 	 * 
 	 * @see TestProperties#PROP_ERRORS_DIR
 	 */
-	String getErrorDirectory();
+	public abstract String getErrorDirectory();
 
 	/**
 	 * Call to generate an error file as the result of incompatibilities in the
 	 * comparison of the expected results to the actual results.
-	 * @param testResult 
-	 * @param resultSet 
-	 * @param results 
+	 * @param test is for the test that was run 
+	 * @param resultSet as the actual results
+	 * @param results expected results
 	 * @return String name for the error file
 	 * @throws QueryTestFailedException could be seen if problems occur accessing resultSet
 	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
 	
-	String generateErrorFile(final TestResult testResult,
+	public abstract String generateErrorFile(final Test test,
 			final ResultSet resultSet, 
 			final Object results) throws QueryTestFailedException, FrameworkException;
-	
-	/**
-	 * Call to generate an error file for a query that failed comparison. File should
-	 * have the SQL, the actual results returned from the server and the results
-	 * that were expected.
-	 * @param querySetID 
-	 * @param queryID
-	 * @param sql
-	 * @param resultSet 
-	 * @param queryError 
-	 * @param expectedResultsFile 
-	 * @return String name for the error file
-	 * @throws QueryTestFailedException could be seen if problems occur accessing resultSet
-	 * @throws FrameworkException could be seen if problems occur creating error file
-	 */
-	String generateErrorFile(final String querySetID,
-			final String queryID, final String sql, final ResultSet resultSet,
-			final Throwable queryError, final Object expectedResultsFile)
-			throws QueryTestFailedException, FrameworkException;
 
 	
 	/**
 	 * Call to generate an error file based on an error that occurred.  
-	 * @param querySetID 
-	 * @param queryID
+	 * @param test is the Test being run
 	 * @param error
 	 * @return String name for the error file
 	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
-	String generateErrorFile(final String querySetID,
-			final String queryID, final Throwable error)
+	public abstract String generateErrorFile(final Test test, final Throwable error)
 			throws FrameworkException;
 	
 }
