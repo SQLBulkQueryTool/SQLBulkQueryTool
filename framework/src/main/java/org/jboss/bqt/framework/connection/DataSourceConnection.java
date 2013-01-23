@@ -29,9 +29,10 @@ import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
-import org.jboss.bqt.core.util.PropertiesUtils;
-import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.FrameworkPlugin;
 
 public class DataSourceConnection extends ConnectionStrategy {
@@ -113,26 +114,25 @@ public class DataSourceConnection extends ConnectionStrategy {
 	}
 
 	@Override
-	public Connection getConnection() throws QueryTestFailedException {
+	public Connection getConnection() throws FrameworkException {
 		try {
 			return getXAConnection().getConnection();
-		} catch (QueryTestFailedException qtf) {
+		} catch (FrameworkException qtf) {
 			throw qtf;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new QueryTestFailedException(e);
+			throw new FrameworkException(e);
 		}
 	}
 
 	@Override
-	public synchronized XAConnection getXAConnection()
-			throws QueryTestFailedException {
+	public synchronized XAConnection getXAConnection() throws FrameworkException {
 		if (xaConnection == null) {
 			validate();
 			try {
 				xaConnection = createConnection();
 			} catch (Exception e) {
-				throw new QueryTestFailedException(e);
+				throw new FrameworkException(e);
 			}
 		}
 		return xaConnection;

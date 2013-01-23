@@ -26,6 +26,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.framework.FrameworkPlugin;
@@ -99,7 +100,7 @@ public class DriverConnection extends ConnectionStrategy {
 
 	@Override
 	public synchronized Connection getConnection()
-			throws QueryTestFailedException {
+			throws FrameworkException {
 		if (this.connection != null) {
 			try {
 				if (!this.connection.isClosed()) {
@@ -117,7 +118,7 @@ public class DriverConnection extends ConnectionStrategy {
 	}
 
 	private Connection getJDBCConnection(String driver, String url,
-			String user, String passwd) throws QueryTestFailedException {
+			String user, String passwd) throws FrameworkException {
 
 		FrameworkPlugin.LOGGER.info("Creating Driver Connection: \"" + url + "\"" + " user:password - " + (user != null ? user : "NA") + ":" + (passwd != null ? passwd : "NA")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -132,7 +133,7 @@ public class DriverConnection extends ConnectionStrategy {
 
 		} catch (Throwable t) {
 			t.printStackTrace();
-			throw new QueryTestFailedException(t.getMessage());
+			throw new FrameworkException(t.getMessage());
 		}
 		return conn;
 

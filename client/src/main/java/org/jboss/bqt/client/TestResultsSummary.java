@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.framework.Test;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -57,7 +57,6 @@ public class TestResultsSummary {
 	private static final String NL = System.getProperty("line.separator"); //$NON-NLS-1$
 
 	// totals for scenario
-	private String resultMode = "NotSet";
 	private int total_queries = 0;
 	private int total_pass = 0;
 	private int total_fail = 0;
@@ -65,21 +64,23 @@ public class TestResultsSummary {
 	private long total_seconds = 0;
 	private List<String> failed_queries = new ArrayList<String>();
 	private List<String> query_sets = new ArrayList<String>(10);
+	private QueryScenario scenario = null;
 
-	private Map<String, Collection<TestResult>> testResults = Collections
-			.synchronizedMap(new HashMap<String, Collection<TestResult>>());
+	private Map<String, Collection<Test>> Tests = Collections
+			.synchronizedMap(new HashMap<String, Collection<Test>>());
 
-	public TestResultsSummary(String resultMode) {
-		this.resultMode = resultMode;
+	public TestResultsSummary(QueryScenario queryscenario) {
+		this.scenario = queryscenario;
 	}
 
 	public void cleanup() {
 		failed_queries.clear();
 		query_sets.clear();
-		testResults.clear();
+		Tests.clear();
+		scenario=null;
 	}
 
-	public synchronized void addTestResult(String querySetID, TestResult result) {
+	public synchronized void addTest(String querySetID, Test result) {
 
 		if (result == null) {
 			System.err
@@ -88,19 +89,19 @@ public class TestResultsSummary {
 					"Error - trying to add a null result set for querysetID: " + querySetID); //$NON-NLS-1$
 
 		}
-		Collection<TestResult> results = null;
-		if (this.testResults.containsKey(querySetID)) {
-			results = this.testResults.get(querySetID);
+		Collection<Test> results = null;
+		if (this.Tests.containsKey(querySetID)) {
+			results = this.Tests.get(querySetID);
 		} else {
-			results = new ArrayList<TestResult>();
-			this.testResults.put(querySetID, results);
+			results = new ArrayList<Test>();
+			this.Tests.put(querySetID, results);
 		}
 		results.add(result);
 
 	}
 
-	public Collection<TestResult> getTestResults(String querySetID) {
-		return this.testResults.get(querySetID);
+	public Collection<Test> getTests(String querySetID) {
+		return this.Tests.get(querySetID);
 	}
 
 	private static PrintStream getSummaryStream(String outputDir,
@@ -262,10 +263,10 @@ public class TestResultsSummary {
 
 	}
 
-	private void printQueryTestResults(PrintStream outputStream,
+	private void printQueryTests(PrintStream outputStream,
 			Date testStartTS, Date endTS, Date length, int numberOfClients,
 			SimpleDateFormat formatter, Collection results) {
-		outputStream.println("Query Test Results [" + this.resultMode + "]"); //$NON-NLS-1$
+		outputStream.println("Query Test Results [" + this.scenario.getResultsMode() + "]"); //$NON-NLS-1$
 		outputStream.println("=================="); //$NON-NLS-1$
 		outputStream.println("Start        Time: " + testStartTS); //$NON-NLS-1$
 		outputStream.println("End          Time: " + endTS); //$NON-NLS-1$
@@ -286,7 +287,7 @@ public class TestResultsSummary {
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
-			TestResult stat = (TestResult) resultItr.next();
+			Test stat = (Test) resultItr.next();
 			writeQueryResult(outputStream, formatter, stat);
 		}
 
@@ -307,16 +308,16 @@ public class TestResultsSummary {
 		int expected_fail = 0;
 
 		for (Iterator resultsItr = results.iterator(); resultsItr.hasNext();) {
-			TestResult stat = (TestResult) resultsItr.next();
+			Test stat = (Test) resultsItr.next();
 			++queries;
 			switch (stat.getStatus()) {
-			case TestResult.RESULT_STATE.TEST_EXCEPTION:
+			case Test.RESULT_STATE.TEST_EXCEPTION:
 				++fail;
 				break;
-			case TestResult.RESULT_STATE.TEST_SUCCESS:
+			case Test.RESULT_STATE.TEST_SUCCESS:
 				++pass;
 				break;
-			case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+			case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 				++pass;
 				++expected_fail;
 				break;
@@ -331,7 +332,7 @@ public class TestResultsSummary {
 	}
 
 	private void addTotalPassFailGen(String scenario_name, Collection results,
-			Date testStartTS, Date endTS, Date lengthTime) {
+			Date testStartTSx, Date endTSx, Date lengthTime) {
 		int queries = 0;
 		int pass = 0;
 		int fail = 0;
@@ -345,7 +346,7 @@ public class TestResultsSummary {
 
 		total_querysets++;
 		for (Iterator resultsItr = results.iterator(); resultsItr.hasNext();) {
-			TestResult stat = (TestResult) resultsItr.next();
+			Test stat = (Test) resultsItr.next();
 
 			if (queryset == null) {
 				queryset = stat.getQuerySetID();
@@ -353,7 +354,7 @@ public class TestResultsSummary {
 
 			++queries;
 			switch (stat.getStatus()) {
-			case TestResult.RESULT_STATE.TEST_EXCEPTION:
+			case Test.RESULT_STATE.TEST_EXCEPTION:
 				++fail;
 
 				String msg = 
@@ -366,14 +367,14 @@ public class TestResultsSummary {
 
 				this.failed_queries.add(stat.getQueryID() + "~" + msg);
 				break;
-			case TestResult.RESULT_STATE.TEST_SUCCESS:
+			case Test.RESULT_STATE.TEST_SUCCESS:
 				++pass;
 				++succeed;
 				
 				totalFullMilliSecs += ( stat.getEndTS() - stat.getBeginTS());
 				
 				break;
-			case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+			case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 				++pass;
 				break;
 			}
@@ -390,13 +391,13 @@ public class TestResultsSummary {
 
 	}
 
-	public void printResults(QueryScenario scenario, String querySetID,
+	public void printResults(String querySetID,
 			long beginTS, long endTS) throws Exception {
 
 		ClientPlugin.LOGGER.debug("Print results for Query Set [" + querySetID + "]");
 
 		try {
-			printResults(scenario, querySetID, beginTS, endTS, 1, 1);
+			printResults(querySetID, beginTS, endTS, 1, 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -404,7 +405,6 @@ public class TestResultsSummary {
 
 	/**
 	 * Print test results.
-	 * @param scenario 
 	 * @param querySetID 
 	 * 
 	 * @param testStartTS
@@ -415,20 +415,20 @@ public class TestResultsSummary {
 	 * @param runNumber 
 	 * @throws Exception
 	 */
-	public void printResults(QueryScenario scenario, String querySetID,
+	public void printResults(String querySetID,
 			long testStartTS, long endTS, int numberOfClients, int runNumber)
 			throws Exception {
 
 		String testname = scenario.getQueryScenarioIdentifier();
-		Collection<TestResult> testResults = getTestResults(querySetID);
+		Collection<Test> Tests = getTests(querySetID);
 		// Properties props = scenario.getProperties();
 		String outputDir = scenario.getTestRunDir();
 
 		//       CombinedTestClient.log("Calculating and printing result statistics"); //$NON-NLS-1$
-		if (testResults == null) {
+		if (Tests == null) {
 			// do nothing
 
-		} else if (testResults.size() > 0) {
+		} else if (Tests.size() > 0) {
 			// Create output file
 			String outputFileName = generateFileName(querySetID, scenario.getResultsMode(),
 					System.currentTimeMillis());
@@ -458,55 +458,55 @@ public class TestResultsSummary {
 			// outputStream
 			//			.println("Elapsed      Time: " + ((endTS - testStartTS) / 1000) + " seconds"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			addTotalPassFailGen(testname, testResults, starttest, endtest,
+			addTotalPassFailGen(testname, Tests, starttest, endtest,
 					diffdate);
 			// Text File output
-			printQueryTestResults(outputStream, starttest, endtest, diffdate,
-					numberOfClients, TestClient.TSFORMAT, testResults);
-			printQueryTestResults(overwriteStream, starttest, endtest,
-					diffdate, numberOfClients, TestClient.TSFORMAT, testResults);
+			printQueryTests(outputStream, starttest, endtest, diffdate,
+					numberOfClients, TestClient.TSFORMAT, Tests);
+			printQueryTests(overwriteStream, starttest, endtest,
+					diffdate, numberOfClients, TestClient.TSFORMAT, Tests);
 
 
 			// Wiki Update
-			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, testResults); //$NON-NLS-1$ //$NON-NLS-2$
+			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, Tests); //$NON-NLS-1$ //$NON-NLS-2$
 
 			// Print results according to test type
 			// switch (CombinedTestClient.TEST_TYPE) {
 			// case CombinedTestClient.TEST_TYPE_QUERY:
 			// // Text File output
-			// printQueryTestResults(outputStream, testStartTS, endTS,
-			// numberOfClients, TestClientTransaction.TSFORMAT, testResults);
-			// printQueryTestResults(overwriteStream, testStartTS, endTS,
-			// numberOfClients, TestClientTransaction.TSFORMAT, testResults);
+			// printQueryTests(outputStream, testStartTS, endTS,
+			// numberOfClients, TestClientTransaction.TSFORMAT, Tests);
+			// printQueryTests(overwriteStream, testStartTS, endTS,
+			// numberOfClients, TestClientTransaction.TSFORMAT, Tests);
 			//
 			// // HTML Vesion of output
 			//                	PrintStream htmlStream = getSummaryStream(outputDir, CONFIG_ID+".html", true); //$NON-NLS-1$
-			// CombinedTestUtil.printHtmlQueryTestResults(htmlStream,
+			// CombinedTestUtil.printHtmlQueryTests(htmlStream,
 			// testStartTS, endTS, numberOfClients,
-			// TestClientTransaction.TSFORMAT, testResults);
+			// TestClientTransaction.TSFORMAT, Tests);
 			// htmlStream.close();
 			//
 			// // Wiki Update
-			//                	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+CONFIG_ID+".html", testStartTS, endTS, numberOfClients, testResults); //$NON-NLS-1$ //$NON-NLS-2$
+			//                	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+CONFIG_ID+".html", testStartTS, endTS, numberOfClients, Tests); //$NON-NLS-1$ //$NON-NLS-2$
 			// break;
 			// case CombinedTestClient.TEST_TYPE_LOAD:
-			// CombinedTestUtil.printLoadTestResults(outputStream, testStartTS,
+			// CombinedTestUtil.printLoadTests(outputStream, testStartTS,
 			// endTS, numberOfClients, TestClientTransaction.TSFORMAT,
-			// testResults);
-			// CombinedTestUtil.printLoadTestResults(overwriteStream,
+			// Tests);
+			// CombinedTestUtil.printLoadTests(overwriteStream,
 			// testStartTS, endTS, numberOfClients,
-			// TestClientTransaction.TSFORMAT, testResults);
+			// TestClientTransaction.TSFORMAT, Tests);
 			// break;
 			// case CombinedTestClient.TEST_TYPE_PERF:
-			// CombinedTestUtil.printPerfTestResults(outputStream, testStartTS,
+			// CombinedTestUtil.printPerfTests(outputStream, testStartTS,
 			// endTS, numberOfClients, CONF_LVL, TestClientTransaction.TSFORMAT,
-			// testResults);
-			// CombinedTestUtil.printPerfTestResults(overwriteStream,
+			// Tests);
+			// CombinedTestUtil.printPerfTests(overwriteStream,
 			// testStartTS, endTS, numberOfClients, CONF_LVL,
-			// TestClientTransaction.TSFORMAT, testResults);
+			// TestClientTransaction.TSFORMAT, Tests);
 			// break;
 			// case CombinedTestClient.TEST_TYPE_PROF:
-			// CombinedTestUtil.printProfTestResults();
+			// CombinedTestUtil.printProfTests();
 			// break;
 			// default:
 			// break;
@@ -520,7 +520,7 @@ public class TestResultsSummary {
 		}
 	}
 
-	public void printTotals(QueryScenario scenario) throws Exception {
+	public void printTotals() throws Exception {
 		// String outputDir = scenario.getResultsGenerator().getOutputDir();
 		String scenario_name = scenario.getQueryScenarioIdentifier();
 		String querysetname = scenario.getQuerySetName();
@@ -543,7 +543,7 @@ public class TestResultsSummary {
 		}
 
 		outputStream
-				.println("Scenario " + scenario_name + " Summary [" + this.resultMode + "]"); //$NON-NLS-1$
+				.println("Scenario " + scenario_name + " Summary [" + this.scenario.getResultsMode() + "]"); //$NON-NLS-1$
 		outputStream.println("Query Set Name: " + querysetname); //$NON-NLS-1$
 		outputStream.println("=================="); //$NON-NLS-1$
 
@@ -652,7 +652,7 @@ public class TestResultsSummary {
 		//+ "_Run-" + runNumber; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	private static void printHtmlQueryTestResults(PrintStream outputStream,
+	private static void printHtmlQueryTests(PrintStream outputStream,
 			long testStartTS, long endTS, int numberOfClients,
 			SimpleDateFormat formatter, Collection results) {
 
@@ -718,7 +718,7 @@ public class TestResultsSummary {
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
-			TestResult stat = (TestResult) resultItr.next();
+			Test stat = (Test) resultItr.next();
 			htmlCode.append("<tr>").append(NL); //$NON-NLS-1$            
 			addTableDataLink(htmlCode, stat.getQueryID(),
 					"show('" + scrub(stat.getQuery()) + "')"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -730,7 +730,7 @@ public class TestResultsSummary {
 			addTableData(htmlCode,
 					Long.toString((stat.getEndTS() - stat.getBeginTS() / 1000)));
 			// Long.toString(stat.getEndTS()));
-			if (stat.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+			if (stat.getStatus() == Test.RESULT_STATE.TEST_EXCEPTION) {
 				addTableData(htmlCode, stat.getExceptionMsg());
 				if (stat.getErrorfile() != null
 						&& !stat.getErrorfile().equals("null")) { //$NON-NLS-1$
@@ -792,7 +792,7 @@ public class TestResultsSummary {
 		// double totalFirstMilliSecs = 0.0;
 
 		for (Iterator resultItr = queryResults.iterator(); resultItr.hasNext();) {
-			TestResult result = (TestResult) resultItr.next();
+			Test result = (Test) resultItr.next();
 			if ( result.getException() != null || result.getExceptionMsg() != null) {
 				// dont include errors in time calculations;
 				continue;		
@@ -831,7 +831,7 @@ public class TestResultsSummary {
 	 * @param stat
 	 */
 	private static void writeQueryResult(PrintStream outputStream,
-			SimpleDateFormat formatter, TestResult stat) {
+			SimpleDateFormat formatter, Test stat) {
 		
 		outputStream.print(stat.getQueryID());
 		outputStream.print(","); //$NON-NLS-1$
@@ -852,7 +852,7 @@ public class TestResultsSummary {
 		outputStream.print(","); //$NON-NLS-1$
 
 		outputStream
-				.println((stat.getStatus() != TestResult.RESULT_STATE.TEST_SUCCESS ? stat
+				.println((stat.getStatus() != Test.RESULT_STATE.TEST_SUCCESS ? stat
 						.getExceptionMsg() : "")); //$NON-NLS-1$
 	}
 

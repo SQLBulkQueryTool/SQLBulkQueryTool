@@ -25,22 +25,19 @@ package org.jboss.bqt.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.TestResult;
-import org.jboss.bqt.client.results.TestResultStat;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.PropertiesUtils;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
-import org.jboss.bqt.framework.TransactionContainer;
+import org.jboss.bqt.framework.TestCaseLifeCycle;
+import org.jboss.bqt.framework.TransactionAPI;
 import org.jboss.bqt.framework.TransactionFactory;
 
 /**
@@ -170,11 +167,10 @@ public class TestClient {
 
 	}	
 
-	public void runScenario(File scenarioFile) throws Exception {
+	public void runScenario(File scenarioFile) throws Throwable {
 		
 		String scenario_name = init(scenarioFile);
 
-		ClientPlugin.LOGGER.info("Starting scenario " + scenario_name);
 		
 		this.scenario = QueryScenario.createInstance(scenario_name, CONFIG.getProperties());
 		
@@ -182,76 +178,19 @@ public class TestClient {
 			this.createSQL(scenario);
 			return;
 		}
+		ClientPlugin.LOGGER.info("Starting scenario: " + scenario.getQueryScenarioIdentifier());
 		
-		TransactionContainer tc = getTransactionContainer();
+		TransactionAPI tc = getTransactionContainer(CONFIG.getProperties());
 
-		String querySetID = null;
-
-		TestClientTransaction userTxn = getClientTransaction(scenario);
-
-		Iterator<String> qsetIt = scenario.getQuerySetIDs().iterator();
-		TestResultsSummary summary = new TestResultsSummary(
-				scenario.getResultsMode());
-
-		try {
-
-			// iterate over the query set ID's, which there
-			// should be 1 for each file to be processed
-			while (qsetIt.hasNext()) {
-				querySetID = qsetIt.next();
-
-				ClientPlugin.LOGGER.info("Start Test: " + new Date() + " - Query ID [" + querySetID + "]");
-
-				final List<QueryTest> queryTests = scenario.getQueries(querySetID);
-
-				// the iterator to process the query tests
-				Iterator<QueryTest> queryTestIt = queryTests.iterator();
-
-				long beginTS = System.currentTimeMillis();
-
-				while (queryTestIt.hasNext()) {
-					QueryTest q = queryTestIt.next();
-
-					userTxn.init(summary, q);
-
-					// run test
-					try {
-						tc.runTransaction(userTxn);
-					} catch (Throwable rme) {
-						ClientPlugin.LOGGER.error(rme,
-								"Test Error: " + q.getQuerySetID() + ":" + q.getQueryID() + ":" + rme.getMessage());
-						scenario.getErrorWriter().generateErrorFile(q.getQuerySetID(), q.getQueryID(), rme);
-						
-						TestResult tr = new TestResultStat(q.getQuerySetID(), q.getQueryID());
-						tr.setException(rme);
-						tr.setResultMode(scenario.getResultsMode());
-						tr.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
-						
-						summary.addTestResult(q.getQuerySetID(), tr);
-	
-					} 
-
-				}
-
-				long endTS = System.currentTimeMillis();
-
-				ClientPlugin.LOGGER.info("End Test: " + new Date() + " - Query ID [" + querySetID + "]");
-
-				summary.printResults(scenario, querySetID, beginTS, endTS);
-
-			}
-
-		} finally {
-			try {
-				summary.printTotals(scenario);
-				summary.cleanup();	
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-
-		}
+		TestCaseLifeCycle testCase = scenario.getTestCase();
 		
-		ClientPlugin.LOGGER.info("Completed scenario " + scenario_name);
+		testCase.setup(tc);
+		
+		testCase.runTestCase();
+		
+		testCase.cleanup();
+		
+		ClientPlugin.LOGGER.info("Completed scenario: " + scenario.getQueryScenarioIdentifier());
 
 	}
 	
@@ -259,12 +198,8 @@ public class TestClient {
 		return this.scenario;
 	}
 	
-	protected TransactionContainer getTransactionContainer() {
-		return TransactionFactory.create(CONFIG);
-	}
-	
-	protected TestClientTransaction getClientTransaction(QueryScenario scenario) {
-		return  new TestClientTransaction(scenario);
+	protected TransactionAPI getTransactionContainer(Properties props) {
+		return TransactionFactory.create(CONFIG.getProperties());
 	}
 	
 	private String init(File scenarioFile) throws Exception {
@@ -286,13 +221,16 @@ public class TestClient {
 		// if PRE1 scenario properties are supported, then map the old properties to the new.
 		if (PRE1_SUPPORTED) {
 			ClientPlugin.LOGGER.debug("Support for PRE1.0 ScenarioProperties");
-			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_QUERYSET_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR));
-			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_TEST_QUERIES_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR));
-			sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_EXPECTED_RESULTS_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR));
+			if (sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR) != null) {
+				sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_QUERYSET_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR));
+				sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_TEST_QUERIES_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR));
+				sc_props.put(TestProperties.PRE1_0_SCENARIO_SUPPORT.NEW_EXPECTED_RESULTS_DIR, sc_props.getProperty(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR));
 
-			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR);
-			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR);
-			sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR);
+				sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_EXPECTED_RESULTS_DIR);
+				sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_QUERYSET_DIR);
+				sc_props.remove(TestProperties.PRE1_0_SCENARIO_SUPPORT.OLD_TEST_QUERIES_DIR);
+
+			}
 		}
 				
 		CONFIG.setProperties(sc_props);
@@ -300,13 +238,21 @@ public class TestClient {
 		return scenario_name;
 	}
 		
-	private void createSQL(QueryScenario queryset) throws Exception {
-		ClientPlugin.LOGGER.debug("Start creating sql");
+	private void createSQL(QueryScenario scenario) throws Throwable {
+		ClientPlugin.LOGGER.info("Start creating sql for scenario: " + scenario.getQueryScenarioIdentifier());
 
 		try {
-			CreateSQLQueryFile createsqltrans = new CreateSQLQueryFile(queryset);
+			// NOTE: no transaction container is needed for running this type
+			//		of test case, so the testcase is executed directly
+			TestCaseLifeCycle createsqltrans = scenario.getTestCase();
+			
+			Properties props = new Properties();
+			props.setProperty(TransactionFactory.TRANSACTION_TYPE, TransactionFactory.TRANSACTION_TYPES.USEDEFAULT_TRANSACTION);
+			TransactionAPI tc = getTransactionContainer(props);
 		
-			createsqltrans.testCase();
+			createsqltrans.setup(tc);
+			createsqltrans.runTestCase();
+			createsqltrans.cleanup();
 		
 		} finally {
 
@@ -315,7 +261,7 @@ public class TestClient {
 			ConfigPropertyLoader.reset();
 		}
 		
-		ClientPlugin.LOGGER.debug("Completed creating sql " );
+		ClientPlugin.LOGGER.info("Completed creating sql: " + scenario.getQueryScenarioIdentifier() );
 	
 	}
 

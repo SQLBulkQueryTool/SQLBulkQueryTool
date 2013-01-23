@@ -32,7 +32,9 @@ import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.testcase.CreateSQLQueryFile;
+import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCaseLifeCycle;
 
 /**
  * The SQL Result Mode controls the process for generating query files based on the
@@ -53,12 +55,13 @@ public class CreateSQLQuery extends QueryScenario {
 	}
 	
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#setUp()
+	 * Call to obtain the {@link TestCaseLifeCycle testcase} thata will run
+	 * this scenario
+	 * @return TransactionQueryTestCase
 	 */
 	@Override
-	protected void setUp() {
+	public TestCaseLifeCycle getTestCase() {
+		return new CreateSQLQueryFile(this);
 	}
 	
 	@Override
@@ -93,17 +96,20 @@ public class CreateSQLQuery extends QueryScenario {
 	}
 	
 	@Override
-	public ExpectedResultsReader getExpectedResults(String querySetID) {
+	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(org.jboss.bqt.client.api.TestResult, java.sql.ResultSet)
-	 */
+
 	@Override
-	public void handleTestResult(TestResult tr, ResultSet resultSet) {
+	public void handleTestResult(Test tr, ResultSet resultSet) {
+	}
+	
+	// need to override this method because the abstract logic for throwing
+	// exceptions depends on this
+	@Override
+	public boolean exceptionExpected(Test test) {
+		return false;
 	}
 
 }

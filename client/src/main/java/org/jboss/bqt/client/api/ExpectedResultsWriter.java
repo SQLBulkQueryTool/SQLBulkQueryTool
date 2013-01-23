@@ -23,31 +23,58 @@
 package org.jboss.bqt.client.api;
 
 import java.sql.ResultSet;
+import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.framework.Test;
 
 /**
  * The ExpectedResultsWriter represents how a new set of expected results will be written for
- * a given <code>querySetID</code> and <code>queryIdentifier</code>. The
+ * a given {@link Test}. The
  * implementor should write out one result file for each call that is made to
- * {@link #generateQueryResultFile(TestResult, ResultSet)  }
- * , however, it will control the format of the content.  The location should be
+ * {@link #generateQueryResultFile(Test, ResultSet)  }.  The location should be
  * based on {@link TestProperties#PROP_GENERATE_DIR generateDirectory}.
  * 
- * The testing process will only generate a new result file when the result mode
+ * When a test is run, it will only trigger the generation of a new result file when the result mode
  * is {@link TestProperties.RESULT_MODES#GENERATE}.  
  * 
  */
-public interface ExpectedResultsWriter {
+public abstract class ExpectedResultsWriter {
+	
+	private Properties properties;
+	private QueryScenario scenario;
+	private String generateDir;
+	
+	public ExpectedResultsWriter(QueryScenario scenario, Properties props) {
+		this.properties = props;
+		this.scenario = scenario;
+		
+		this.generateDir = getProperties().getProperty(TestProperties.PROP_GENERATE_DIR);
+		if (generateDir == null) {
+			BQTUtil.throwInvalidProperty(TestProperties.PROP_GENERATE_DIR);
+		}
+	}
+	
+	protected Properties getProperties() {
+		return properties;
+	}
+	
+	protected QueryScenario getQueryScenario() {
+		return scenario;
+	}
 
+	
 	/**
 	 * Returns the full path to the newly created expected results location.
 	 * @return String full directory path
 	 * 
 	 * @see TestProperties#PROP_GENERATE_DIR
 	 */
-	String getGenerateDir();
+	public String getGenerateDir() {
+		return generateDir;
+	}
 
 	/**
 	 * Call to generate the results file from an executed query. If an exception
@@ -55,12 +82,12 @@ public interface ExpectedResultsWriter {
 	 * based on the result should be able to be used as the expected result when
 	 * query tests are run with in the resultmode of "compare".
 	 * 
-	 * @param testResult 
+	 * @param test
 	 * @param resultSet 
 	 * @throws FrameworkRuntimeException is thrown to stop processing
 	 */
 	
-	void generateQueryResultFile(final TestResult testResult,
+	public abstract void generateQueryResultFile(final Test test,
 			final ResultSet resultSet) throws FrameworkRuntimeException;	
 	
 	

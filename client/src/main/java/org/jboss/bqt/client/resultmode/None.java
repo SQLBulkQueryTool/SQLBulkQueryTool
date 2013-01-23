@@ -24,14 +24,16 @@ package org.jboss.bqt.client.resultmode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import junit.framework.TestResult;
+
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
-import org.jboss.bqt.client.api.TestResult;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.util.ArgCheck;
+import org.jboss.bqt.framework.Test;
 
 /**
  * The None Result Mode controls the process for executing the queries, but not perform any post execution
@@ -51,15 +53,6 @@ public class None extends QueryScenario {
 
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#setUp()
-	 */
-	@Override
-	protected void setUp() {
-	}
-	
 	@Override
 	public boolean isNone() {
 		return true;
@@ -77,7 +70,7 @@ public class None extends QueryScenario {
 	}
 	
 	@Override
-	public ExpectedResultsReader getExpectedResults(String querySetID) {
+	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
 		return null;
 	}
 	
@@ -86,19 +79,13 @@ public class None extends QueryScenario {
 		return null;
 	}	
 
-	/**
-	 * {@inheritDoc}
-	 * @throws FrameworkException 
-	 *
-	 * @see org.jboss.bqt.client.api.QueryScenario#handleTestResult(org.jboss.bqt.client.api.TestResult, java.sql.ResultSet)
-	 */
 	@Override
-	public void handleTestResult(TestResult tr, ResultSet resultSet) throws FrameworkException {
+	public void handleTestResult(Test tr, ResultSet resultSet) throws FrameworkException {
 		// create error files for any query that doesn't execute successfully
 		ArgCheck.isNotNull(tr, "TestResult must be passed in");
 
-		if (tr.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
-				this.getErrorWriter().generateErrorFile(tr.getQuerySetID(), tr.getQueryID(),tr.getException());
+		if (tr.isFailure()) {
+				this.getErrorWriter().generateErrorFile(tr,tr.getException());
 		}
 	}
 

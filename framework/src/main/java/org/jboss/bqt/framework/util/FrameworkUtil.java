@@ -19,41 +19,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.framework.transaction;
+package org.jboss.bqt.framework.util;
 
-import org.jboss.bqt.framework.TransactionContainer;
-import org.jboss.bqt.framework.TransactionQueryTestCase;
-import org.jboss.bqt.framework.ConfigPropertyNames.CONNECTION_STRATEGY_PROPS;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
- * This transction is only valid when AutoCommit = ON txnAutoWrap = Optimistic.
+ * @author vhalbert
+ *
  */
-public class TxnAutoTransaction extends TransactionContainer {
+public class FrameworkUtil {
+	
+	public static void writeResultSet(File expected, BufferedReader resultReader, boolean actual)
+			throws IOException {
+		if (actual) {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(expected));
+			String s = null;
+			while ((s = resultReader.readLine()) != null) {
+				bw.write(s);
+				bw.write("\n"); //$NON-NLS-1$
+			}
+			bw.close();
+		}
+	}
+	
 
-	private String autocommittxn = null;
-
-	public TxnAutoTransaction() {
-		super();
+	public static String read(BufferedReader r, boolean casesensitive)
+			throws IOException {
+		StringBuffer result = new StringBuffer();
+		String s = null;
+		try {
+			while ((s = r.readLine()) != null) {
+				result.append((casesensitive ? s.trim() : s.trim()
+						.toLowerCase()));
+				result.append("\n"); //$NON-NLS-1$
+			}
+		} finally {
+			r.close();
+		}
+		return result.toString();
 	}
 
-	public TxnAutoTransaction(String autocommittxn) {
-		super();
-		this.autocommittxn = autocommittxn;
-	}
-
-	@Override
-	public void before(TransactionQueryTestCase test) {
-//		if (this.autocommittxn != null) {
-//			test.getConnectionStrategy()
-//					.setEnvironmentProperty(
-//							CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-//							this.autocommittxn);
-//		}
-
-	}
-
-	@Override
-	public void after(TransactionQueryTestCase test) {
-
-	}
 }

@@ -262,43 +262,6 @@ public class ReflectionHelper {
 				+ " Args: " + argumentsClasses); //$NON-NLS-1$
 	}
 
-	/**
-	 * Convert any argument classes to primitives.
-	 * 
-	 * @param arguments
-	 *            the list of argument classes.
-	 * @return the list of Class instances in which any classes that could be
-	 *         represented by primitives (e.g., Boolean) were replaced with the
-	 *         primitive classes (e.g., Boolean.TYPE).
-	 */
-	private static List convertArgumentClassesToPrimitives(List arguments) {
-		List result = new ArrayList(arguments.size());
-		Iterator iter = arguments.iterator();
-		while (iter.hasNext()) {
-			Class clazz = (Class) iter.next();
-			if (clazz == Boolean.class)
-				clazz = Boolean.TYPE;
-			else if (clazz == Character.class)
-				clazz = Character.TYPE;
-			else if (clazz == Byte.class)
-				clazz = Byte.TYPE;
-			else if (clazz == Short.class)
-				clazz = Short.TYPE;
-			else if (clazz == Integer.class)
-				clazz = Integer.TYPE;
-			else if (clazz == Long.class)
-				clazz = Long.TYPE;
-			else if (clazz == Float.class)
-				clazz = Float.TYPE;
-			else if (clazz == Double.class)
-				clazz = Double.TYPE;
-			else if (clazz == Void.class)
-				clazz = Void.TYPE;
-			result.add(clazz);
-		}
-
-		return result;
-	}
 
 	/**
 	 * Helper method to load a class.
@@ -311,15 +274,13 @@ public class ReflectionHelper {
 	 * @return Class is the instance of the class
 	 * @throws ClassNotFoundException
 	 */
-	private static final Class loadClass(final String className,
+	private static final Class<?> loadClass(final String className,
 			final ClassLoader classLoader) throws ClassNotFoundException {
-		Class cls = null;
 		if (classLoader == null) {
-			cls = Class.forName(className.trim());
-		} else {
-			cls = Class.forName(className.trim(), true, classLoader);
-		}
-		return cls;
+			return Class.forName(className.trim());
+		} 
+		
+		return Class.forName(className.trim(), true, classLoader);
 	}
 
 	/**
@@ -349,8 +310,10 @@ public class ReflectionHelper {
 			if (size > 0) {
 				for (Iterator it = ctorObjs.iterator(); it.hasNext();) {
 					Object obj = it.next();
-					names[i] = loadClass(obj.getClass().getName(), classLoader);
-					objArray[i] = obj;
+	                if (obj != null) {
+		                names[i] = obj.getClass();
+		                objArray[i] = obj;
+	                }
 					i++;
 				}
 			}
@@ -368,8 +331,29 @@ public class ReflectionHelper {
 		try {
 			final Class<?> cls = loadClass(className, classLoader);
 
-			Constructor ctor = cls.getDeclaredConstructor(argTypes);
-
+	       Constructor<?> ctor = null;
+	        try {
+	        	ctor = cls.getDeclaredConstructor(argTypes);
+	        } catch (NoSuchMethodException e) {
+	        	
+	        }
+	        
+	        if (ctor == null && argTypes != null && argTypes.length > 0) {
+	        	List<Class<?>> argumentsClasses = Arrays.asList(argTypes);
+	        	List<Class<?>> argumentsClassList = convertArgumentClassesToPrimitives(argumentsClasses);
+	        	for (Constructor<?> possible : cls.getDeclaredConstructors()) {
+	        		if (argsMatch(argumentsClasses, argumentsClassList, possible.getParameterTypes())) {
+	        			ctor = possible;
+	        			break;
+	        		}
+	        	}
+	        }
+	        
+	        if (ctor == null) {
+	        	  throw new FrameworkRuntimeException("Program Error: wrong arg types when creating class:" + Arrays.toString(argTypes));
+	        }
+	        
+		        
 			return ctor.newInstance(ctorObjs);
 
 		} catch (FrameworkRuntimeException e) {
@@ -380,5 +364,55 @@ public class ReflectionHelper {
 			throw new FrameworkRuntimeException(e);
 		}
 	}
+	
+	private static boolean argsMatch(List<Class<?>> argumentsClasses,
+			List<Class<?>> argumentsClassList, Class[] args) {
+        if ( args.length != argumentsClasses.size() ) {
+            return false;
+        }
+		for ( int i=0; i<args.length; ++i ) {
+		    Class<?> primitiveClazz = argumentsClassList.get(i);
+		    Class<?> objectClazz = argumentsClasses.get(i);
+		    if ( objectClazz != null ) {
+		        // Check for possible matches with (converted) primitive types
+		        // as well as the original Object type 
+		        if ( ! args[i].equals(primitiveClazz) && ! args[i].isAssignableFrom(objectClazz) ) {
+		            return false;   // found one that doesn't match
+		        }
+		    } else {
+		        // a null is assignable for everything except a primitive
+		        if ( args[i].isPrimitive() ) {
+		            return false;   // found one that doesn't match
+		        }
+		    }
+		}
+		return true;
+	}
+	
+    
+    /**
+     * Convert any argument classes to primitives.
+     * @param arguments the list of argument classes.
+     * @return the list of Class instances in which any classes that could be represented
+     * by primitives (e.g., Boolean) were replaced with the primitive classes (e.g., Boolean.TYPE).
+     */
+    private static List<Class<?>> convertArgumentClassesToPrimitives( List<Class<?>> arguments ) {
+        List<Class<?>> result = new ArrayList<Class<?>>(arguments.size());
+        for (Class<?> clazz : arguments) {
+            if      ( clazz == Boolean.class   ) clazz = Boolean.TYPE;
+            else if ( clazz == Character.class ) clazz = Character.TYPE;
+            else if ( clazz == Byte.class      ) clazz = Byte.TYPE;
+            else if ( clazz == Short.class     ) clazz = Short.TYPE;
+            else if ( clazz == Integer.class   ) clazz = Integer.TYPE;
+            else if ( clazz == Long.class      ) clazz = Long.TYPE;
+            else if ( clazz == Float.class     ) clazz = Float.TYPE;
+            else if ( clazz == Double.class    ) clazz = Double.TYPE;
+            else if ( clazz == Void.class      ) clazz = Void.TYPE;
+            result.add( clazz );
+        }
+
+        return result;
+    }
+    
 
 }

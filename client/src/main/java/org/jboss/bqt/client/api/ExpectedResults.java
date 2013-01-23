@@ -19,32 +19,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.framework.transaction;
+package org.jboss.bqt.client.api;
 
-import org.jboss.bqt.framework.TransactionContainer;
-import org.jboss.bqt.framework.TransactionQueryTestCase;
-import org.jboss.bqt.framework.ConfigPropertyNames.CONNECTION_STRATEGY_PROPS;
-import org.jboss.bqt.framework.ConfigPropertyNames.TXN_AUTO_WRAP_OPTIONS;
 
 /**
- * This transction is only valid when AutoCommit = ON txnAutoWrap = OFF
+ * ExpectedResults represent the expected outcome from the execution of one query.
  */
-public class OffWrapTransaction extends TransactionContainer {
+public interface ExpectedResults {
 
-	public OffWrapTransaction() {
-		super();
-	}
-
-	@Override
-	public void before(TransactionQueryTestCase test) {
-//		test.getConnectionStrategy().setEnvironmentProperty(
-//				CONNECTION_STRATEGY_PROPS.TXN_AUTO_WRAP,
-//				TXN_AUTO_WRAP_OPTIONS.AUTO_WRAP_OFF);
-
-	}
+	/**
+	 * Returns the querySetID identifier
+	 * @return String
+	 */
+	String getQuerySetID();
 	
-	@Override
-	public void after(TransactionQueryTestCase test) {
+	/**
+	 * Returns the queryID identifier
+	 * @return String
+	 */
+	String getQueryID();
 
-	}
+	/**
+	 * @return Returns the query.
+	 */
+	String getQuery();
+	
+	/**
+	 * Returns the execution time the query ran when the expected results were captured.
+	 * @return long is the execution time
+	 */
+	long getExecutionTime();
+
+	/**
+	 * Return <code>true</code> if the result of the test has results.
+	 * @return boolean
+	 */
+	boolean isResult();
+
+	/**
+	 * Return <code>true</code> if the result of the test is an exception
+	 * @return boolean
+	 */
+	boolean isException();
+
+
+
 }

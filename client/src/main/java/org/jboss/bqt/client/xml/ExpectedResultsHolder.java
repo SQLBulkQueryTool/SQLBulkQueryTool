@@ -21,12 +21,13 @@
  */
 package org.jboss.bqt.client.xml;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 
-import org.jboss.bqt.client.api.TestResult;
+import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.core.util.ExceptionUtil;
+import org.jboss.bqt.framework.Test;
 
 /**
  * ResultsHolder
@@ -34,15 +35,17 @@ import org.jboss.bqt.core.util.ExceptionUtil;
  * Data structure. Holder of expected results and metadata.
  * </p>
  */
-public class ResultsHolder {
+public class ExpectedResultsHolder implements ExpectedResults {
 
 	// either TagNames.Elements.QUERY_RESULTS or TagNames.Elements.EXCEPTION
 	private String resultType;
 	
-	private TestResult actualTestResult;
+	private Test actualTestResult;
 
 	// Identifier
 	private String queryID;
+	
+	private String querySetID;
 
 	// The SQl query if available.
 	private String query;
@@ -61,19 +64,23 @@ public class ResultsHolder {
 	private long executionTime = -1;
 
 
-	public ResultsHolder(final String type) {
+	public ExpectedResultsHolder(final String type) {
 		this.resultType = type;
 	}
 	
-	public ResultsHolder(final String type, TestResult testResult) {
+	public ExpectedResultsHolder(final String type, Test testResult) {
 		this.resultType = type;
 		this.actualTestResult = testResult;
 	}
 	
-	public TestResult getActualTestResult() {
+	public Test getActualTestResult() {
 		return this.actualTestResult;
 	}
 
+	public String getQuerySetID() {
+		return querySetID;
+		
+	}
 	public String getQueryID() {
 		return queryID;
 	}
@@ -81,6 +88,10 @@ public class ResultsHolder {
 	public void setQueryID(final String queryID) {
 		this.queryID = queryID;
 	}
+	
+	public void setQuerySetID(final String querySetID) {
+		this.querySetID = querySetID;
+	}	
 	
 	public long getExecutionTime() {
 		return executionTime;

@@ -24,7 +24,7 @@ package org.jboss.bqt.client;
 import java.io.Serializable;
 
 /**
- * The QuerySQL represents a single sql statement to be executed for a given
+ * The QuerySQL represents a single sql statement to be executed in a given
  * {@link QueryTest Test}. The {@link #rowCnt} and {@link #updateCnt}, when set,
  * provide validation checks after the execution of the query.
  * 
