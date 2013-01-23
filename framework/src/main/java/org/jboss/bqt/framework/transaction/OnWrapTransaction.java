@@ -23,7 +23,8 @@ package org.jboss.bqt.framework.transaction;
 
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.framework.AbstractQuery;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TestCase;
 
 /**
  * This transction is only valid when AutoCommit = ON txnAutoWrap = ON
@@ -34,8 +35,8 @@ public class OnWrapTransaction extends AbstractQuery {
 	}
 
 	@Override
-	public void before(Test test) { 
-		super.before(test);
+	public void before(TestCase testCase) { 
+		super.before(testCase);
         try {
 			debug("Autocommit: " + getConnectionStrategy().getAutocommit());
 			getConnectionStrategy().getConnection().setAutoCommit(false);
@@ -49,7 +50,8 @@ public class OnWrapTransaction extends AbstractQuery {
 	@Override
 	public void after() {
 		try {
-			if (getTest().rollbackAlways() || getTest().isExceptionExpected()) {
+			if (getTestCase().getActualTest().rollbackAlways() || getTestCase().getTestResult().isFailure()) {
+
 				getConnectionStrategy().getConnection().rollback();
                 
 			} else {

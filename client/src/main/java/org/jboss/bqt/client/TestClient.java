@@ -64,7 +64,7 @@ public class TestClient {
 	public static final SimpleDateFormat TSFORMAT = new SimpleDateFormat(
 			"HH:mm:ss.SSS"); //$NON-NLS-1$
 	
-	private ConfigPropertyLoader CONFIG = null;
+	public static ConfigPropertyLoader CONFIG = null;
 	
 	private QueryScenario scenario;
 

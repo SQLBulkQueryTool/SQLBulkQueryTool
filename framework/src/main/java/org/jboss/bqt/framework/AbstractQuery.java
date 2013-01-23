@@ -68,7 +68,7 @@ public abstract class AbstractQuery implements TransactionAPI {
 	
 	private String testClassName = "n/a";
 	
-	private Test test = null;
+	private TestCase testCase = null;
 
 	public AbstractQuery() {
 		
@@ -85,11 +85,11 @@ public abstract class AbstractQuery implements TransactionAPI {
 	 *************************/
 
 	/**
-	 * @param test 
+	 * @param testCase 
 	 * 
 	 */
-	public void before(Test test) {
-		this.test = test;
+	public void before(TestCase testCase) {
+		this.testCase = testCase;
 		
 		this.applicationException = null;
 		this.internalException = null;
@@ -103,7 +103,11 @@ public abstract class AbstractQuery implements TransactionAPI {
 	}
 	
 	public void after() {
-		test.setException(this.getException());
+		
+		testCase.getTestResult().setException(this.getException());
+		if (testCase.getTestResult().getException()!= null) {
+			this.testCase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+		}
 	}
 
 	
@@ -136,8 +140,8 @@ public abstract class AbstractQuery implements TransactionAPI {
 		return this.internalConnection;
 	}
 	
-	public Test getTest() {
-		return this.test;
+	public TestCase getTestCase() {
+		return this.testCase;
 	}
 	
 	public ResultSet getResultSet() {
@@ -208,8 +212,8 @@ public abstract class AbstractQuery implements TransactionAPI {
 				
 			} else {
 				
-				this.test.setRowCount(0);
-				this.test.setUpdateCount( this.internalStatement.getUpdateCount() );			
+				this.testCase.getTestResult().setRowCount(0);
+				this.testCase.getTestResult().setUpdateCount( this.internalStatement.getUpdateCount() );			
 			}
 
 			
@@ -218,10 +222,11 @@ public abstract class AbstractQuery implements TransactionAPI {
 			beginTS = -1;
 
 			this.internalException = e;
+			
 			throw new QueryTestFailedException(e);
 		}
-		this.test.setBeginTS(beginTS);
-		this.test.setEndTS(endTS);
+		this.testCase.getTestResult().setBeginTS(beginTS);
+		this.testCase.getTestResult().setEndTS(endTS);
 		return result;
 	}
 	
@@ -444,7 +449,6 @@ public abstract class AbstractQuery implements TransactionAPI {
 	}
 
 	private void closeResultSet() {
-		this.internalException = null;
 
 		if (this.internalResultSet != null) {
 			try {

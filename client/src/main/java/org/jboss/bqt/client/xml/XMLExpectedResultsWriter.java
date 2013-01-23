@@ -29,17 +29,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
+import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
 import org.jdom.Document;
@@ -66,13 +66,13 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 	}
 
 	@Override
-	public void generateQueryResultFile(Test testResult,
+	public void generateQueryResultFile(TestCase testcase,
 			ResultSet result) throws FrameworkRuntimeException {
 		
-		String querySetID = testResult.getQuerySetID();
-		String queryID = testResult.getQueryID();
-		String query = testResult.getQuery();
-		Throwable ex = testResult.getException();
+		String querySetID = testcase.getTestResult().getQuerySetID();
+		String queryID = testcase.getTestResult().getQueryID();
+		String query = testcase.getTestResult().getQuery();
+		Throwable ex = testcase.getTestResult().getException();
 
 		try {
 			if (result != null)
@@ -80,7 +80,7 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		String filename = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), testResult);
+		String filename = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), (QueryTest)testcase.getActualTest());
 		
 		File resultsFile = createNewResultsFile(querySetID, getGenerateDir(), filename);
 		OutputStream outputStream;
@@ -114,15 +114,7 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 				resultsElement.setAttribute(resultsIDAttribute);
 				
 				String t = "";
-				if (testResult != null) {
-					
-					Date starttest = new Date(testResult.getBeginTS());
-					Date endtest = new Date(testResult.getEndTS());
-					long diff = endtest.getTime() - starttest.getTime(); // diff in mills
 
-					t = String.valueOf(diff);
-					
-				}
 				Attribute timeIDAttribute = new Attribute(
 						TagNames.Attributes.EXECUTION_TIME, t);
 
@@ -179,7 +171,6 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 
 	private File createNewResultsFile(String querySetID, String genDir, String filename) {
 
-//		String targetDirname = genDir + File.separator + "expected_results" + File.separator + querySetID; //$NON-NLS-1$
 		String targetDirname = genDir + File.separator + querySetID; //$NON-NLS-1$
 
 		File dir = new File(targetDirname);

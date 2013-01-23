@@ -32,7 +32,8 @@ import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.framework.AbstractQuery;
 import org.jboss.bqt.framework.DatabaseMetaDataReader;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
 import org.jboss.bqt.framework.TransactionAPI;
 
@@ -91,9 +92,12 @@ public class CreateSQLQueryFile implements TestCaseLifeCycle {
 		
 		QueryTest queries = null;
 		try {
-			Test test = new Test(scenario.getQueryScenarioIdentifier(), scenario.getQuerySetName());
 			
-			trans.before(test);
+			TestCase testCase = new TestCase(null);
+			TestResult testResult = new TestResult(scenario.getQueryScenarioIdentifier(), scenario.getQuerySetName());
+			
+			testCase.setTestResult(testResult);
+			trans.before(testCase);
 
 			
 			// need to set this so the underlying query execution handles an
@@ -123,7 +127,7 @@ public class CreateSQLQueryFile implements TestCaseLifeCycle {
 				
 			}
 			
-			queries = new QueryTest(scenario.getQueryScenarioIdentifier(),"sql", scenario.getQuerySetName(), querysqls,false);
+			queries = new QueryTest(scenario.getQueryScenarioIdentifier(), scenario.getQuerySetName(), "sql", querysqls);
 			
 			this.scenario.writeQueryTests(queries);
 			ClientPlugin.LOGGER.info("# Queries written in the file: " + querystrings.size());

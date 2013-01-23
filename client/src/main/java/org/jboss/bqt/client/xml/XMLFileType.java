@@ -24,7 +24,7 @@ package org.jboss.bqt.client.xml;
 import org.jboss.bqt.client.FileType;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 
 /**
  * @author vhalbert
@@ -95,18 +95,18 @@ public class XMLFileType implements FileType {
 	 * @return String expected results file name
 	 */
 	
-	public String getExpectedResultsFileName(QueryScenario scenario, Test test) {
+	public String getExpectedResultsFileName(QueryScenario scenario, QueryTest test) {
 		return test.getQuerySetID() + "_" + test.getQueryID() + ".xml"; //$NON-NLS-1$
 	}
 	
 	/**
 	 * Returns the name of the error file (excluding path)
 	 * @param scenario
-	 * @param test
+	 * @param testResult
 	 * @return String error file name
 	 */
-	public String getErrorFileName(QueryScenario scenario, Test test) {
-		return test.getQuerySetID() + "_" + test.getQueryID() + ".err";
+	public String getErrorFileName(QueryScenario scenario, TestResult testResult) {
+		return testResult.getQuerySetID() + "_" + testResult.getQueryID() + ".err";
 
 	}
 	

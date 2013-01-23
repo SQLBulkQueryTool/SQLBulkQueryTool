@@ -28,7 +28,7 @@ import java.util.Properties;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 
 
 /**
@@ -68,7 +68,7 @@ public abstract class ErrorWriter {
 	/**
 	 * Call to generate an error file as the result of incompatibilities in the
 	 * comparison of the expected results to the actual results.
-	 * @param test is for the test that was run 
+	 * @param testResult is for the test that was run 
 	 * @param resultSet as the actual results
 	 * @param results expected results
 	 * @return String name for the error file
@@ -76,19 +76,19 @@ public abstract class ErrorWriter {
 	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
 	
-	public abstract String generateErrorFile(final Test test,
+	public abstract String generateErrorFile(final TestResult testResult,
 			final ResultSet resultSet, 
 			final Object results) throws QueryTestFailedException, FrameworkException;
 
 	
 	/**
 	 * Call to generate an error file based on an error that occurred.  
-	 * @param test is the Test being run
+	 * @param testResult is the TestResult being run
 	 * @param error
 	 * @return String name for the error file
 	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
-	public abstract String generateErrorFile(final Test test, final Throwable error)
+	public abstract String generateErrorFile(final TestResult testResult, final Throwable error)
 			throws FrameworkException;
 	
 }

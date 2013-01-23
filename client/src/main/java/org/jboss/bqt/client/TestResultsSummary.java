@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -66,8 +66,8 @@ public class TestResultsSummary {
 	private List<String> query_sets = new ArrayList<String>(10);
 	private QueryScenario scenario = null;
 
-	private Map<String, Collection<Test>> Tests = Collections
-			.synchronizedMap(new HashMap<String, Collection<Test>>());
+	private Map<String, Collection<TestResult>> TestResults = Collections
+			.synchronizedMap(new HashMap<String, Collection<TestResult>>());
 
 	public TestResultsSummary(QueryScenario queryscenario) {
 		this.scenario = queryscenario;
@@ -76,11 +76,11 @@ public class TestResultsSummary {
 	public void cleanup() {
 		failed_queries.clear();
 		query_sets.clear();
-		Tests.clear();
+		TestResults.clear();
 		scenario=null;
 	}
 
-	public synchronized void addTest(String querySetID, Test result) {
+	public synchronized void addTest(String querySetID, TestResult result) {
 
 		if (result == null) {
 			System.err
@@ -89,19 +89,19 @@ public class TestResultsSummary {
 					"Error - trying to add a null result set for querysetID: " + querySetID); //$NON-NLS-1$
 
 		}
-		Collection<Test> results = null;
-		if (this.Tests.containsKey(querySetID)) {
-			results = this.Tests.get(querySetID);
+		Collection<TestResult> results = null;
+		if (this.TestResults.containsKey(querySetID)) {
+			results = this.TestResults.get(querySetID);
 		} else {
-			results = new ArrayList<Test>();
-			this.Tests.put(querySetID, results);
+			results = new ArrayList<TestResult>();
+			this.TestResults.put(querySetID, results);
 		}
 		results.add(result);
 
 	}
 
-	public Collection<Test> getTests(String querySetID) {
-		return this.Tests.get(querySetID);
+	public Collection<TestResult> getTests(String querySetID) {
+		return this.TestResults.get(querySetID);
 	}
 
 	private static PrintStream getSummaryStream(String outputDir,
@@ -207,7 +207,7 @@ public class TestResultsSummary {
 
 		try {
 			overallsummary.write("================== \n"); //$NON-NLS-1$
-			overallsummary.write("Test Summary \n"); //$NON-NLS-1$
+			overallsummary.write("TestResult Summary \n"); //$NON-NLS-1$
 			overallsummary.write("================== \n"); //$NON-NLS-1$
 
 			overallsummary
@@ -249,7 +249,7 @@ public class TestResultsSummary {
 
 		try {
 			overallsummary.write("================== \n"); //$NON-NLS-1$
-			overallsummary.write("Test Summary Errors \n"); //$NON-NLS-1$
+			overallsummary.write("TestResult Summary Errors \n"); //$NON-NLS-1$
 			overallsummary.write("================== \n"); //$NON-NLS-1$
 
 			overallsummary.write(pad("Scenario", 42, ' ') +
@@ -266,7 +266,7 @@ public class TestResultsSummary {
 	private void printQueryTests(PrintStream outputStream,
 			Date testStartTS, Date endTS, Date length, int numberOfClients,
 			SimpleDateFormat formatter, Collection results) {
-		outputStream.println("Query Test Results [" + this.scenario.getResultsMode() + "]"); //$NON-NLS-1$
+		outputStream.println("Query TestResult Results [" + this.scenario.getResultsMode() + "]"); //$NON-NLS-1$
 		outputStream.println("=================="); //$NON-NLS-1$
 		outputStream.println("Start        Time: " + testStartTS); //$NON-NLS-1$
 		outputStream.println("End          Time: " + endTS); //$NON-NLS-1$
@@ -287,7 +287,7 @@ public class TestResultsSummary {
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
-			Test stat = (Test) resultItr.next();
+			TestResult stat = (TestResult) resultItr.next();
 			writeQueryResult(outputStream, formatter, stat);
 		}
 
@@ -308,16 +308,16 @@ public class TestResultsSummary {
 		int expected_fail = 0;
 
 		for (Iterator resultsItr = results.iterator(); resultsItr.hasNext();) {
-			Test stat = (Test) resultsItr.next();
+			TestResult stat = (TestResult) resultsItr.next();
 			++queries;
 			switch (stat.getStatus()) {
-			case Test.RESULT_STATE.TEST_EXCEPTION:
+			case TestResult.RESULT_STATE.TEST_EXCEPTION:
 				++fail;
 				break;
-			case Test.RESULT_STATE.TEST_SUCCESS:
+			case TestResult.RESULT_STATE.TEST_SUCCESS:
 				++pass;
 				break;
-			case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+			case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 				++pass;
 				++expected_fail;
 				break;
@@ -346,7 +346,7 @@ public class TestResultsSummary {
 
 		total_querysets++;
 		for (Iterator resultsItr = results.iterator(); resultsItr.hasNext();) {
-			Test stat = (Test) resultsItr.next();
+			TestResult stat = (TestResult) resultsItr.next();
 
 			if (queryset == null) {
 				queryset = stat.getQuerySetID();
@@ -354,7 +354,7 @@ public class TestResultsSummary {
 
 			++queries;
 			switch (stat.getStatus()) {
-			case Test.RESULT_STATE.TEST_EXCEPTION:
+			case TestResult.RESULT_STATE.TEST_EXCEPTION:
 				++fail;
 
 				String msg = 
@@ -367,14 +367,14 @@ public class TestResultsSummary {
 
 				this.failed_queries.add(stat.getQueryID() + "~" + msg);
 				break;
-			case Test.RESULT_STATE.TEST_SUCCESS:
+			case TestResult.RESULT_STATE.TEST_SUCCESS:
 				++pass;
 				++succeed;
 				
 				totalFullMilliSecs += ( stat.getEndTS() - stat.getBeginTS());
 				
 				break;
-			case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+			case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 				++pass;
 				break;
 			}
@@ -420,15 +420,15 @@ public class TestResultsSummary {
 			throws Exception {
 
 		String testname = scenario.getQueryScenarioIdentifier();
-		Collection<Test> Tests = getTests(querySetID);
+		Collection<TestResult> TestResults = getTests(querySetID);
 		// Properties props = scenario.getProperties();
 		String outputDir = scenario.getTestRunDir();
 
 		//       CombinedTestClient.log("Calculating and printing result statistics"); //$NON-NLS-1$
-		if (Tests == null) {
+		if (TestResults == null) {
 			// do nothing
 
-		} else if (Tests.size() > 0) {
+		} else if (TestResults.size() > 0) {
 			// Create output file
 			String outputFileName = generateFileName(querySetID, scenario.getResultsMode(),
 					System.currentTimeMillis());
@@ -458,52 +458,52 @@ public class TestResultsSummary {
 			// outputStream
 			//			.println("Elapsed      Time: " + ((endTS - testStartTS) / 1000) + " seconds"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			addTotalPassFailGen(testname, Tests, starttest, endtest,
+			addTotalPassFailGen(testname, TestResults, starttest, endtest,
 					diffdate);
 			// Text File output
 			printQueryTests(outputStream, starttest, endtest, diffdate,
-					numberOfClients, TestClient.TSFORMAT, Tests);
+					numberOfClients, TestClient.TSFORMAT, TestResults);
 			printQueryTests(overwriteStream, starttest, endtest,
-					diffdate, numberOfClients, TestClient.TSFORMAT, Tests);
+					diffdate, numberOfClients, TestClient.TSFORMAT, TestResults);
 
 
 			// Wiki Update
-			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, Tests); //$NON-NLS-1$ //$NON-NLS-2$
+			//       	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+querySetID+".html", testStartTS, endTS, numberOfClients, TestResults); //$NON-NLS-1$ //$NON-NLS-2$
 
 			// Print results according to test type
 			// switch (CombinedTestClient.TEST_TYPE) {
 			// case CombinedTestClient.TEST_TYPE_QUERY:
 			// // Text File output
 			// printQueryTests(outputStream, testStartTS, endTS,
-			// numberOfClients, TestClientTransaction.TSFORMAT, Tests);
+			// numberOfClients, TestClientTransaction.TSFORMAT, TestResults);
 			// printQueryTests(overwriteStream, testStartTS, endTS,
-			// numberOfClients, TestClientTransaction.TSFORMAT, Tests);
+			// numberOfClients, TestClientTransaction.TSFORMAT, TestResults);
 			//
 			// // HTML Vesion of output
 			//                	PrintStream htmlStream = getSummaryStream(outputDir, CONFIG_ID+".html", true); //$NON-NLS-1$
 			// CombinedTestUtil.printHtmlQueryTests(htmlStream,
 			// testStartTS, endTS, numberOfClients,
-			// TestClientTransaction.TSFORMAT, Tests);
+			// TestClientTransaction.TSFORMAT, TestResults);
 			// htmlStream.close();
 			//
 			// // Wiki Update
-			//                	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+CONFIG_ID+".html", testStartTS, endTS, numberOfClients, Tests); //$NON-NLS-1$ //$NON-NLS-2$
+			//                	CombinedTestUtil.publishResultsToWiki(props, outputDir+File.separator+CONFIG_ID+".html", testStartTS, endTS, numberOfClients, TestResults); //$NON-NLS-1$ //$NON-NLS-2$
 			// break;
 			// case CombinedTestClient.TEST_TYPE_LOAD:
 			// CombinedTestUtil.printLoadTests(outputStream, testStartTS,
 			// endTS, numberOfClients, TestClientTransaction.TSFORMAT,
-			// Tests);
+			// TestResults);
 			// CombinedTestUtil.printLoadTests(overwriteStream,
 			// testStartTS, endTS, numberOfClients,
-			// TestClientTransaction.TSFORMAT, Tests);
+			// TestClientTransaction.TSFORMAT, TestResults);
 			// break;
 			// case CombinedTestClient.TEST_TYPE_PERF:
 			// CombinedTestUtil.printPerfTests(outputStream, testStartTS,
 			// endTS, numberOfClients, CONF_LVL, TestClientTransaction.TSFORMAT,
-			// Tests);
+			// TestResults);
 			// CombinedTestUtil.printPerfTests(overwriteStream,
 			// testStartTS, endTS, numberOfClients, CONF_LVL,
-			// TestClientTransaction.TSFORMAT, Tests);
+			// TestClientTransaction.TSFORMAT, TestResults);
 			// break;
 			// case CombinedTestClient.TEST_TYPE_PROF:
 			// CombinedTestUtil.printProfTests();
@@ -658,7 +658,7 @@ public class TestResultsSummary {
 
 		StringBuffer htmlCode = new StringBuffer("<html>").append(NL); //$NON-NLS-1$
 		htmlCode.append("<HEAD>").append(NL); //$NON-NLS-1$
-		htmlCode.append("<TITLE>Query Test Results</TITLE>").append(NL); //$NON-NLS-1$
+		htmlCode.append("<TITLE>Query TestResult Results</TITLE>").append(NL); //$NON-NLS-1$
 		htmlCode.append("<STYLE TYPE=\"text/css\">").append(NL); //$NON-NLS-1$
 		htmlCode.append(
 				"td { font-family: \"New Century Schoolbook\", Times, serif  }").append(NL); //$NON-NLS-1$
@@ -680,7 +680,7 @@ public class TestResultsSummary {
 		htmlCode.append("</SCRIPT>").append(NL); //$NON-NLS-1$        
 		htmlCode.append("</HEAD>").append(NL); //$NON-NLS-1$
 		htmlCode.append("<body>").append(NL); //$NON-NLS-1$
-		htmlCode.append("<h1>Query Test Results</h1>").append(NL); //$NON-NLS-1$
+		htmlCode.append("<h1>Query TestResult Results</h1>").append(NL); //$NON-NLS-1$
 		htmlCode.append("<table border=\"1\">").append(NL); //$NON-NLS-1$
 
 		addTableRow(htmlCode, "StartTime", new Date(testStartTS).toString()); //$NON-NLS-1$
@@ -718,7 +718,7 @@ public class TestResultsSummary {
 
 		Iterator resultItr = results.iterator();
 		while (resultItr.hasNext()) {
-			Test stat = (Test) resultItr.next();
+			TestResult stat = (TestResult) resultItr.next();
 			htmlCode.append("<tr>").append(NL); //$NON-NLS-1$            
 			addTableDataLink(htmlCode, stat.getQueryID(),
 					"show('" + scrub(stat.getQuery()) + "')"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -730,7 +730,7 @@ public class TestResultsSummary {
 			addTableData(htmlCode,
 					Long.toString((stat.getEndTS() - stat.getBeginTS() / 1000)));
 			// Long.toString(stat.getEndTS()));
-			if (stat.getStatus() == Test.RESULT_STATE.TEST_EXCEPTION) {
+			if (stat.getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
 				addTableData(htmlCode, stat.getExceptionMsg());
 				if (stat.getErrorfile() != null
 						&& !stat.getErrorfile().equals("null")) { //$NON-NLS-1$
@@ -792,7 +792,7 @@ public class TestResultsSummary {
 		// double totalFirstMilliSecs = 0.0;
 
 		for (Iterator resultItr = queryResults.iterator(); resultItr.hasNext();) {
-			Test result = (Test) resultItr.next();
+			TestResult result = (TestResult) resultItr.next();
 			if ( result.getException() != null || result.getExceptionMsg() != null) {
 				// dont include errors in time calculations;
 				continue;		
@@ -831,7 +831,7 @@ public class TestResultsSummary {
 	 * @param stat
 	 */
 	private static void writeQueryResult(PrintStream outputStream,
-			SimpleDateFormat formatter, Test stat) {
+			SimpleDateFormat formatter, TestResult stat) {
 		
 		outputStream.print(stat.getQueryID());
 		outputStream.print(","); //$NON-NLS-1$
@@ -852,7 +852,7 @@ public class TestResultsSummary {
 		outputStream.print(","); //$NON-NLS-1$
 
 		outputStream
-				.println((stat.getStatus() != Test.RESULT_STATE.TEST_SUCCESS ? stat
+				.println((stat.getStatus() != TestResult.RESULT_STATE.TEST_SUCCESS ? stat
 						.getExceptionMsg() : "")); //$NON-NLS-1$
 	}
 

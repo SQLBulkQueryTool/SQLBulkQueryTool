@@ -25,13 +25,13 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Test represents a single test and the state of it.
+ * TestResult represents a single test and the state of it.
  * 
  * <p>
  * A per-query set of result stats.
  * </p>
  */
-public class Test implements ConfigPropertyNames, Serializable {
+public class TestResult implements ConfigPropertyNames, Serializable {
 	
 
 	/**
@@ -120,18 +120,15 @@ public class Test implements ConfigPropertyNames, Serializable {
 	private long rowCount;
 	private long updateCount;
 	
-	private boolean exceptionExpected = false;
-	private boolean rollbackAlways = false;
+private String resultMode = null;
 	
-	private String resultMode = null;
-	
-	public Test(final String querySetID, final String queryID) {
+	public TestResult(final String querySetID, final String queryID) {
 		this.querySetID = querySetID;
 		this.queryID = queryID;
 
 	}
 
-	public Test(final String querySetID, final String queryID,
+	public TestResult(final String querySetID, final String queryID,
 			String query) {
 		this.querySetID = querySetID;
 		this.queryID = queryID;
@@ -196,8 +193,8 @@ public class Test implements ConfigPropertyNames, Serializable {
 	
 	public boolean isSuccess() {
 		switch (getStatus()) {
-		case Test.RESULT_STATE.TEST_SUCCESS:
-		case Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+		case TestResult.RESULT_STATE.TEST_SUCCESS:
+		case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
 			return true;
 		}
 		return false;
@@ -272,32 +269,7 @@ public class Test implements ConfigPropertyNames, Serializable {
 		return endtest.getTime() - starttest.getTime(); // diff in mills
 	}
 	
-	/**
-	 * Will return true if the test that is being run is expected
-	 * to have an exception
-	 * @return boolean true if test is expected to have an exception
-	 */
-	public boolean isExceptionExpected() {
-		return exceptionExpected;
-	}
-	
-	public void setExceptionExpected(boolean expected) {
-		this.exceptionExpected = expected;
-	}
-	
-	/**
-	 * Indicates what should be done when a failure occurs in
-	 * 
-	 * @return boolean
-	 * 
-	 * @since
-	 */
-	public boolean rollbackAlways() {
-		return rollbackAlways;
-	}
-	
-	public void setRollbackAlways(boolean always) {
-		this.rollbackAlways = always;
-	}
+
+
 
 }

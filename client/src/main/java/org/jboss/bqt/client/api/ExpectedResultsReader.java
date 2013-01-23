@@ -26,11 +26,12 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 
 /**
  * An ExpectedResultsReader represents one set of expected results (referred to as the
@@ -87,47 +88,40 @@ public abstract class ExpectedResultsReader {
 	 * @see TestProperties#PROP_EXPECTED_RESULTS_DIR_LOC
 	 */
 	public String getExpectResultsLocation() {
-		return this.results_dir_loc;
+		return this.results_dir_loc ;
 	}
 
 	/**
 	 * Returns the <code>File</code> location for the actual results for the
 	 * specified query identifier.
 	 * 
-	 * @param test
+	 * @param queryTest
 	 * @return File location for actual results for the specified query
 	 * @throws FrameworkRuntimeException
 	 * 
 	 * @since
 	 */
-	public abstract File getResultsFile(Test test) throws FrameworkRuntimeException;
+	public abstract File getResultsFile(QueryTest queryTest) throws FrameworkRuntimeException;
 
 	/**
-	 * Indicates if a query expects to have an <code>Exception</code> to be
-	 * thrown when the query is executed.
-	 * 
-	 * @param test
-	 * @return boolean true if the query expects an exception to be thrown
-	 * @throws FrameworkRuntimeException
+	 * Obtain the expected results based on the query test to be performed
+	 * @param queryTest
+	 * @return ExpectedResults
 	 */
-	public abstract boolean isExceptionExpected(Test test)
-			throws FrameworkRuntimeException;
-	
-	
-	public abstract ExpectedResults getExpectedResults(Test test);
+	public abstract ExpectedResults getExpectedResults(QueryTest queryTest);
 	
 
 	/**
 	 * Called to compare the <code>ResultSet</code> from the executed query to
 	 * the expected results and return the errors.
-	 * @param test 
+	 * @param testCase 
 	 * @param resultSet 
 	 * @param isOrdered 
 	 * @return Object identifying the errors in the comparison
 	 * @throws QueryTestFailedException
 	 */
 	
-	public abstract Object compareResults(final Test test,
+	public abstract Object compareResults(final TestCase testCase,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException;
 
 	
