@@ -29,14 +29,14 @@ package org.jboss.bqt.framework;
 public interface TransactionAPI  {
 	
 	/**
-	 * Called before the {@link Test} is executed.
-	 * @param test
+	 * Called before the {@link TestCase} is executed.
+	 * @param testCase
 	 */
-	void before(Test test);
+	void before(TestCase testCase);
 	
 
 	/**
-	 * Called after the {@link Test} is executed.
+	 * Called after the {@link TestCase} is executed.
 	 */
 	void after();
 	

@@ -36,7 +36,7 @@ import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.StringHelper;
 import org.jboss.bqt.framework.FrameworkPlugin;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 import org.jboss.bqt.framework.resultsreaders.MetadataReader;
 import org.jboss.bqt.framework.resultsreaders.ResultSetReader;
 import org.jboss.bqt.framework.resultsreaders.StringArrayReader;
@@ -128,14 +128,14 @@ public class AssertResults {
 	
 	
 	
-	public static void assertUpdateCount(Test test, int expected) throws QueryTestFailedException {
-		if (test != null && expected != test.getUpdateCount()) {
-			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.updateCountNotCorrect", new Object[] { String.valueOf(expected), String.valueOf( test.getUpdateCount()) }));
+	public static void assertUpdateCount(TestResult testResult, int expected) throws QueryTestFailedException {
+		if (testResult != null && expected != testResult.getUpdateCount()) {
+			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.updateCountNotCorrect", new Object[] { String.valueOf(expected), String.valueOf( testResult.getUpdateCount()) }));
 		}
 	}
 
-	public static void assertRowCount(Test test, long expected) throws QueryTestFailedException {
-		long count = test.getRowCount();
+	public static void assertRowCount(TestResult testResult, long expected) throws QueryTestFailedException {
+		long count = testResult.getRowCount();
 		if (expected != count) {
 			throw new QueryTestFailedException(FrameworkPlugin.Util.getString("AbstractQueryTest.rowCountNotCorrect",  new Object[] { String.valueOf(expected), String.valueOf( count) }));
 		}

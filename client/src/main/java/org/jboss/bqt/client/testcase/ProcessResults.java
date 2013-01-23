@@ -33,9 +33,11 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.TestResultsSummary;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.framework.AbstractQuery;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
+import org.jboss.bqt.framework.TestResult;
 import org.jboss.bqt.framework.TransactionAPI;
 import org.jboss.bqt.framework.util.AssertResults;
 
@@ -50,6 +52,8 @@ public class ProcessResults implements TestCaseLifeCycle {
 	private QueryScenario scenario = null;
 	
 	private TransactionAPI trans;
+	
+	private AbstractQuery abQuery;
 
 	public ProcessResults(QueryScenario scenario) {
 		super();
@@ -64,6 +68,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 	
 	public void setup(TransactionAPI transaction) {
 		this.trans = transaction;
+		abQuery = ((AbstractQuery) trans);
 		
 	}
 	
@@ -82,7 +87,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 				String querySetID = null;
 				querySetID = qsetIt.next();
 
-				ClientPlugin.LOGGER.info("Start Test:  QuerySetID [" + querySetID + "]");
+				ClientPlugin.LOGGER.info("Start TestResult:  QuerySetID [" + querySetID + "]");
 
 				final List<QueryTest> queryTests = scenario.getQueries(querySetID);
 
@@ -94,26 +99,35 @@ public class ProcessResults implements TestCaseLifeCycle {
 				while (queryTestIt.hasNext()) {
 					QueryTest q = queryTestIt.next();
 					
-					Test test = new Test(q.getQuerySetID(), q.getQueryID());
+					TestResult testResult = new TestResult(q.getQuerySetID(), q.getQueryID());
 					
-					ClientPlugin.LOGGER.debug("New Test: QuerySetID [" + test.getQuerySetID() + "-" + test.getQueryID() +"]");
+					TestCase testcase = new TestCase(q);
+					testcase.setTestResult(testResult);
+					
+					ClientPlugin.LOGGER.debug("New TestResult: QuerySetID [" + testResult.getQuerySetID() + "-" + testResult.getQueryID() +"]");
 
-					test.setResultMode(this.scenario.getResultsMode());
-					test.setStatus(Test.RESULT_STATE.TEST_PRERUN);
+					testResult.setResultMode(this.scenario.getResultsMode());
+					testResult.setStatus(TestResult.RESULT_STATE.TEST_PRERUN);
 					
-					try {					
-						executeTest(q, test);
+					try {			
+						abQuery.before(testcase);
+						
+						executeTest(testcase);
+						
+					} catch (QueryTestFailedException qtfe) {
+						// dont set on testResult, handled in transactionAPI
 						
 					} catch (Throwable rme) {
 						if (ClientPlugin.LOGGER.isDebugEnabled()) {
 							rme.printStackTrace();
 						}
+						abQuery.setApplicationException(rme);
 
-						test.setException(rme);
-						test.setStatus(Test.RESULT_STATE.TEST_EXCEPTION);						
-					} 
-					
-					after(test);
+					} finally {
+						abQuery.after();
+					}
+						
+					after(testcase);
 					
 					trans.cleanup();
 				
@@ -121,7 +135,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 
 				long endTS = System.currentTimeMillis();
 
-				ClientPlugin.LOGGER.info("End Test: QuerySetID [" + querySetID + "]");
+				ClientPlugin.LOGGER.info("End TestResult: QuerySetID [" + querySetID + "]");
 
 				try {
 					summary.printResults(querySetID, beginTS, endTS);
@@ -156,70 +170,67 @@ public class ProcessResults implements TestCaseLifeCycle {
 	}
 
 
-	public void executeTest(QueryTest qt, Test test) throws Throwable {
+	public void executeTest(TestCase testcase) throws Throwable {
 		
-		QuerySQL[] queries = qt.getQueries();
+		QueryTest test = (QueryTest) testcase.getActualTest();
+		TestResult testResult = testcase.getTestResult();
+		
+		QuerySQL[] queries =  test.getQueries();
 		
 		int l = queries.length;
 		
 		boolean resultModeNone = scenario.isNone();
-		
-		AbstractQuery abQuery = ((AbstractQuery) trans);
-
+	
 		
 		// multiple queries cannot be processed as a single result
 		// therefore, only the NONE result mode is valid
 		if (l > 1) {
 			resultModeNone = true;
-			test.setResultMode(TestProperties.RESULT_MODES.NONE);
+			testResult.setResultMode(TestProperties.RESULT_MODES.NONE);
 			if (!scenario.isNone()) {
-				ClientPlugin.LOGGER.info("Overriding ResultMode to NONE for QueryID [" + test.getQueryID() + "]");
+				ClientPlugin.LOGGER.info("Overriding ResultMode to NONE, multiple queries for QueryID [" + testResult.getQueryID() + "]");
 			}
 
-		} else if (scenario.isCompare()) {
-			test.setExceptionExpected( scenario.exceptionExpected(test));
-		}
-		
-		abQuery.before(test);		
-
+		} 
 
 		for (int i = 0; i < l; i++) {
 			QuerySQL qsql = queries[i];
-			test.setQuery(qsql.getSql());
+			testResult.setQuery(qsql.getSql());
 			
 			// if runtimes or rowcounts are greater than 1, then no expected results will
 			// be processed, therefore, resultmode is set to NONE for this query
-			if (qsql.getRunTimes() > 1 || qsql.getRowCnt() > 0) {
+			if ( !resultModeNone && (qsql.getRunTimes() > 1 || qsql.getRowCnt() > 0)) {
 				resultModeNone = true;
-				test.setResultMode(TestProperties.RESULT_MODES.NONE);
+				testResult.setResultMode(TestProperties.RESULT_MODES.NONE);
+				ClientPlugin.LOGGER.info("Overriding ResultMode to NONE due to runtimes or rowcount for QueryID [" + testResult.getQueryID() + "]");
 			}
 			
-			ClientPlugin.LOGGER.debug("Expecting - ID: " + qt.getQuerySetID() + "  -  "
-					+ qt.getQueryID() + "ResultMode: " + (resultModeNone ? "NONE" : scenario.getResultsMode()) + ", numtimes: " +
+			ClientPlugin.LOGGER.debug("Expecting - ID: " + test.getQuerySetID() + "  -  "
+					+ test.getQueryID() + "ResultMode: " + (resultModeNone ? "NONE" : scenario.getResultsMode()) + ", numtimes: " +
 					qsql.getRunTimes() + " rowcount: "  + qsql.getRowCnt() + " updatecnt: " + 
 					qsql.getUpdateCnt());
 
 						
 			for (int r = 0; r < qsql.getRunTimes(); r++) {
 
-				abQuery.execute(test.getQuery(), qsql.getParms(), qsql.getPayLoad());
+				abQuery.execute(testResult.getQuery(), qsql.getParms(), qsql.getPayLoad());
 				// check for NONE first, because it can be changed based on conditions
 				// NOTE: isSQL() isn't processed in this class and therefore isn't looked for
 				if (resultModeNone) {
 						if (qsql.getRowCnt() >= 0) {
-							test.setRowCount(abQuery.getRowCount());					
-							AssertResults.assertRowCount(test, qsql.getRowCnt());
+							testResult.setRowCount(abQuery.getRowCount());					
+							AssertResults.assertRowCount(testResult, qsql.getRowCnt());
 						} else if (qsql.getUpdateCnt() >= 0) {
-							AssertResults.assertUpdateCount(test, qsql.getUpdateCnt());
+							AssertResults.assertUpdateCount(testResult, qsql.getUpdateCnt());
 						}		
 
 				} else if (scenario.isCompare()) {
 					// on single queries, row count checks can still be specified and checked
 						if (qsql.getRowCnt() >= 0) {
-							test.setRowCount(abQuery.getRowCount());
-							AssertResults.assertRowCount(test, qsql.getRowCnt());
+							testResult.setRowCount(abQuery.getRowCount());
+							AssertResults.assertRowCount(testResult, qsql.getRowCnt());
 						} else if (qsql.getUpdateCnt() >= 0) {
-							AssertResults.assertUpdateCount(test, qsql.getUpdateCnt());
+							AssertResults.assertUpdateCount(testResult, qsql.getUpdateCnt());
 						}
 				} else if (scenario.isGenerate()) {
 					// do nothing
@@ -227,38 +238,45 @@ public class ProcessResults implements TestCaseLifeCycle {
 			}			
 		}
 		
-		abQuery.after();
 
+		
 	}
 	
-	private void after(Test test) {
+	private void after(TestCase testcase) {
 		
 		FrameworkRuntimeException lastT = null;
 		try {
-			final Throwable resultException = test.getException();
-	
-			if (resultException != null) {
-				if (test.isExceptionExpected()) {
-					test.setStatus(Test.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
-				} else {
-					test.setStatus(Test.RESULT_STATE.TEST_EXCEPTION);
+			
+			if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
+				testcase.setExpectedResults(scenario.getExpectedResults((QueryTest)testcase.getActualTest()));
+			}
+
+			if (testcase.getTestResult().isFailure()) {
+				// check testresult, because the resultmode could be overridden due conditions (i.e., multiple queries
+				if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
+					if (testcase.getExpectedResults().isExceptionExpected()) {
+						testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
+					} else {
+						testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
+					}
 				}
 			} else {
-				test.setStatus(Test.RESULT_STATE.TEST_SUCCESS);
+				testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_SUCCESS);
 			}
-			
-			this.scenario.getTestResultsSummary().addTest(test.getQuerySetID(), test);
 	
 			// if the test was NOT originally resultMode = NONE, but was changed because 
 			// of certain conditions, then need to handle the test results if an error occurs
-			if (test.getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) && 
+			if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) && 
 					! this.scenario.isNone()) {
-				if (test.getStatus() == Test.RESULT_STATE.TEST_EXCEPTION) {
-						this.scenario.getErrorWriter().generateErrorFile(test, (ResultSet) null, (Object) null);
+				if (testcase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+						this.scenario.getErrorWriter().generateErrorFile(testcase.getTestResult(), (ResultSet) null, (Object) null);
 				}
 			} else {
-				this.scenario.handleTestResult(test, ((AbstractQuery) trans).getResultSet());
+				this.scenario.handleTestResult(testcase, ((AbstractQuery) trans).getResultSet());
 			}
+						
+			this.scenario.getTestResultsSummary().addTest(testcase.getTestResult().getQuerySetID(), testcase.getTestResult());
+
 		} catch (FrameworkRuntimeException t) {
 			lastT = t;
 		} catch (Throwable t) {

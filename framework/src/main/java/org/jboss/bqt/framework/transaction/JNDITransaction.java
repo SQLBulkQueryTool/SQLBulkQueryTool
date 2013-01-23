@@ -24,10 +24,11 @@ package org.jboss.bqt.framework.transaction;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
+import org.jboss.bqt.framework.TestCase;
+
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.framework.AbstractQuery;
 import org.jboss.bqt.framework.ConfigPropertyNames;
-import org.jboss.bqt.framework.Test;
 
 public class JNDITransaction extends AbstractQuery  {
 	UserTransaction userTxn = null;
@@ -38,8 +39,8 @@ public class JNDITransaction extends AbstractQuery  {
 	
 	
 	@Override
-	public void before(Test test) {
-		super.before(test);
+	public void before(TestCase testCase) {
+		super.before(testCase);
 		
 		String jndi = getConnectionStrategy()
 				.getEnvironment()
@@ -68,7 +69,7 @@ public class JNDITransaction extends AbstractQuery  {
 	public void after() {
 		try {
 			if (this.userTxn != null) {
-				if (getTest().rollbackAlways() || getTest().isExceptionExpected()) {
+				if (getTestCase().getActualTest().rollbackAlways() || getTestCase().getTestResult().isFailure()) {
 					this.userTxn.rollback();
 				} else {
 					this.userTxn.commit();

@@ -21,9 +21,10 @@
  */
 package org.jboss.bqt.framework.transaction;
 
+
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.framework.AbstractQuery;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 
 /**
  * A transaction which is user controlled.
@@ -35,8 +36,8 @@ public class LocalTransaction extends AbstractQuery {
 	}
 
 	@Override
-	public void before(Test test) {
-		super.before(test);
+	public void before(TestCase testCase) {
+		super.before(testCase);
 
 		try {
 			debug("LocalTransaction - Autocommit: " + getConnectionStrategy().getAutocommit());
@@ -50,7 +51,8 @@ public class LocalTransaction extends AbstractQuery {
 	@Override
 	public void after() {
 		try {
-			if (getTest().rollbackAlways() || getTest().isExceptionExpected()) {
+			if (getTestCase().getActualTest().rollbackAlways() || getTestCase().getTestResult().isFailure()) {
+
 				getConnectionStrategy().getConnection().rollback();
 
 			} else {

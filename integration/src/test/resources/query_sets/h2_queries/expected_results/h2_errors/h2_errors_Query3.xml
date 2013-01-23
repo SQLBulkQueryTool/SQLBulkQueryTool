@@ -3,11 +3,10 @@
   <query><![CDATA[Select ACCOUNT.ACCOUNT_ID, ACCOUNTX.SSN From ACCOUNT]]></query>
   <queryResults name="Query3">
     <exception>
-      <exceptionType>QueryTestFailedException</exceptionType>
+      <exceptionType>JdbcSQLException</exceptionType>
       <message>Column "ACCOUNTX.SSN" not found; SQL statement:
 Select ACCOUNT.ACCOUNT_ID, ACCOUNTX.SSN From ACCOUNT [42122-124]</message>
-      <class>org.jboss.bqt.core.exception.QueryTestFailedException</class>
+      <class>org.h2.jdbc.JdbcSQLException</class>
     </exception>
   </queryResults>
 </root>
-

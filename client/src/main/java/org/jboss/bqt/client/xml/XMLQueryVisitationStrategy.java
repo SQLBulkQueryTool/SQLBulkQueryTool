@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
@@ -57,8 +58,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -110,7 +109,7 @@ public class XMLQueryVisitationStrategy {
 					ClientPlugin.LOGGER.debug("=======  Creating Single QueryTest " + queryName);
 	        	    QuerySQL sql = createQuerySQL(queryElement);
 	         	    
-	        	    QueryTest q = new QueryTest(queryScenarioID, queryName, querySetID, new QuerySQL[] {sql}, false);
+	        	    QueryTest q = new QueryTest(queryScenarioID, querySetID, queryName, new QuerySQL[] {sql});
 	        	    queries.add(q);
 	        	} else {
 	        		ClientPlugin.LOGGER.debug("=======  Creating QueryTest has multiple sql statements " + queryName);
@@ -124,7 +123,7 @@ public class XMLQueryVisitationStrategy {
 	        			querysql[c] = sql;
 	        			c++;	
 	        		}
-	        		QueryTest q = new QueryTest(queryScenarioID, uniqueID, querySetID, querysql, false);
+	        		QueryTest q = new QueryTest(queryScenarioID, querySetID, uniqueID, querysql);
 	        		queries.add(q);
 	 	    
 	        	}
@@ -136,7 +135,7 @@ public class XMLQueryVisitationStrategy {
                 String uniqueID = querySetID + "_" + queryName;
                 QuerySQL sql = new QuerySQL(exceptionType, null);
                 
-                QueryTest q = new QueryTest(queryScenarioID, uniqueID, querySetID, new QuerySQL[] {sql}, true);
+                QueryTest q = new QueryTest(queryScenarioID, uniqueID, querySetID, new QuerySQL[] {sql});
                 queries.add(q);
 
             }
@@ -266,13 +265,14 @@ public class XMLQueryVisitationStrategy {
      * Consume an XML results File and produce a Map containing query results
      * as List objects, with resultNames/IDs as Keys.
      * <br>
+     * @param test 
      * @param querySetID Identifies the query set
      * @param resultsFile the XML file object that is to be parsed
      * @return the Map containig results.
      * @throws IOException 
      * @exception JDOMException if there is an error consuming the message.
      */
-    public ExpectedResultsHolder parseXMLResultsFile(final String querySetID, final File resultsFile) throws IOException, JDOMException {
+    public ExpectedResultsHolder parseXMLResultsFile(final QueryTest test, final String querySetID, final File resultsFile) throws IOException, JDOMException {
 
         QueryResults queryResults;
         ExpectedResultsHolder expectedResults = null;
@@ -293,9 +293,8 @@ public class XMLQueryVisitationStrategy {
                 //
                 // We've got a ResultSet
                 //
-                expectedResults = new ExpectedResultsHolder( TagNames.Elements.QUERY_RESULTS );
-                expectedResults.setQuerySetID(querySetID);
-                expectedResults.setQueryID( resultName );
+                expectedResults = new ExpectedResultsHolder( TagNames.Elements.QUERY_RESULTS, test );
+  //               expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
                 if (execTime != null) expectedResults.setExecutionTime( Long.parseLong(execTime) );
                 expectedResults.setIdentifiers( queryResults.getFieldIdents() );
@@ -307,9 +306,8 @@ public class XMLQueryVisitationStrategy {
                 //
                 // We've got an exception
                 //
-                expectedResults = new ExpectedResultsHolder( TagNames.Elements.EXCEPTION );
-                expectedResults.setQuerySetID(querySetID);
-                expectedResults.setQueryID( resultName );
+                expectedResults = new ExpectedResultsHolder( TagNames.Elements.EXCEPTION,  test );
+ //                expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
 
                 final Element exceptionElement = resultElement.getChild(TagNames.Elements.EXCEPTION);

@@ -20,60 +20,38 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.resultmode;
+package org.jboss.bqt.client.xml;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Properties;
 
-import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
-import org.jboss.bqt.framework.TestCase;
-import org.jboss.bqt.framework.TestResult;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests primarily the various cloning scenarios available with PropertiesUtils
+ * These test verify XMLQueryVisitationStrategy is parsing correctly
  */
-public class TestCompareQueryScenario {
+public class TestXMLQueryVisitationStrategy {
 
-	public TestCompareQueryScenario() {
+	public TestXMLQueryVisitationStrategy() {
 
 	}
 	
-    @Before
-    public void setUp() throws Exception {
-        
-    	ConfigPropertyLoader.reset();
-    }
-
-	// ===================================================================
-	// ACTUAL TESTS
-	// ===================================================================
-	
-	/**
-	 * Tests the supported reads and/or writes.
-	 * 
-	 * Using Compare result mode,  the results generator and query write is not used
-	 * 
-	 * @throws Exception
-	 */
 	@Test
-	public void testCoreSupport() throws Exception {
-		System.setProperty("result.mode", "compare");
-		
+	public void testIsExceptionExpected_No() throws Exception {
 		//  the following 3 properties are what's normally found in the scenario.properties file
 		System.setProperty("queryset.dirname", "test_query_set");
 		System.setProperty("test.queries.dirname", "test_queries");
 		System.setProperty("expected.results.dirname", "expected_results");	
+		
+		System.setProperty("result.mode", "compare");	
 	
 		//
 		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
@@ -81,78 +59,36 @@ public class TestCompareQueryScenario {
 		System.setProperty("output.dir", UnitTestUtil.getTestOutputPath() + File.separator + "sqltest" );
 		
 		System.setProperty(ConfigPropertyNames.CONFIG_FILE, UnitTestUtil.getTestDataPath() + File.separator + "localconfig.properties");		
-
+		
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		Properties p = _instance.getProperties();
 		if (p == null || p.isEmpty()) {
 			throw new RuntimeException("Failed to load config properties file");
-		}
 
+		}
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
-		assertTrue(set instanceof Compare);
+		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
+		final ExpectedResultsHolder expectedResult;
 
-		assertTrue(set.getQuerySetIDs().size() == 1);
+		QueryTest test = new QueryTest(set.getQueryScenarioIdentifier(), "samplefiles", "expectedresult_noerror", null);
+		String filename = UnitTestUtil.getTestDataPath() + File.separator + "samplefiles" + File.separator + "expectedresult_noerror.xml";
+		File resultsFile = new File(filename);
+		expectedResult = jstrat.parseXMLResultsFile(test, set.getQueryScenarioIdentifier(), resultsFile);
 		
-		assertTrue(set.getQueryReader().getQueries("test_queries1").size() == 2);
+		assertFalse(expectedResult.isExceptionExpected());
 		
-		assertTrue(set.getQueryWriter()==null);
-		
-		assertTrue(set.getExpectedResultsGenerator() == null);
-		
-		QueryTest qt = new QueryTest(set.getQueryScenarioIdentifier(), "test_queries1", "Query1", null);
-		TestResult testResult = new TestResult(qt.getQuerySetID(), qt.getQueryID());
-		
-		TestCase testcase = new TestCase(qt);
-		testcase.setTestResult(testResult);
-		
-		testcase.setExpectedResults(set.getExpectedResults(qt));
-
-		testResult.setResultMode(set.getResultsMode());
-		testResult.setStatus(TestResult.RESULT_STATE.TEST_SUCCESS);
-
-		assertFalse(testcase.getExpectedResults().isExceptionExpected());
-		
-
-		
-		// 		
-		
-		qt = new QueryTest(set.getQueryScenarioIdentifier(), "test_queries1", "Query2", null);
-		testResult = new TestResult(qt.getQuerySetID(), qt.getQueryID());
-		
-		testcase = new TestCase(qt);
-		testcase.setTestResult(testResult);
-		
-		testcase.setExpectedResults(set.getExpectedResults(qt));
-
-		testResult.setResultMode(set.getResultsMode());
-		testResult.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
-
-		assertTrue(testcase.getExpectedResults().isExceptionExpected());
-	
-		
-//		org.jboss.bqt.framework.TestResult testGood = new org.jboss.bqt.framework.TestResult("test_queries1", "Query1");
-
-//		org.jboss.bqt.framework.TestResult testError = new org.jboss.bqt.framework.TestResult("test_queries1", "Query2");
-//		assertTrue(set.exceptionExpected(testError));
-//		assertFalse(set.exceptionExpected(testGood));
-
-//		assertTrue(set.getExpectedResultsReader("test_queries1").getExpectedResults(testError) != null);
-
+		assertTrue(expectedResult.getExceptionMsg() == null);
 	}
 	
-	/**
-	 * Should throw an exception when the query folder is empty or not found
-	 * @throws Exception
-	 */
-    @Test( expected = FrameworkRuntimeException.class )
-	public void testEmptyQueryFolder() throws Exception {
-		System.setProperty("result.mode", "compare");
-		
+	@Test
+	public void testIsExceptionExpected_Yes() throws Exception {
 		//  the following 3 properties are what's normally found in the scenario.properties file
-		System.setProperty("queryset.dirname", "empty_query_set");
+		System.setProperty("queryset.dirname", "test_query_set");
 		System.setProperty("test.queries.dirname", "test_queries");
 		System.setProperty("expected.results.dirname", "expected_results");	
+		
+		System.setProperty("result.mode", "compare");	
 	
 		//
 		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
@@ -160,31 +96,37 @@ public class TestCompareQueryScenario {
 		System.setProperty("output.dir", UnitTestUtil.getTestOutputPath() + File.separator + "sqltest" );
 		
 		System.setProperty(ConfigPropertyNames.CONFIG_FILE, UnitTestUtil.getTestDataPath() + File.separator + "localconfig.properties");		
-
+		
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		Properties p = _instance.getProperties();
 		if (p == null || p.isEmpty()) {
 			throw new RuntimeException("Failed to load config properties file");
+
 		}
-
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
+		
+		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
+		final ExpectedResultsHolder expectedResult;
+		QueryTest test = new QueryTest(set.getQueryScenarioIdentifier(), "samplefiles", "expectedresult_error", null);
 
-		assertTrue(set.getQuerySetIDs()!=null);
+		String filename = UnitTestUtil.getTestDataPath() + File.separator + "samplefiles" + File.separator + "expectedresult_error.xml";
+		File resultsFile = new File(filename);
+		expectedResult = jstrat.parseXMLResultsFile(test, set.getQueryScenarioIdentifier(), resultsFile);
+		
+		assertTrue(expectedResult.isExceptionExpected());
+		
+		assertFalse(expectedResult.getExceptionMsg() == null);
 
 	}
-
-	/**
-	 * Should throw an exception when the expectd results folder is empty or not found
-	 * @throws Exception
-	 */
-    @Test( expected = FrameworkRuntimeException.class )
-	public void testEmptyExpectedResultsFolder() throws Exception {
-		System.setProperty("result.mode", "compare");
-		
+	
+    @Test( expected = java.lang.AssertionError.class )
+	public void testIsExceptionExpected_Failure() throws Exception {
 		//  the following 3 properties are what's normally found in the scenario.properties file
-		System.setProperty("queryset.dirname", "empty_query_set");
+		System.setProperty("queryset.dirname", "test_query_set");
 		System.setProperty("test.queries.dirname", "test_queries");
 		System.setProperty("expected.results.dirname", "expected_results");	
+		
+		System.setProperty("result.mode", "compare");	
 	
 		//
 		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
@@ -192,16 +134,25 @@ public class TestCompareQueryScenario {
 		System.setProperty("output.dir", UnitTestUtil.getTestOutputPath() + File.separator + "sqltest" );
 		
 		System.setProperty(ConfigPropertyNames.CONFIG_FILE, UnitTestUtil.getTestDataPath() + File.separator + "localconfig.properties");		
-
+		
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		Properties p = _instance.getProperties();
 		if (p == null || p.isEmpty()) {
 			throw new RuntimeException("Failed to load config properties file");
-		}
 
+		}
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
-		set.getExpectedResultsReader("test_queries");
+		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
+		final ExpectedResultsHolder expectedResult;
+		QueryTest test = new QueryTest(set.getQueryScenarioIdentifier(), "samplefiles", "expectedresult_error", null);
+
+		String filename = UnitTestUtil.getTestDataPath() + File.separator + "samplefiles" + File.separator + "expectedresult_error.xml";
+		File resultsFile = new File(filename);
+		expectedResult = jstrat.parseXMLResultsFile(test, set.getQueryScenarioIdentifier(), resultsFile);
+		
+		assertFalse(expectedResult.isExceptionExpected());
 
 	}
+ 
 }

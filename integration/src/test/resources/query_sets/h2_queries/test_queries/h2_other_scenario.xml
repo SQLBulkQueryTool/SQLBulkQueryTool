@@ -15,5 +15,10 @@
     </sql>
     <sql rowCount="1">select * from PRODUCT where ID = 9999</sql>
   </query>
+  
+    <query name="Query4">
+    <sql >Delete from PRODUCT Where ID = 9999</sql>
+    <sql rowCount="0">select * from PRODUCT Where ID = 9999</sql>
+  </query>
 </root>
 

@@ -40,7 +40,7 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestResult;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -81,42 +81,31 @@ public class XMLErrorWriter extends ErrorWriter {
 	}
 	
 	@Override
-	public 	String generateErrorFile(final Test test, final Throwable error)
+	public 	String generateErrorFile(final TestResult testResult, final Throwable error)
 				throws FrameworkException {
 
 		String errorFileName = null;
 			// write actual results to error file
-			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), test);
+			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), testResult);
 				//generateErrorFileName(queryID, querySetID);
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
 			File errorFile = new File(getErrorDirectory(), errorFileName);
 			
-			generateErrorResults(test,
+			generateErrorResults(testResult,
 					 (String) null, errorFile, (ResultSet) null, (File) null, error);
 		
 		return errorFileName;
 	}
 
 	@Override
-	public String generateErrorFile(Test test, ResultSet resultSet,
+	public String generateErrorFile(TestResult testResult, ResultSet resultSet,
 			Object results) throws QueryTestFailedException, FrameworkException {
-//		return generateErrorFile(testResult.getQuerySetID(),
-//				testResult.getQueryID(), testResult.getQuery(), resultSet,
-//				testResult.getException(), results);
-//		
-//		}
-//
-//	@Override
-//	public String generateErrorFile(final String querySetID,
-//			final String queryID, final String sql, final ResultSet resultSet,
-//			final Throwable queryError, final Object expectedResultsFile)
-//			throws QueryTestFailedException, FrameworkException {
 
 		String errorFileName = null;
 		try {
 			// write actual results to error file
-			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), test);
+			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), testResult);
 
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
@@ -126,8 +115,8 @@ public class XMLErrorWriter extends ErrorWriter {
 			if (resultSet != null) {
 				resultSet.beforeFirst();
 			}
-			generateErrorResults(test, test.getQuery(), errorFile,
-					resultSet, (File) results, test.getException());
+			generateErrorResults(testResult, testResult.getQuery(), errorFile,
+					resultSet, (File) results, testResult.getException());
 
 		} catch (SQLException sqle) {
 			throw new QueryTestFailedException(sqle);
@@ -143,7 +132,7 @@ public class XMLErrorWriter extends ErrorWriter {
 		 * GenerateExpectedResults an error file for a query that failed comparison. File should
 		 * have the SQL, the actual results returned from the server and the results
 		 * that were expected.
-		 * @param test
+		 * @param testResult
 		 * @param sql
 		 * @param resultsFile
 		 * @param actualResult
@@ -151,7 +140,7 @@ public class XMLErrorWriter extends ErrorWriter {
 		 * @param ex
 		 * @throws FrameworkException
 		 */
-		private void generateErrorResults(Test test,
+		private void generateErrorResults(TestResult testResult,
 				String sql, File resultsFile, ResultSet actualResult,
 				File expectedResultFile, Throwable ex)
 				throws FrameworkException {
@@ -174,7 +163,7 @@ public class XMLErrorWriter extends ErrorWriter {
 				Element resultElement = new Element(TagNames.Elements.QUERY_RESULTS);
 				// set the queryIDAttr on the exception element
 				resultElement.setAttribute(new Attribute(TagNames.Attributes.NAME,
-						test.getQueryID()));
+						testResult.getQueryID()));
 				// set the querySQLAttr on the exception element
 				resultElement.setAttribute(new Attribute(TagNames.Attributes.VALUE,
 						(sql != null ? sql : "NULL")));

@@ -31,7 +31,8 @@ import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ArgCheck;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 
 /**
  * The Generate Result Mode controls the process for generating the expected results files based on the
@@ -73,15 +74,15 @@ public class GenerateExpectedResults extends QueryScenario {
 
 
 	@Override
-	public void handleTestResult(Test tr, ResultSet resultSet) throws QueryTestFailedException, FrameworkException {
-		ArgCheck.isNotNull(tr, "Test must be passed in");
+	public void handleTestResult(TestCase testCase, ResultSet resultSet) throws QueryTestFailedException, FrameworkException {
+		ArgCheck.isNotNull(testCase, "testCase must be passed in");
 
 		// generate the expected results
-		this.getExpectedResultsGenerator().generateQueryResultFile(tr, resultSet);
+		this.getExpectedResultsGenerator().generateQueryResultFile(testCase, resultSet);
 	
 		// If there was an exeception in the test results, create the error file
-		if (tr.isFailure()) {
-				this.getErrorWriter().generateErrorFile(tr, resultSet, null);	
+		if (testCase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+				this.getErrorWriter().generateErrorFile(testCase.getTestResult(), resultSet, null);	
 		}
 	}
 

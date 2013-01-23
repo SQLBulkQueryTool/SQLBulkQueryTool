@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,8 +40,6 @@ import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.FileUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 public class XMLQueryReader extends QueryReader {
 

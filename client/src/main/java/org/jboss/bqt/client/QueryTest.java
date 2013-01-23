@@ -21,26 +21,28 @@
  */
 package org.jboss.bqt.client;
 
+import org.jboss.bqt.framework.ActualTest;
+import org.jboss.bqt.framework.TestResult;
+
 /**
  * The QueryTest represents a logical test execution.  This test can consist of one
  * or more {@link QuerySQL SQL} queries required to perform the test.
+ * The QueryTest is what to run, where {@link TestResult} is the corresponding result of the test.
  * 
  * @author vanhalbert
  * 
  */
-public class QueryTest {
+public class QueryTest extends ActualTest {
 
 	private QuerySQL[] queries;
 	private String querySetID;
 	private String queryID;
-	private boolean isException = false;
 	private String queryScenarioID;
 
-	public QueryTest(String queryScenarioID, String queryID, String querySetID,
-			QuerySQL[] queries, boolean isException) {
+	public QueryTest(String queryScenarioID, String querySetID, String queryID, 
+			QuerySQL[] queries) {
 		this.queryID = queryID;
 		this.queries = queries;
-		this.isException = isException;
 		this.querySetID = querySetID;
 		this.queryScenarioID = queryScenarioID;
 	}
@@ -51,10 +53,6 @@ public class QueryTest {
 
 	public String getQueryID() {
 		return queryID;
-	}
-
-	public boolean isException() {
-		return this.isException;
 	}
 
 	public String getQuerySetID() {

@@ -33,7 +33,7 @@ import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.testcase.CreateSQLQueryFile;
-import org.jboss.bqt.framework.Test;
+import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
 
 /**
@@ -102,14 +102,8 @@ public class CreateSQLQuery extends QueryScenario {
 
 
 	@Override
-	public void handleTestResult(Test tr, ResultSet resultSet) {
+	public void handleTestResult(TestCase tr, ResultSet resultSet) {
 	}
 	
-	// need to override this method because the abstract logic for throwing
-	// exceptions depends on this
-	@Override
-	public boolean exceptionExpected(Test test) {
-		return false;
-	}
 
 }
