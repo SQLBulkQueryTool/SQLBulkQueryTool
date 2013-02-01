@@ -22,13 +22,14 @@
 
 package org.jboss.bqt.client.api;
 
-import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TransactionAPI;
 
 
 /**
@@ -68,17 +69,18 @@ public abstract class ErrorWriter {
 	/**
 	 * Call to generate an error file as the result of incompatibilities in the
 	 * comparison of the expected results to the actual results.
-	 * @param testResult is for the test that was run 
-	 * @param resultSet as the actual results
-	 * @param results expected results
+	 * @param testCase is for the test that was run 
+	 * @param expectedResults , pass in null when generating error on no expected results are available, as 
+	 * 			would be when resultmode = GENERATE 
+	 * @param transaction is the current transaction being processed
+	 * @param exception that will be written in the error file
 	 * @return String name for the error file
 	 * @throws QueryTestFailedException could be seen if problems occur accessing resultSet
 	 * @throws FrameworkException could be seen if problems occur creating error file
 	 */
 	
-	public abstract String generateErrorFile(final TestResult testResult,
-			final ResultSet resultSet, 
-			final Object results) throws QueryTestFailedException, FrameworkException;
+	public abstract String generateErrorFile(final TestCase testCase, ExpectedResults expectedResults,
+			final TransactionAPI transaction, Throwable exception) throws QueryTestFailedException, FrameworkException;
 
 	
 	/**

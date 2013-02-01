@@ -27,18 +27,29 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Properties;
 
+import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.UnitTestUtil;
+import org.jboss.bqt.framework.AbstractQuery;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
+import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Tests primarily the various cloning scenarios available with PropertiesUtils
  */
 public class TestGenerateQueryScenario {
+	
+	@Mock
+	private AbstractQuery trans;
+
 
 	public TestGenerateQueryScenario() {
 
@@ -48,6 +59,12 @@ public class TestGenerateQueryScenario {
     public void setUp() throws Exception {
         
     	ConfigPropertyLoader.reset();
+    	
+    	MockitoAnnotations.initMocks(this);
+    	
+//    	
+//    	when(testclient.getTransactionContainer(new Properties())).thenReturn(tc);
+// 
     }
 
 	// ===================================================================
@@ -58,8 +75,7 @@ public class TestGenerateQueryScenario {
 	 * Tests the supported reads and/or writes.
 	 * 
 	 * Using Generate result mode
-	 * 
-	 * @throws Exception
+	 * @throws Exception 
 	 */
 	@Test
 	public void testCoreSupport() throws Exception {
@@ -86,17 +102,19 @@ public class TestGenerateQueryScenario {
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
 		assertTrue(set instanceof GenerateExpectedResults);
-
+		
+		QueryTest qt = new QueryTest(set.getQueryScenarioIdentifier(), "test_queries1", "Query1", null);
+		TestResult testResult = new TestResult(qt.getQuerySetID(), qt.getQueryID());
+		
+		TestCase testcase = new TestCase(qt);
+		testcase.setTestResult(testResult);
 
 		assertTrue(set.getQuerySetIDs()!=null);
 		
 		assertTrue(set.getQueryReader()!=null);
 		
-		assertTrue(set.getExpectedResultsGenerator() != null);
-		
 		assertTrue(set.getQueryWriter()==null);
-
-		assertTrue(set.getExpectedResultsReader("") == null);
+		
 		
 
 	}

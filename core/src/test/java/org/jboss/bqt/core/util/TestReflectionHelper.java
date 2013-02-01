@@ -22,7 +22,9 @@
 
 package org.jboss.bqt.core.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -36,7 +38,6 @@ import org.junit.Test;
 /**
  * TestReflectionHelper
  */
-@SuppressWarnings("unchecked")
 public class TestReflectionHelper {
 
     // =========================================================================

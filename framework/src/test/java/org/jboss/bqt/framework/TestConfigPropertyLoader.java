@@ -55,7 +55,15 @@ public class TestConfigPropertyLoader {
      */
     @Test
     public void test1() throws Exception {
-		System.setProperty("test", "value");
+    	// add this step of removing the property because the order of
+    	// running is not guaranteed, and if this doesn't run first,
+    	// this property is set by other tests
+    	Properties props = System.getProperties();
+    	props.remove(ConfigPropertyNames.CONFIG_FILE);
+    	
+    	System.setProperties(props);
+
+    	System.setProperty("test", "value");
 
 		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
 		Properties p = _instance.getProperties();

@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.query.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
+import org.jboss.bqt.client.xml.XMLQueryVisitationStrategy;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.util.FileUtils;
 

@@ -22,16 +22,15 @@
 
 package org.jboss.bqt.client.api;
 
-import java.io.File;
-import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.ActualTest;
 import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TransactionAPI;
 
 /**
  * An ExpectedResultsReader represents one set of expected results (referred to as the
@@ -96,33 +95,25 @@ public abstract class ExpectedResultsReader {
 	 * specified query identifier.
 	 * 
 	 * @param queryTest
-	 * @return File location for actual results for the specified query
+	 * @return ExpectedResults
 	 * @throws FrameworkRuntimeException
 	 * 
 	 * @since
 	 */
-	public abstract File getResultsFile(QueryTest queryTest) throws FrameworkRuntimeException;
-
-	/**
-	 * Obtain the expected results based on the query test to be performed
-	 * @param queryTest
-	 * @return ExpectedResults
-	 */
-	public abstract ExpectedResults getExpectedResults(QueryTest queryTest);
-	
+	public abstract ExpectedResults getExpectedResults(ActualTest queryTest) throws FrameworkRuntimeException;
 
 	/**
 	 * Called to compare the <code>ResultSet</code> from the executed query to
 	 * the expected results and return the errors.
 	 * @param testCase 
-	 * @param resultSet 
+	 * @param transaction 
+	 * @param expectedResults 
 	 * @param isOrdered 
-	 * @return Object identifying the errors in the comparison
-	 * @throws QueryTestFailedException
+	 * @throws QueryTestFailedException is thrown if actual don't match expected
 	 */
 	
-	public abstract Object compareResults(final TestCase testCase,
-			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException;
+	public abstract void compareResults(final TestCase testCase,
+			final TransactionAPI transaction, ExpectedResults expectedResults, final boolean isOrdered) throws QueryTestFailedException;
 
 	
 

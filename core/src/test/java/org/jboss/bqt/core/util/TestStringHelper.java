@@ -22,15 +22,9 @@
 
 package org.jboss.bqt.core.util;
 
-import static org.junit.Assert.assertEquals;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import junit.framework.TestCase;
 
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 /**
  * @version 	1.0

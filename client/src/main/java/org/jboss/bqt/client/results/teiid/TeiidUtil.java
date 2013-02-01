@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.core.util;
+package org.jboss.bqt.client.results.teiid;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -31,14 +31,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.Method;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.jboss.bqt.core.exception.FrameworkException;
+import org.jboss.bqt.core.xml.JdomHelper;
+import org.teiid.core.util.FileUtils;
 
 /**
  * TestResultSetUtil was built in order to override the
@@ -49,10 +49,9 @@ import java.util.List;
  * 
  * @since
  */
-public class TestResultSetUtil {
+public class TeiidUtil {
 
 	public static final int DEFAULT_MAX_COL_WIDTH = 29;
-	private static final String SPACER = "  "; //$NON-NLS-1$
 	private static final String NULL = "<null>"; //$NON-NLS-1$
 	private static final String MORE = "$ ";
 
@@ -66,13 +65,28 @@ public class TestResultSetUtil {
 					expectedResultsFile));
 		}
 
-		PrintStream out = TestResultSetUtil.getPrintStream(null,
+		PrintStream out = TeiidUtil.getPrintStream(null,
 				expectedResultsReader, printToConsole ? System.out : null);
 
 		printThrowable(t, query, out);
-		return TestResultSetUtil.getUnequalLines(out);
+		return TeiidUtil.getUnequalLines(out);
 	}
 	
+	
+	
+	public static void printResults(String result, String sql, File outputFile) throws FrameworkException {
+
+		try {		
+			
+	//		JdomHelper.write(result, outputFile.getAbsolutePath());
+			FileUtils.write(result.getBytes(), outputFile);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e);
+		} 		
+
+	}
 
 	public static void printThrowable(Throwable t, String sql, PrintStream out) {
 		out.println(sql);
@@ -138,78 +152,30 @@ public class TestResultSetUtil {
 		}
 		return out;
 	}
+	
+	public static List compareToResults(String results, 
+			File resultsFile, String query, File expectedResultsFile, boolean printToConsole) throws IOException {
 
-	/**
-	 * Compares the actual results with the expected results.
-	 * 
-	 * @param rs
-	 *            the result of the execution
-	 * @param query 
-	 * @param maxColWidth
-	 *            the max width a column is allowed to have
-	 * @param printMetadata
-	 *            writes the metadata if true
-	 * @param resultsFile
-	 *            output file to which the results will be written. Can be null.
-	 * @param expectedResultsFile
-	 *            expected results file with which to compare the results. Can
-	 *            be null.
-	 * @param printToConsole
-	 *            writes to System.out if true
-	 * @return The List of line numbers which differ between the actual and
-	 *         expected results.
-	 * @throws IOException
-	 * @throws SQLException
-	 * @since 4.3
-	 */
-	public static List writeAndCompareResultSet(ResultSet rs, String query,
-			int maxColWidth, boolean printMetadata, File resultsFile,
-			File expectedResultsFile, boolean printToConsole)
-			throws IOException, SQLException {
 		FileOutputStream resultsOutputStream = null;
 		if (resultsFile != null) {
 			resultsOutputStream = new FileOutputStream(resultsFile);
 		}
+		
 		BufferedReader expectedResultsReader = null;
 		if (expectedResultsFile != null && expectedResultsFile.exists()
 				&& expectedResultsFile.canRead()) {
 			expectedResultsReader = new BufferedReader(new FileReader(
 					expectedResultsFile));
 		}
-		return writeAndCompareResultSet(rs, query, maxColWidth, printMetadata,
-				resultsOutputStream, expectedResultsReader,
+		PrintStream out = getPrintStream(resultsOutputStream, expectedResultsReader,
 				printToConsole ? System.out : null);
-	}
 
-	/**
-	 * Compares the actual results with the expected results.
-	 * 
-	 * @param rs
-	 *            the result of the execution
-	 * @param query 
-	 * @param maxColWidth
-	 *            the max width a column is allowed to have
-	 * @param printMetadata
-	 *            writes the metadata if true
-	 * @param resultsOutput
-	 *            OutputStream to which the results will be written. Can be
-	 *            null.
-	 * @param expectedResultsInput
-	 *            reader with which the expected results are read. Can be null.
-	 * @param defaultPrintStream
-	 *            the default stream to which to write the results. Can be null.
-	 * @return The List of line numbers which differ between the actual and
-	 *         expected results.
-	 * @throws SQLException
-	 * @since 4.3
-	 */
-	public static List writeAndCompareResultSet(ResultSet rs, String query,
-			int maxColWidth, boolean printMetadata, OutputStream resultsOutput,
-			BufferedReader expectedResultsInput, PrintStream defaultPrintStream)
-			throws SQLException {
-		PrintStream out = getPrintStream(resultsOutput, expectedResultsInput,
-				defaultPrintStream);
-		printResultSet(rs, query, maxColWidth, printMetadata, out);
+		/**
+		 * @see printResults(String, String, File)
+		 * because the out.println order must match so that, all things equal, they will match up when compared
+		 */
+		out.println(results);
+
 		return getUnequalLines(out);
 	}
 
@@ -218,182 +184,6 @@ public class TestResultSetUtil {
 			return ((ComparingPrintStream) out).getUnequalLines();
 		}
 		return Collections.EMPTY_LIST;
-	}
-
-
-	public static void printUpdateCount(int updateCount, PrintStream out) {
-		out.println("Update Count : " + updateCount); //$NON-NLS-1$
-	}
-
-	public static void printBatchedUpdateCounts(int[] counts, PrintStream out) {
-		out.println("Batched Update Counts :"); //$NON-NLS-1$
-		for (int i = 0; i < counts.length; i++) {
-			out.println(counts[i]);
-		}
-		out.println("Total Batched Commands : " + counts.length); //$NON-NLS-1$
-	}
-
-	/**
-	 * Prints the ResultSet (and optionally the ResultSetMetaData) to a stream.
-	 * If you're using the stream from getPrintStream(), then you can also
-	 * compare data with expected results.
-	 * 
-	 * @param rs
-	 * @param query 
-	 * @param maxColWidth
-	 *            the max width a column is allowed to have. The column will be
-	 *            wider than this value only if the column name is longer.
-	 * @param printMetadata
-	 * @param out
-	 * @throws SQLException
-	 * @since 4.2
-	 */
-	public static void printResultSet(ResultSet rs, String query,
-			int maxColWidth, boolean printMetadata, PrintStream out)
-			throws SQLException {
-		if (maxColWidth < 0) {
-			maxColWidth = DEFAULT_MAX_COL_WIDTH;
-		}
-
-		out.println(query);
-
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int count = rsmd.getColumnCount();
-		int[] sizes = new int[count];
-		StringWriter types = new StringWriter();
-		StringWriter columns = new StringWriter();
-		for (int i = 1; i <= count; i++) {
-			String columnName = rsmd.getColumnName(i);
-			String typeName = rsmd.getColumnTypeName(i);
-			if (maxColWidth == 0) {
-				// Sets the width of the column to the wider of the column name
-				// and the column type name.
-				sizes[i - 1] = Math.max(columnName.length(), typeName.length());
-			} else {
-				// Sets the width of the column to the wider of the column name
-				// and the column display size (which cannot exceed
-				// maxColWidth).
-				sizes[i - 1] = Math.max(
-						Math.max(columnName.length(), typeName.length()), // takes
-																			// into
-																			// account
-																			// the
-																			// type
-																			// name
-																			// width
-						Math.min(rsmd.getColumnDisplaySize(i), maxColWidth));
-			}
-			types.write(resizeString(typeName, sizes[i - 1]));
-			columns.write(resizeString(columnName, sizes[i - 1]));
-			if (i != count) {
-				types.write(SPACER);
-				columns.write(SPACER);
-			}
-		}
-		out.println(types.toString());
-		out.println(columns.toString());
-		int totalRows = 0;
-		while (rs.next()) {
-			for (int j = 1; j <= count; j++) {
-				if (maxColWidth == 0) {
-					Object obj = rs.getObject(j);
-					out.print(obj == null ? NULL : obj); //$NON-NLS-1$
-					if (j != count)
-						out.print(SPACER);
-				} else {
-					String resizedString = resizeString(rs.getObject(j),
-							sizes[j - 1]);
-					out.print(resizedString);
-					if (j != count && resizedString.length() <= sizes[j - 1]) {
-						out.print(SPACER);
-					}
-				}
-			}
-			out.println();
-			totalRows++;
-		}
-		out.println("Row Count : " + totalRows); //$NON-NLS-1$
-		if (printMetadata)
-			printResultSetMetadata(rsmd, out);
-	}
-
-	private static String[] METADATA_METHODS = { "getColumnName", //$NON-NLS-1$
-			"getColumnType", //$NON-NLS-1$
-			"getCatalogName", //$NON-NLS-1$
-			"getColumnClassName", //$NON-NLS-1$
-			"getColumnLabel", //$NON-NLS-1$
-			"getColumnTypeName", //$NON-NLS-1$
-			"getSchemaName", //$NON-NLS-1$
-			"getTableName", //$NON-NLS-1$
-			"getColumnDisplaySize", //$NON-NLS-1$
-			"getPrecision", //$NON-NLS-1$
-			"getScale", //$NON-NLS-1$
-			"isAutoIncrement", //$NON-NLS-1$
-			"isCaseSensitive", //$NON-NLS-1$
-			"isCurrency", //$NON-NLS-1$
-			"isDefinitelyWritable", //$NON-NLS-1$
-			"isNullable", //$NON-NLS-1$
-			"isReadOnly", //$NON-NLS-1$
-			"isSearchable", //$NON-NLS-1$
-			"isSigned", //$NON-NLS-1$
-			"isWritable", //$NON-NLS-1$
-	};
-
-	/**
-	 * Prints the ResultSetMetaData values for each column
-	 * 
-	 * @param rsmd
-	 * @param out
-	 * @throws SQLException
-	 * @since 4.2
-	 */
-	public static void printResultSetMetadata(ResultSetMetaData rsmd,
-			PrintStream out) throws SQLException {
-		int columns = rsmd.getColumnCount();
-		Class RSMD = ResultSetMetaData.class;
-		Class[] params = { int.class };
-		int numMethods = METADATA_METHODS.length;
-		String[][] metadataStrings = new String[columns][numMethods];
-		// Init the widths of the columns
-		int[] maxColWidths = new int[numMethods];
-		for (int i = 0; i < numMethods; i++) {
-			maxColWidths[i] = METADATA_METHODS[i].length();
-		}
-		// Buffer the metadata
-		for (int col = 1; col <= columns; col++) {
-			Object[] columnParam = { new Integer(col) };
-			for (int i = 0; i < numMethods; i++) {
-				try {
-					Method m = RSMD.getMethod(METADATA_METHODS[i], params);
-					Object obj = m.invoke(rsmd, columnParam);
-					String stringVal = (obj == null) ? NULL : obj.toString(); //$NON-NLS-1$
-					metadataStrings[col - 1][i] = stringVal;
-					if (maxColWidths[i] < stringVal.length()) {
-						maxColWidths[i] = stringVal.length();
-					}
-				} catch (Throwable t) {
-
-				}
-			}
-		}
-		// Print the header
-		for (int i = 0; i < numMethods; i++) {
-			out.print(resizeString(METADATA_METHODS[i], maxColWidths[i]));
-			if (i != numMethods) {
-				out.print(SPACER);
-			}
-		}
-		out.println();
-		// Print the metadata from the buffer
-		for (int col = 0; col < columns; col++) {
-			for (int i = 0; i < numMethods; i++) {
-				out.print(resizeString(metadataStrings[col][i], maxColWidths[i]));
-				if (i != numMethods) {
-					out.print(SPACER);
-				}
-			}
-			out.println();
-		}
 	}
 
 	private static String resizeString(Object obj, int size) {
@@ -697,6 +487,11 @@ public class TestResultSetUtil {
 			super.println(x);
 			compareLines();
 		}
+		
+		private static final String NODE_PROCESS_TIME = "<value>Node Process Time";
+		private static final String NODE_CUMULATIVE_PROCESS_TIME = "<value>Node Cumulative Process Time";
+		private static final String NODE_CUMULATIVE_BATCH_PROCESS_TIME = "<value>Node Cumulative Next Batch Process Time";
+		
 
 		private void compareLines() {
 			buf.flush();
@@ -708,15 +503,33 @@ public class TestResultSetUtil {
 		
 				String rl = br.readLine();
 				while (rl != null) {
+					
+/*  The following lines are not compared due to could change between every execution and are meaningless if 
+ *  change by a millisecond  
+ 			        <value>Node Process Time: 123</value>
+			        <value>Node Cumulative Process Time: 123</value>
+			        <value>Node Cumulative Next Batch Process Time: 0</value>
+*/
+					
 					line++;
-
-						String expectedLine = in.readLine();
-						if (!rl.equals(expectedLine)) {
+				
+					String expectedLine = in.readLine();
+										
+					if (!rl.equals(expectedLine)) {
+				// only if they dont compare, then check to see if they need bypassing
+				// because once test are setup to run in batches, the number of failures should be fewer
+						
+						if (rl.indexOf(NODE_PROCESS_TIME) >= 0 && expectedLine.indexOf(NODE_PROCESS_TIME) >= 0) {
+						} else if (rl.indexOf(NODE_CUMULATIVE_PROCESS_TIME) >= 0 && expectedLine.indexOf(NODE_CUMULATIVE_PROCESS_TIME) >= 0) {
+						} else if (rl.indexOf(NODE_CUMULATIVE_BATCH_PROCESS_TIME) >= 0 && expectedLine.indexOf(NODE_CUMULATIVE_BATCH_PROCESS_TIME) >= 0) {
+						} else {
+							
 							unequalLines.add("\n[" + new Integer(line) + "] "
 									+ rl);
 						}
-						
-						rl = br.readLine();	
+					}
+					
+					rl = br.readLine();	
 				}
 			} catch (IOException e) {
 				

@@ -22,7 +22,6 @@
 
 package org.jboss.bqt.client.testcase;
 
-import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,7 +103,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 					TestCase testcase = new TestCase(q);
 					testcase.setTestResult(testResult);
 					
-					ClientPlugin.LOGGER.debug("New TestResult: QuerySetID [" + testResult.getQuerySetID() + "-" + testResult.getQueryID() +"]");
+					ClientPlugin.LOGGER.debug("Test: QuerySetID [" + testResult.getQuerySetID() + "-" + testResult.getQueryID() +"]");
 
 					testResult.setResultMode(this.scenario.getResultsMode());
 					testResult.setStatus(TestResult.RESULT_STATE.TEST_PRERUN);
@@ -117,7 +116,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 					} catch (QueryTestFailedException qtfe) {
 						// dont set on testResult, handled in transactionAPI
 						
-					} catch (Throwable rme) {
+					} catch (Exception rme) {
 						if (ClientPlugin.LOGGER.isDebugEnabled()) {
 							rme.printStackTrace();
 						}
@@ -150,11 +149,12 @@ public class ProcessResults implements TestCaseLifeCycle {
 			try {
 				summary.printTotals();
 				summary.cleanup();	
-			} catch (Throwable t) {
+			} catch (Exception e) {
 				if (fre == null) {
-					throw new FrameworkRuntimeException(t);
+					throw new FrameworkRuntimeException(e);
 				}
 				throw fre;
+
 			}
 		}
 	}
@@ -170,7 +170,7 @@ public class ProcessResults implements TestCaseLifeCycle {
 	}
 
 
-	public void executeTest(TestCase testcase) throws Throwable {
+	public void executeTest(TestCase testcase) throws Exception {
 		
 		QueryTest test = (QueryTest) testcase.getActualTest();
 		TestResult testResult = testcase.getTestResult();
@@ -209,7 +209,6 @@ public class ProcessResults implements TestCaseLifeCycle {
 					+ test.getQueryID() + "ResultMode: " + (resultModeNone ? "NONE" : scenario.getResultsMode()) + ", numtimes: " +
 					qsql.getRunTimes() + " rowcount: "  + qsql.getRowCnt() + " updatecnt: " + 
 					qsql.getUpdateCnt());
-
 						
 			for (int r = 0; r < qsql.getRunTimes(); r++) {
 
@@ -225,21 +224,16 @@ public class ProcessResults implements TestCaseLifeCycle {
 						}		
 
 				} else if (scenario.isCompare()) {
-					// on single queries, row count checks can still be specified and checked
-						if (qsql.getRowCnt() >= 0) {
-							testResult.setRowCount(abQuery.getRowCount());
-							AssertResults.assertRowCount(testResult, qsql.getRowCnt());
-						} else if (qsql.getUpdateCnt() >= 0) {
-							AssertResults.assertUpdateCount(testResult, qsql.getUpdateCnt());
-						}
+					// no rowcount or update counts can be checked in compare
+					// because if comparing expected results, the count will be done at that time
+					// if its an update, then no expected results would exist, and therefore,
+					// the NONE option should be used for update checks.
+					
 				} else if (scenario.isGenerate()) {
 					// do nothing
 				}	
 			}			
-		}
-		
-
-		
+		}		
 	}
 	
 	private void after(TestCase testcase) {
@@ -247,19 +241,8 @@ public class ProcessResults implements TestCaseLifeCycle {
 		FrameworkRuntimeException lastT = null;
 		try {
 			
-			if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
-				testcase.setExpectedResults(scenario.getExpectedResults((QueryTest)testcase.getActualTest()));
-			}
-
 			if (testcase.getTestResult().isFailure()) {
-				// check testresult, because the resultmode could be overridden due conditions (i.e., multiple queries
-				if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.COMPARE)) {
-					if (testcase.getExpectedResults().isExceptionExpected()) {
-						testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
-					} else {
-						testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
-					}
-				}
+				testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
 			} else {
 				testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_SUCCESS);
 			}
@@ -269,17 +252,17 @@ public class ProcessResults implements TestCaseLifeCycle {
 			if (testcase.getTestResult().getResultMode().equalsIgnoreCase(TestProperties.RESULT_MODES.NONE) && 
 					! this.scenario.isNone()) {
 				if (testcase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
-						this.scenario.getErrorWriter().generateErrorFile(testcase.getTestResult(), (ResultSet) null, (Object) null);
+						this.scenario.getErrorWriter().generateErrorFile(testcase, null, (TransactionAPI) null, testcase.getTestResult().getException());
 				}
 			} else {
-				this.scenario.handleTestResult(testcase, ((AbstractQuery) trans).getResultSet());
+				this.scenario.handleTestResult(testcase, trans);
 			}
 						
 			this.scenario.getTestResultsSummary().addTest(testcase.getTestResult().getQuerySetID(), testcase.getTestResult());
 
 		} catch (FrameworkRuntimeException t) {
 			lastT = t;
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			t.printStackTrace();
 			lastT = new FrameworkRuntimeException(t.getMessage());
 		} finally {
