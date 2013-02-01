@@ -103,7 +103,6 @@ public class TestResult implements ConfigPropertyNames, Serializable {
 	 * @since
 	 */
 	private static final long serialVersionUID = 6670189391506288744L;
-//	protected int resultStatus = -1;
 	protected String queryID;
 	protected String querySetID;
 	protected String errorMsg;

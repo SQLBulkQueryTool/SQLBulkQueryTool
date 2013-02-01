@@ -30,8 +30,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.api.ErrorWriter;
+import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkException;
@@ -40,11 +42,15 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
+import org.jboss.bqt.framework.AbstractQuery;
+import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TransactionAPI;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.input.JDOMParseException;
 import org.jdom.output.XMLOutputter;
 
 /**
@@ -91,7 +97,8 @@ public class XMLErrorWriter extends ErrorWriter {
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
 			File errorFile = new File(getErrorDirectory(), errorFileName);
-			
+			ClientPlugin.LOGGER.warn("**** E 1 Generate Error File");
+
 			generateErrorResults(testResult,
 					 (String) null, errorFile, (ResultSet) null, (File) null, error);
 		
@@ -99,11 +106,18 @@ public class XMLErrorWriter extends ErrorWriter {
 	}
 
 	@Override
-	public String generateErrorFile(TestResult testResult, ResultSet resultSet,
-			Object results) throws QueryTestFailedException, FrameworkException {
+	public String generateErrorFile(TestCase testCase, ExpectedResults expectedResults, TransactionAPI transaction, Throwable ex) throws QueryTestFailedException, FrameworkException {
 
+		if (expectedResults == null) {
+			return generateErrorFile(testCase.getTestResult(), testCase.getTestResult().getException());
+		}
+
+		
+		ResultSet resultSet = ((AbstractQuery) transaction).getResultSet();
+		
 		String errorFileName = null;
 		try {
+			TestResult testResult = testCase.getTestResult();
 			// write actual results to error file
 			errorFileName = this.getQueryScenario().getFileType().getErrorFileName(this.getQueryScenario(), testResult);
 
@@ -115,8 +129,10 @@ public class XMLErrorWriter extends ErrorWriter {
 			if (resultSet != null) {
 				resultSet.beforeFirst();
 			}
+			ClientPlugin.LOGGER.warn("**** E 2 Generate Error File");
+		
 			generateErrorResults(testResult, testResult.getQuery(), errorFile,
-					resultSet, (File) results, testResult.getException());
+					resultSet, expectedResults.getExpectedResultsFile() , ex);
 
 		} catch (SQLException sqle) {
 			throw new QueryTestFailedException(sqle);
@@ -175,6 +191,9 @@ public class XMLErrorWriter extends ErrorWriter {
 				// produce xml for the actualException and this to the
 				// exceptionElement
 				if (ex != null) {
+					
+					ClientPlugin.LOGGER.warn("**** E 3 Generate Error File");
+
 					Element actualExceptionElement = new Element(
 							TagNames.Elements.ACTUAL_EXCEPTION);
 
@@ -182,6 +201,8 @@ public class XMLErrorWriter extends ErrorWriter {
 							.jdomException(ex, actualExceptionElement);
 					resultElement.addContent(actualExceptionElement);
 				} else if (actualResult != null) {
+					ClientPlugin.LOGGER.warn("**** E 4 Generate Error File");
+
 					// ------------------------------
 					// Got a ResultSet from server
 					// error was in comparing results
@@ -201,41 +222,57 @@ public class XMLErrorWriter extends ErrorWriter {
 
 				} 
 				
+				if (expectedResultFile != null) {
 				// ---------------------
 				// Expected Results - ...
 				// ---------------------
 				// produce xml for the expected results
 				// Get expected results
-				Element expectedResult = new Element("bogus"); //$NON-NLS-1$
+					Element expectedResult = new Element("bogus"); //$NON-NLS-1$
 				
-				try {
-					expectedResult = jstrat.parseXMLResultsFile(expectedResultFile,
-							expectedResult);
-					
-					if (expectedResult.getChild(TagNames.Elements.SELECT) != null) {
-						// ----------------------------------------------------------
-						// -
-						// Expected result was a ResultSet set element name to
-						// reflect
-						// ----------------------------------------------------------
-						// -
-						expectedResult
-								.setName(TagNames.Elements.EXPECTED_QUERY_RESULTS);
-					} else {
-						// ----------------------------------------------------------
-						// --
-						// Expected result was an exception set element name to
-						// reflect
-						// ----------------------------------------------------------
-						// --
-						expectedResult
-								.setName(TagNames.Elements.EXPECTED_EXCEPTION);
-					}
-					
-					resultElement.addContent(expectedResult);
+					try {
 
-				} catch (Throwable jdomerror) {
-					jstrat.produceMsg(jdomerror, resultElement);
+						expectedResult = jstrat.parseXMLResultsFile(expectedResultFile,
+								expectedResult);
+						ClientPlugin.LOGGER.warn("**** E 5 Expected: " + expectedResult);
+						
+						if (testResult.isSuccess()) {
+							
+							expectedResult
+							.setName(TagNames.Elements.EXPECTED_QUERY_RESULTS);
+							
+						} else {
+							
+							expectedResult
+							.setName(TagNames.Elements.EXPECTED_EXCEPTION);
+							
+						}
+						
+//						if (expectedResult.getChild(TagNames.Elements.SELECT) != null) {
+//							// ----------------------------------------------------------
+//							// -
+//							// Expected result was a ResultSet set element name to
+//							// reflect
+//							// ----------------------------------------------------------
+//							// -
+//							expectedResult
+//									.setName(TagNames.Elements.EXPECTED_QUERY_RESULTS);
+//						} else {
+//							// ----------------------------------------------------------
+//							// --
+//							// Expected result was an exception set element name to
+//							// reflect
+//							// ----------------------------------------------------------
+//							// --
+//							expectedResult
+//									.setName(TagNames.Elements.EXPECTED_EXCEPTION);
+//						}
+						
+						resultElement.addContent(expectedResult);
+	
+					} catch (Throwable jdomerror) {
+						jstrat.produceMsg(jdomerror, resultElement);
+					}
 				}
 
 				// ------------------------------
@@ -245,11 +282,16 @@ public class XMLErrorWriter extends ErrorWriter {
 
 				// add the results elements to the root element
 				rootElement.addContent(resultElement);
+				ClientPlugin.LOGGER.warn("**** E 6 Generate Error File");
 
 				// Output xml
 				XMLOutputter outputter = new XMLOutputter(JdomHelper.getFormat(
 						"  ", true)); //$NON-NLS-1$
 				outputter.output(new Document(rootElement), outputStream);
+			} catch (JDOMParseException jde) {
+				ClientPlugin.LOGGER.warn("**** JDOMERROR Generate Error File");
+
+				jde.printStackTrace();
 
 			} catch (SQLException e) {
 				throw new FrameworkException(

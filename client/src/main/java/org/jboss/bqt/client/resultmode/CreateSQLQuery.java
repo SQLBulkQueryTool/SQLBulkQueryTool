@@ -21,20 +21,18 @@
  */
 package org.jboss.bqt.client.resultmode;
 
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.api.ExpectedResultsReader;
-import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryReader;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.testcase.CreateSQLQueryFile;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
+import org.jboss.bqt.framework.TransactionAPI;
 
 /**
  * The SQL Result Mode controls the process for generating query files based on the
@@ -89,20 +87,10 @@ public class CreateSQLQuery extends QueryScenario {
 	public List<QueryTest> getQueries(String querySetID) {
 		return null;
 	}
-	
-	@Override
-	public synchronized ExpectedResultsWriter getExpectedResultsGenerator() {
-		return null;
-	}
-	
-	@Override
-	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
-		return null;
-	}
 
 
 	@Override
-	public void handleTestResult(TestCase tr, ResultSet resultSet) {
+	public void handleTestResult(TestCase tr, TransactionAPI transaction) {
 	}
 	
 

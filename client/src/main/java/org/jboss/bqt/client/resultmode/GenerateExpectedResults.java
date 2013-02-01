@@ -21,11 +21,12 @@
  */
 package org.jboss.bqt.client.resultmode;
 
-import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
-import org.jboss.bqt.client.api.ExpectedResultsReader;
+import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.client.api.QueryWriter;
 import org.jboss.bqt.core.exception.FrameworkException;
@@ -33,6 +34,7 @@ import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TransactionAPI;
 
 /**
  * The Generate Result Mode controls the process for generating the expected results files based on the
@@ -51,6 +53,7 @@ public class GenerateExpectedResults extends QueryScenario {
 		super(scenarioName, queryProperties);
 	}
 	
+	
 	@Override
 	public boolean isGenerate() {
 		return true;
@@ -63,27 +66,32 @@ public class GenerateExpectedResults extends QueryScenario {
 	}
 	
 	@Override
-	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
-		return null;
-	}
-	
-	@Override
 	public synchronized QueryWriter getQueryWriter() {
 		return null;
 	}		
 
 
 	@Override
-	public void handleTestResult(TestCase testCase, ResultSet resultSet) throws QueryTestFailedException, FrameworkException {
+	public void handleTestResult(TestCase testCase, TransactionAPI transaction) throws  FrameworkException {
 		ArgCheck.isNotNull(testCase, "testCase must be passed in");
+		
+		
+		List<ExpectedResultsWriter> resultsWriters = this.getExpectedResultsWriters();
+		
+		 for (ExpectedResultsWriter writer : resultsWriters) {
+			 try {
+				 writer.generateExpectedResultFile(testCase, transaction);
+				} catch (FrameworkException fe) {					
+					this.getErrorWriter().generateErrorFile(testCase.getTestResult(), fe);
+				}
 
-		// generate the expected results
-		this.getExpectedResultsGenerator().generateQueryResultFile(testCase, resultSet);
+		 }
 	
 		// If there was an exeception in the test results, create the error file
-		if (testCase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
-				this.getErrorWriter().generateErrorFile(testCase.getTestResult(), resultSet, null);	
-		}
+//		if (testCase.getTestResult().getStatus() == TestResult.RESULT_STATE.TEST_EXCEPTION) {
+//				this.getErrorWriter().generateErrorFile(testCase.getTestResult(), testCase.getTestResult().getException());
+//				//(testCase, null, transaction);	
+//		}
 	}
 
 }

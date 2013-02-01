@@ -34,6 +34,7 @@ public interface TransactionAPI  {
 	 */
 	void before(TestCase testCase);
 	
+	
 
 	/**
 	 * Called after the {@link TestCase} is executed.

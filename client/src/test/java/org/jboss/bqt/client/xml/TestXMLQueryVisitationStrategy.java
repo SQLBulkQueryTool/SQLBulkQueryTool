@@ -30,9 +30,11 @@ import java.util.Properties;
 
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.results.ExpectedResultsHolder;
 import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**

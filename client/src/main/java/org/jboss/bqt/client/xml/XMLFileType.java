@@ -21,9 +21,25 @@
  */
 package org.jboss.bqt.client.xml;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
 import org.jboss.bqt.client.FileType;
 import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.ExpectedResultsReader;
+import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.query.xml.XMLQueryReader;
+import org.jboss.bqt.client.query.xml.XMLQueryWriter;
+import org.jboss.bqt.client.results.teiid.TeiidQueryPlanReader;
+import org.jboss.bqt.client.results.teiid.TeiidQueryPlanWriter;
+import org.jboss.bqt.client.results.xml.XMLExpectedResultsReader;
+import org.jboss.bqt.client.results.xml.XMLExpectedResultsWriter;
+import org.jboss.bqt.core.util.PropertiesUtils;
+import org.jboss.bqt.core.util.ReflectionHelper;
 import org.jboss.bqt.framework.TestResult;
 
 /**
@@ -44,24 +60,6 @@ public class XMLFileType implements FileType {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * @see org.jboss.bqt.client.FileType#getExpectedResultsReaderClassName()
-	 */
-	public String getExpectedResultsReaderClassName() {
-		return XMLExpectedResults.class.getName();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see org.jboss.bqt.client.FileType#getExpectedResultsWriterClassName()
-	 */
-	public String getExpectedResultsWriterClassName() {
-		return XMLExpectedResultsWriter.class.getName();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 *
 	 * @see org.jboss.bqt.client.FileType#getQueryWriterClassName()
 	 */
 	public String getQueryWriterClassName() {
@@ -76,6 +74,42 @@ public class XMLFileType implements FileType {
 	public String getQueryReaderClassName() {
 		return XMLQueryReader.class.getName();
 	}
+	
+	public 	List<ExpectedResultsReader> getExpectedResultsReaders(QueryScenario scenario, Properties properties, String querySetID) {
+		List<ExpectedResultsReader> resultsReaders = new ArrayList<ExpectedResultsReader>(2);
+		
+		Collection<Object> args = new ArrayList<Object>(3);
+		args.add(scenario);
+		args.add(querySetID);
+		args.add(properties);
+
+		resultsReaders.add( (ExpectedResultsReader) createInstance(XMLExpectedResultsReader.class.getName(), args) );
+
+		boolean queryPlan = PropertiesUtils.getBooleanProperty(properties, TestProperties.QUERY_PLAN, false);
+
+		if (queryPlan) {
+			resultsReaders.add( (ExpectedResultsReader) createInstance(TeiidQueryPlanReader.class.getName(), args) );
+		}
+		
+		return resultsReaders;
+	}
+
+	
+	public List<ExpectedResultsWriter> getExpectedResultsWriters(QueryScenario scenario, Properties properties)  {
+		List<ExpectedResultsWriter> resultsWriters = new ArrayList<ExpectedResultsWriter>(2);
+		
+		resultsWriters.add( createExpectedResultsWriter(scenario, properties, XMLExpectedResultsWriter.class.getName() ) );
+		
+		boolean queryPlan = PropertiesUtils.getBooleanProperty(properties, TestProperties.QUERY_PLAN, false);
+
+		if (queryPlan) {
+			resultsWriters.add( createExpectedResultsWriter(scenario, properties, TeiidQueryPlanWriter.class.getName() ) );
+			
+		}
+		
+		return resultsWriters;
+	}
+
 	
 	/** 
 	 * Returns the name of the query file (excluding path)
@@ -92,11 +126,12 @@ public class XMLFileType implements FileType {
 	 * Returns the name of the file (excluding path)
 	 * @param scenario
 	 * @param test
+	 * @param extension 
 	 * @return String expected results file name
 	 */
 	
-	public String getExpectedResultsFileName(QueryScenario scenario, QueryTest test) {
-		return test.getQuerySetID() + "_" + test.getQueryID() + ".xml"; //$NON-NLS-1$
+	public String getExpectedResultsFileName(QueryScenario scenario, QueryTest test, String extension) {
+		return test.getQuerySetID() + "_" + test.getQueryID() + extension; //$NON-NLS-1$
 	}
 	
 	/**
@@ -108,6 +143,17 @@ public class XMLFileType implements FileType {
 	public String getErrorFileName(QueryScenario scenario, TestResult testResult) {
 		return testResult.getQuerySetID() + "_" + testResult.getQueryID() + ".err";
 
+	}
+	
+	private ExpectedResultsWriter createExpectedResultsWriter(QueryScenario scenario, Properties props, String fileName) {
+		Collection<Object> args = new ArrayList<Object>(2);
+		args.add(scenario);
+		args.add(props);
+		return (ExpectedResultsWriter) createInstance(fileName, args);
+	}
+	
+	private Object createInstance(String clzzName, final Collection<?> args) {
+		return ReflectionHelper.create(clzzName,args, null);
 	}
 	
 

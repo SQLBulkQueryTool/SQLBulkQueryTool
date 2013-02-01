@@ -74,14 +74,19 @@ ARGS=%ARGS% -Dexectimemin=%EXECTIMEMIN%
 ARGS=%ARGS% -Dexceedpercent=%EXCEEDPERCENT%
 
 rem If not set, the default to scenario or global properties
-if "x%USERNAME%" == "x" (
+if not "x%USERNAME%" == "x" (
   set  ARGS=%ARGS -Dusername=%USERNAME%
 )
 
 rem If not set, the default to scenario or global properties
-if "x%PASSWORD%" == "x" (
+if not "x%PASSWORD%" == "x" (
   set  ARGS=%ARGS -Dpassword=%PASSWORD%
 )
+
+if not "x%TEIID_QUERYPLAN%" == "x" (
+  set  ARGS=%ARGS -Dbqt.query.plan=true
+)
+
 
 
 set CP=%DIRNAME%/lib/*;%DIRNAME%/config/*

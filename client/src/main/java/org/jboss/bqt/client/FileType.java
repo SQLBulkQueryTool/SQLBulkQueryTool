@@ -21,6 +21,11 @@
  */
 package org.jboss.bqt.client;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.jboss.bqt.client.api.ExpectedResultsReader;
+import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
 import org.jboss.bqt.framework.TestResult;
 
@@ -45,13 +50,18 @@ public interface FileType {
 	
 	String getErrorWriterClassName();
 	
-	String getExpectedResultsReaderClassName();
+//	String getExpectedResultsReaderClassName();
 	
-	String getExpectedResultsWriterClassName();
+//	String getExpectedResultsWriterClassName();
+//	
 	
 	String getQueryWriterClassName();
 	
 	String getQueryReaderClassName();
+	
+	List<ExpectedResultsReader> getExpectedResultsReaders(QueryScenario scenario, Properties properties, String querySetID);
+	
+	List<ExpectedResultsWriter> getExpectedResultsWriters(QueryScenario scenario, Properties properties);
 	
 	/** 
 	 * Returns the name of the query file (excluding path)
@@ -66,9 +76,10 @@ public interface FileType {
 	 * Returns the name of the file (excluding path)
 	 * @param scenario
 	 * @param test to be performed
+	 * @param extension to append to the file (include the period)
 	 * @return String expected results file name
 	 */
-	String getExpectedResultsFileName(QueryScenario scenario, QueryTest test);
+	String getExpectedResultsFileName(QueryScenario scenario, QueryTest test, String extension);
 	
 	/**
 	 * Returns the name of the error file (excluding path)

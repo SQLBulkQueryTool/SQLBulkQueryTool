@@ -21,9 +21,12 @@
  */
 package org.jboss.bqt.test;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 
 import org.jboss.bqt.client.TestClient;
+import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.junit.BeforeClass;
@@ -62,7 +65,12 @@ public class TestIntegrationWithLocalDB {
 		
 		TestClient tc = new TestClient();
 		tc.runTest();
-	
+		
+		String outputdir = System.getProperty("output.dir");
+		File other = new File(outputdir + File.separator + "h2_scenario" + File.separator + "generate" + File.separator +
+				"h2_queries" + File.separator + "expected_results" + File.separator + "h2_other_scenario");
+
+		assertFalse("No expected results should have been generated for these types of queriest", other.exists());
 	}
 
 	@Test
@@ -72,6 +80,15 @@ public class TestIntegrationWithLocalDB {
 		
 		TestClient tc = new TestClient();
 		tc.runTest();
+
+		String outputdir = System.getProperty("output.dir");
+		
+		File compareErrors = new File(outputdir + File.separator + "h2_scenario" + File.separator + "errors_for_compare" );
+		
+		File[] errorFiles = FileUtils.findAllFilesInDirectory(compareErrors.getAbsolutePath());
+		
+		assertTrue("Compare Has Error Files", (errorFiles == null || errorFiles.length == 0) );
+		
 	
 	}	
 	

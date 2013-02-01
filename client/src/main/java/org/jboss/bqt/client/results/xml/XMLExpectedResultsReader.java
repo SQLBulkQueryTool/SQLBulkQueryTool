@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.results.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,16 +32,25 @@ import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
+import org.jboss.bqt.client.results.ExpectedResultsHolder;
+import org.jboss.bqt.client.xml.XMLQueryVisitationStrategy;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
+import org.jboss.bqt.framework.AbstractQuery;
+import org.jboss.bqt.framework.ActualTest;
 import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TransactionAPI;
 import org.jdom.JDOMException;
+import org.teiid.core.util.ArgCheck;
 
-public class XMLExpectedResults extends ExpectedResultsReader {
+public class XMLExpectedResultsReader extends ExpectedResultsReader {
 	
 	private XMLCompareResults compare;
+	private ExpectedResults lastResults;
+	private ActualTest lastTest;
 
-	public XMLExpectedResults(QueryScenario scenario, String querySetID, Properties props) {
+	public XMLExpectedResultsReader(QueryScenario scenario, String querySetID, Properties props) {
 		super(scenario, querySetID, props);
 
 		File dir = new File(this.getExpectResultsLocation() + File.separator + querySetID);
@@ -59,49 +68,38 @@ public class XMLExpectedResults extends ExpectedResultsReader {
 
 		ClientPlugin.LOGGER.debug("Expected results loc: " + dir.getAbsolutePath());
 	}
-	
-	
+
 	@Override
-	public ExpectedResults getExpectedResults(QueryTest test) {
-		File er = findExpectedResultsFile(test, this.getQuerySetID());
-		ExpectedResultsHolder rh = loadExpectedResults(test, er);
+	public synchronized ExpectedResults getExpectedResults(ActualTest queryTest) {
+		if (lastTest != null && lastTest.equals(queryTest)) {
+			return lastResults;
+		}
+		
+		File er = findExpectedResultsFile((QueryTest) queryTest, this.getQuerySetID());
+		ExpectedResultsHolder rh = loadExpectedResults((QueryTest)queryTest, er);
+
+		this.lastResults = rh;
+		this.lastTest = queryTest;
+		
 		return rh;
 	}
 
-
 	@Override
-	public synchronized File getResultsFile(QueryTest testResult)
-			throws FrameworkRuntimeException {
-		return findExpectedResultsFile(testResult, this.getQuerySetID());
+	public void compareResults(final TestCase testcase,
+			final TransactionAPI transaction, final ExpectedResults expectedResults, final boolean isOrdered) throws QueryTestFailedException {
 
-	}
-	
-
-	/**
-	 * Compare the results of a query with those that were expected.
-	 * @param testcase 
-	 * @param resultSet 
-	 * @param isOrdered 
-	 * 
-	 * 
-	 * @return The response time for comparing the first batch (sizes) of
-	 *         resutls.
-	 * @throws QueryTestFailedException
-	 *             If comparison fails.
-	 */
-	@Override
-	public Object compareResults(final TestCase testcase,
-			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
-
-		return compare.compareResults(testcase, resultSet, isOrdered);
+		ResultSet resultSet = ((AbstractQuery) transaction).getResultSet();
+		compare.compareResults(testcase, expectedResults, resultSet, isOrdered);
 	
 	}
 
 	private ExpectedResultsHolder loadExpectedResults(QueryTest test, File resultsFile) {
+		ArgCheck.isNotNull(resultsFile);
 		XMLQueryVisitationStrategy jstrat = new XMLQueryVisitationStrategy();
 		final ExpectedResultsHolder expectedResult;
 		try {
 			expectedResult = jstrat.parseXMLResultsFile(test, this.getQueryScenario().getQueryScenarioIdentifier(), resultsFile);
+			expectedResult.setExpectedResultsFile(resultsFile);
 		} catch (IOException e) {
 			throw new FrameworkRuntimeException(
 					"Unable to load expected results: " + e.getMessage()); //$NON-NLS-1$
@@ -114,7 +112,7 @@ public class XMLExpectedResults extends ExpectedResultsReader {
 
 	private File findExpectedResultsFile(QueryTest test,
 			String querySetIdentifier)  {
-		String resultFileName = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), test);
+		String resultFileName = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), test, ".xml");
 			//queryIdentifier + ".xml"; //$NON-NLS-1$
 		File file = new File(this.getExpectResultsLocation() + File.separator + this.getQuerySetID(),
 				resultFileName);

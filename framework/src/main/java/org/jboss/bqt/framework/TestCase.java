@@ -36,7 +36,6 @@ package org.jboss.bqt.framework;
 public class TestCase {
 	
 	private ActualTest at = null;
-	private ExpectedTestResults er = null;
 	private TestResult tr = null;
 	
 	public TestCase(ActualTest test) {
@@ -52,13 +51,13 @@ public class TestCase {
 	}
 
 	
-	/**
-	 * Return the expected results when the actual test is performed.
-	 * @return ExpectedResults
-	 */
-	public ExpectedTestResults getExpectedResults() {
-		return this.er;
-	}
+//	/**
+//	 * Return the expected results when the actual test is performed.
+//	 * @return ExpectedResults
+//	 */
+//	public ExpectedTestResults getExpectedResults() {
+//		return this.er;
+//	}
 	
 	/**
 	 * Return the test result for the performed actual test.
@@ -68,9 +67,9 @@ public class TestCase {
 		return this.tr;
 	}
 	
-	public void setExpectedResults(ExpectedTestResults expectedResults) {
-		this.er = expectedResults;
-	}
+//	public void setExpectedResults(ExpectedTestResults expectedResults) {
+//		this.er = expectedResults;
+//	}
 	
 	public void setTestResult(TestResult testResult) {
 		this.tr = testResult;

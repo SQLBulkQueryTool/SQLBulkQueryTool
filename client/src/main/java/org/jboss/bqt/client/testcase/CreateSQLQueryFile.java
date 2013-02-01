@@ -129,7 +129,8 @@ public class CreateSQLQueryFile implements TestCaseLifeCycle {
 			
 			queries = new QueryTest(scenario.getQueryScenarioIdentifier(), scenario.getQuerySetName(), "sql", querysqls);
 			
-			this.scenario.writeQueryTests(queries);
+			this.scenario.getQueryWriter().writeQueryTest(queries);
+
 			ClientPlugin.LOGGER.info("# Queries written in the file: " + querystrings.size());
 
 		} catch (Exception e) {

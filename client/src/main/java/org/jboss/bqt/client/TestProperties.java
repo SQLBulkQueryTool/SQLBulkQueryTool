@@ -135,7 +135,18 @@ public interface TestProperties {
 		 * SQL - will generate a queries file that contains SQL queries based on the databasemetadata.
 		 */
 		static final String SQL = "SQL";
+		
+
 	}
+	
+	
+	/**
+	 *  Teiid Query Plan, an option used in adition to running @link {@link RESULT_MODES#COMPARE} and
+	 *  {@link RESULT_MODES#GENERATE}, that will generate a file that contains the query plan
+	 *  for the executed query, or compare a query plan based on whats expected.
+	 */
+	static final String QUERY_PLAN = "bqt.query.plan";
+
 
 	/**
 	 * The {@link #PROP_OUTPUT_DIR} property indicates the root directory that
@@ -178,7 +189,7 @@ public interface TestProperties {
 	 * queries and focus on the longer running queries.
 	 */
 	public static final String PROP_EXECUTE_TIME_MINEMUM = "bqt.exectimemin";	 // milliseconds
-
+	
 
 	public interface PRE1_0_SCENARIO_SUPPORT {
 		public static final String SUPPORT_PRE1_0_SCENARIO = "support.pre1.0.scenario";

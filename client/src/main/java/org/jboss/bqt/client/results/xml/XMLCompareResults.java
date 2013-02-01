@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.results.xml;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -39,6 +39,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.results.ExpectedResultsHolder;
+import org.jboss.bqt.client.util.ListNestedSortComparator;
+import org.jboss.bqt.client.xml.TagNames;
+import org.jboss.bqt.client.xml.TagNames.Elements;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.ObjectConverterUtil;
@@ -80,41 +85,47 @@ public class XMLCompareResults {
 	/**
 	 * Compare the results of a query with those that were expected.
 	 * @param testcase 
+	 * @param expResults 
 	 * @param resultSet 
 	 * @param isOrdered 
 	 * 
-	 * 
-	 * @return The response time for comparing the first batch (sizes) of
-	 *         resutls.
 	 * @throws QueryTestFailedException
 	 *             If comparison fails.
 	 */
-	public Object compareResults(final TestCase testcase,
+	public void compareResults(final TestCase testcase, ExpectedResults expResults,
 			final ResultSet resultSet, final boolean isOrdered) throws QueryTestFailedException {
-
+		
 		final String eMsg = "CompareResults Error: "; //$NON-NLS-1$
-	
-		ExpectedResultsHolder expectedResults = (ExpectedResultsHolder) testcase.getExpectedResults(); 
-			//getResultsFromCache(test);
+		
+//		if (expResults.isExceptionExpected()) {
+//			testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
+//		}
 
-		ExpectedResultsHolder actualResults;
+		ExpectedResultsHolder expectedResults = (ExpectedResultsHolder) expResults;
+		ExpectedResultsHolder actualResults = null;
 
 		switch (testcase.getTestResult().getStatus()) {
 		case TestResult.RESULT_STATE.TEST_EXCEPTION:
-			throw new QueryTestFailedException(
-					eMsg
-							+ "TestResult resulted in unexpected exception " + testcase.getTestResult().getExceptionMsg()); //$NON-NLS-1$
 
-		case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
-
-			if (!expectedResults.isExceptionExpected()) {
-				// The actual exception was expected, but the expected results
-				// was not
+			if (!expResults.isExceptionExpected()) {
+				
 				throw new QueryTestFailedException(
-						eMsg
-								+ "The actual result was an exception, but the Expected results wasn't an exception.  Actual exception: '" //$NON-NLS-1$
-								+ testcase.getTestResult().getExceptionMsg() + "'"); //$NON-NLS-1$
+				eMsg
+						+ "TestResult resulted in unexpected exception " + testcase.getTestResult().getExceptionMsg()); //$NON-NLS-1$
+				
 			}
+//		case TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION:
+//
+//			if (!expectedResults.isExceptionExpected()) {
+//				// The actual exception was expected, but the expected results
+//				// was not
+//				throw new QueryTestFailedException(
+//						eMsg
+//								+ "The actual result was an exception, but the Expected results wasn't an exception.  Actual exception: '" //$NON-NLS-1$
+//								+ testcase.getTestResult().getExceptionMsg() + "'"); //$NON-NLS-1$
+//			}
+			
+			testcase.getTestResult().setStatus(TestResult.RESULT_STATE.TEST_EXPECTED_EXCEPTION);
 			// We got an exception that we expected - convert actual exception
 			// to ResultsHolder
 			actualResults = new ExpectedResultsHolder(TagNames.Elements.EXCEPTION, (QueryTest) testcase.getActualTest());
@@ -129,7 +140,7 @@ public class XMLCompareResults {
 //			 ClientPlugin.LOGGER.info("*** EXPECTED EXC: Actual Results (ResultSet): " +
 //			 actualResults);
 
-			compareExceptions(actualResults, expectedResults, eMsg);
+			compareExceptions(actualResults,  expectedResults, eMsg);
 
 			break;
 
@@ -139,23 +150,21 @@ public class XMLCompareResults {
 			actualResults = new ExpectedResultsHolder(TagNames.Elements.QUERY_RESULTS, (QueryTest) testcase.getActualTest());
 			actualResults.setExecutionTime(testcase.getTestResult().getExecutionTime());
 
-			convertResults(resultSet, testcase.getTestResult().getUpdateCount(), actualResults);
-			
 //			// DEBUG:
-//			ClientPlugin.LOGGER.info("*** SUCCESS: Expected Results (holder): " +
+//			ClientPlugin.LOGGER.info("*** 2 Expected Results (holder): " +
 //			 expectedResults);
 //		//	 DEBUG:
-//			 ClientPlugin.LOGGER.info("*** SUCCESS: Actual Results (ResultSet): " +
+//			 ClientPlugin.LOGGER.info("*** 2 Actual Results (ResultSet): " +
 //			 actualResults);
-
+			
+			convertResults(resultSet, testcase.getTestResult().getUpdateCount(), actualResults);
 
 			if (expectedResults.getRows().size() > 0) {
 				compareResults(testcase, actualResults, expectedResults, eMsg, isOrdered);
 			} else if (actualResults.getRows() != null
 					&& actualResults.getRows().size() > 0) {
 				throw new QueryTestFailedException(
-						eMsg
-								+ "Expected results indicated no results, but actual shows " + actualResults.getRows().size() + " rows."); //$NON-NLS-1$	      		    		      		    
+						eMsg + "Expected results indicated no results, but actual shows " + actualResults.getRows().size() + " rows."); //$NON-NLS-1$	      		    		      		    
 			}
 
 			// DEBUG:
@@ -167,9 +176,6 @@ public class XMLCompareResults {
 			break;
 
 		}
-
-		return null;
-
 	}
 
 	/**
@@ -251,6 +257,8 @@ public class XMLCompareResults {
 						"Can't get results: " + qre.getMessage()); //$NON-NLS-1$
 			}
 		}
+
+
 
 		// Set info on resultsHolder
 		resultsHolder.setRows(records);
@@ -441,6 +449,7 @@ public class XMLCompareResults {
 		final int actualRowCount = actualResults.size();
 		final int expectedRowCount = expectedResults.size();
 		final int actualColumnCount = actualIdentifiers.size();
+
 
 		// Check for less records than in expected results
 		if (actualRowCount < expectedRowCount) {

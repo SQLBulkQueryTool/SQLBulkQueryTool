@@ -140,6 +140,10 @@ public abstract class AbstractQuery implements TransactionAPI {
 		return this.internalConnection;
 	}
 	
+	public Statement getStatement() {
+		return this.internalStatement;
+	}
+	
 	public TestCase getTestCase() {
 		return this.testCase;
 	}
@@ -222,7 +226,6 @@ public abstract class AbstractQuery implements TransactionAPI {
 			beginTS = -1;
 
 			this.internalException = e;
-			
 			throw new QueryTestFailedException(e);
 		}
 		this.testCase.getTestResult().setBeginTS(beginTS);
