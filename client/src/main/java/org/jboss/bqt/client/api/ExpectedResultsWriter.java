@@ -22,20 +22,20 @@
 
 package org.jboss.bqt.client.api;
 
-import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.jboss.bqt.client.TestProperties;
 import org.jboss.bqt.client.util.BQTUtil;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestResult;
+import org.jboss.bqt.framework.TransactionAPI;
 
 /**
  * The ExpectedResultsWriter represents how a new set of expected results will be written for
  * a given {@link TestResult}. The
  * implementor should write out one result file for each call that is made to
- * {@link #generateQueryResultFile(TestCase, ResultSet)  }.  The location should be
+ * {@link #generateExpectedResultFile(TestCase, TransactionAPI)  }.  The location should be
  * based on {@link TestProperties#PROP_GENERATE_DIR generateDirectory}.
  * 
  * When a test is run, it will only trigger the generation of a new result file when the result mode
@@ -56,6 +56,7 @@ public abstract class ExpectedResultsWriter {
 		if (generateDir == null) {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_GENERATE_DIR);
 		}
+		
 	}
 	
 	protected Properties getProperties() {
@@ -78,18 +79,19 @@ public abstract class ExpectedResultsWriter {
 	}
 
 	/**
-	 * Call to generate the results file from an executed query. If an exception
-	 * occurred, it is considered the result from the query. The file created
+	 * Call to generate the results file based on the results from an executed
+	 * query. If an exception occurred, it is considered the result from the query. The file created
 	 * based on the result should be able to be used as the expected result when
 	 * query tests are run with in the resultmode of "compare".
 	 * 
 	 * @param testcase
-	 * @param resultSet 
-	 * @throws FrameworkRuntimeException is thrown to stop processing
+	 * @param transaction 
+	 * @return ExpectedResults
+	 * @throws FrameworkException is thrown to stop processing
 	 */
 	
-	public abstract void generateQueryResultFile(final TestCase testcase,
-			final ResultSet resultSet) throws FrameworkRuntimeException;	
+	public abstract ExpectedResults generateExpectedResultFile(final TestCase testcase,
+			final TransactionAPI transaction) throws FrameworkException;	
 	
 	
 

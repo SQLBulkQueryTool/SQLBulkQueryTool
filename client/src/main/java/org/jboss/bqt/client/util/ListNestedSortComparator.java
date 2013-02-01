@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.util;
 
 import java.util.List;
 
@@ -56,13 +56,14 @@ import java.util.List;
  *      { "a2", "b2", "c2" }
  * </pre>
  */
+@SuppressWarnings({ "serial", "rawtypes" })
 public class ListNestedSortComparator implements java.util.Comparator,
 		java.io.Serializable {
 
 	/**
 	 * Specifies which fields to sort on.
 	 */
-	private int[] sortParameters;
+	private final int[] sortParameters;
 
 	/**
 	 * Indicates whether comparison should be based on ascending or descending
@@ -85,7 +86,7 @@ public class ListNestedSortComparator implements java.util.Comparator,
 	 * order.
 	 * @param sortParameters 
 	 */
-	public ListNestedSortComparator(int[] sortParameters) {
+	public ListNestedSortComparator(final int[] sortParameters) {
 		this(sortParameters, false);
 	}
 
@@ -96,7 +97,7 @@ public class ListNestedSortComparator implements java.util.Comparator,
 	 * @param sortParameters 
 	 * @param ascending 
 	 */
-	public ListNestedSortComparator(int[] sortParameters, boolean ascending) {
+	public ListNestedSortComparator(final int[] sortParameters, final boolean ascending) {
 		this.sortParameters = sortParameters;
 		this.ascendingOrder = ascending;
 	}
@@ -108,7 +109,7 @@ public class ListNestedSortComparator implements java.util.Comparator,
 	 * @param sortParameters 
 	 * @param orderTypes 
 	 */
-	public ListNestedSortComparator(int[] sortParameters, List orderTypes) {
+	public ListNestedSortComparator(final int[] sortParameters, final List orderTypes) {
 		this.sortParameters = sortParameters;
 		this.orderTypes = orderTypes;
 	}
@@ -117,7 +118,7 @@ public class ListNestedSortComparator implements java.util.Comparator,
 		return isDistinct;
 	}
 
-	public void setDistinctIndex(int distinctIndex) {
+	public void setDistinctIndex(final int distinctIndex) {
 		this.distinctIndex = distinctIndex;
 	}
 
@@ -141,14 +142,14 @@ public class ListNestedSortComparator implements java.util.Comparator,
 	 *            The second object being compared
 	 * @return int
 	 */
-	public int compare(Object o1, Object o2) {
-		List list1 = (List) o1;
-		List list2 = (List) o2;
+	public int compare(final Object o1, final Object o2) {
+		final List list1 = (List) o1;
+		final List list2 = (List) o2;
 
 		int compare = 0;
 		for (int k = 0; k < sortParameters.length; k++) {
-			Object param1 = list1.get(sortParameters[k]);
-			Object param2 = list2.get(sortParameters[k]);
+			final Object param1 = list1.get(sortParameters[k]);
+			final Object param2 = list2.get(sortParameters[k]);
 
 			if (param1 == null) {
 				if (param2 == null) {
@@ -168,7 +169,7 @@ public class ListNestedSortComparator implements java.util.Comparator,
 			}
 
 			if (compare != 0) {
-				boolean asc = orderTypes != null ? ((Boolean) orderTypes.get(k))
+				final boolean asc = orderTypes != null ? ((Boolean) orderTypes.get(k))
 						.booleanValue() : this.ascendingOrder;
 				return asc ? compare : -compare;
 			} else if (k == distinctIndex) {

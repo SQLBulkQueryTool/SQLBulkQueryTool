@@ -22,7 +22,6 @@
 package org.jboss.bqt.client.api;
 
 import java.io.File;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,10 +42,11 @@ import org.jboss.bqt.client.util.BQTUtil;
 import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.exception.FrameworkRuntimeException;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
-import org.jboss.bqt.core.util.ArgCheck;
 import org.jboss.bqt.core.util.ReflectionHelper;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
+import org.jboss.bqt.framework.TransactionAPI;
+import org.teiid.core.util.ArgCheck;
 
 /**
  * The QueryScenario manages all the information required to run one scenario of
@@ -67,7 +67,8 @@ public abstract class QueryScenario {
 	private QueryReader reader = null;
 	protected QueryWriter writer = null;
 	protected ExpectedResultsReader resultsReader = null;
-	private ExpectedResultsWriter resultsWriter = null;
+	
+	private List<ExpectedResultsWriter> resultsWriters = null;
 	private ErrorWriter errorWriter = null;
 	private TestResultsSummary summary = null;
 
@@ -129,7 +130,8 @@ public abstract class QueryScenario {
 			BQTUtil.throwInvalidProperty(TestProperties.PROP_TESTRUN_DIR);
 		}
 		
-		this.fileType = BQTUtil.createFileType(queryProperties);
+		fileType = BQTUtil.createFileType(queryProperties);
+		ArgCheck.isNotNull(fileType);
 		
 		summary = new TestResultsSummary(this);
 
@@ -183,13 +185,6 @@ public abstract class QueryScenario {
 
 	public boolean isExpectedResultsNeeded() {
 		return (isCompare());
-	}
-	
-	public ExpectedResults getExpectedResults(QueryTest test) {
-		if (isExpectedResultsNeeded()) {
-			return this.getExpectedResultsReader(test.getQuerySetID()).getExpectedResults(test);
-		}
-		return null;
 	}
 	
 	/**
@@ -263,46 +258,24 @@ public abstract class QueryScenario {
 	 * Will be called to handle the {@link TestCase} and the implementor will be responsible
 	 * for determining how to perform that task.
 	 * @param testcase
-	 * @param resultSet
+	 * @param transaction
 	 * @throws QueryTestFailedException 
 	 * @throws FrameworkException 
 	 */
-	public abstract void handleTestResult(TestCase testcase, ResultSet resultSet) throws QueryTestFailedException, FrameworkException;
+	public abstract void handleTestResult(TestCase testcase, TransactionAPI transaction) throws QueryTestFailedException, FrameworkException;
 
-	/**
-	 * Return the {@link ExpectedResultsReader} for the specified
-	 * <code>querySetID</code>. These expected results will be used to compare
-	 * with the actual results in order to determine success or failure.
-	 * 
-	 * @param querySetID
-	 * @return ExpectedResultsReader
-	 */
-	public ExpectedResultsReader getExpectedResultsReader(String querySetID) {
-		ArgCheck.isNotNull(querySetID, "QuerySetID must be passed in");
-		
-		if (this.resultsReader == null || !this.resultsReader.getQuerySetID().equals(querySetID)) {
-			Collection<Object> args = new ArrayList<Object>(3);
-			args.add(this);
-			args.add(querySetID);
-			args.add(props);
-
-			this.resultsReader = (ExpectedResultsReader) createInstance(fileType.getExpectedResultsReaderClassName(), args);
-		}
-		return this.resultsReader;
-
+	public List<ExpectedResultsReader> getExpectedResultsReaders(TestCase testCase) {
+		return fileType.getExpectedResultsReaders(this, getProperties(), ( (QueryTest)testCase.getActualTest()).getQuerySetID());
 	}
 
-	/**
-	 * Return the {@link ExpectedResultsWriter} that is to be used to create new sets
-	 * of expected results.
-	 * 
-	 * @return ExpectedResultsWriter
-	 */
-	public synchronized ExpectedResultsWriter getExpectedResultsGenerator() {
-		if (this.resultsWriter == null) {
-			this.resultsWriter = createExpectedResultsWriter();
+	
+	public List<ExpectedResultsWriter> getExpectedResultsWriters() throws FrameworkException {
+		if (resultsWriters == null) {
+			resultsWriters = fileType.getExpectedResultsWriters(this, getProperties());
 		}
-		return this.resultsWriter;
+		
+		return resultsWriters;
+
 	}
 
 	/**
@@ -345,24 +318,9 @@ public abstract class QueryScenario {
 
 	}	
 	
-	public void writeQueryTests(QueryTest queryTest) throws Exception {
-		getQueryWriter().writeQueryTest(queryTest);
-
-	}	
-	
 	public TestResultsSummary getTestResultsSummary() {
 		return this.summary;
 	}
-
-//	public boolean exceptionExpected(TestResult testResult) {
-//		boolean errorExpected = false;
-//		ExpectedResultsReader expectedResults = getExpectedResultsReader(testResult.getQuerySetID());
-//		if (expectedResults != null) {
-//			errorExpected = expectedResults.isExceptionExpected(testResult);
-//		}
-//
-//		return errorExpected;
-//	}
 	
 	/* ************
 	 * 
@@ -389,21 +347,7 @@ public abstract class QueryScenario {
 		args.add(this);
 		args.add(props);
 		return (ErrorWriter) createInstance(fileType.getErrorWriterClassName(), args);
-	}	
-	
-//	protected ExpectedResultsReader createExpectedResultsReader() {
-//		Collection<Object> args = new ArrayList<Object>(2);
-//		args.add(scenarioName);
-//		args.add(props);
-//		return (ExpectedResultsReader) createInstance(fileType.getExpectedResultsReaderClassName(), args);
-//	}	
-	
-	protected ExpectedResultsWriter createExpectedResultsWriter() {
-		Collection<Object> args = new ArrayList<Object>(2);
-		args.add(this);
-		args.add(props);
-		return (ExpectedResultsWriter) createInstance(fileType.getExpectedResultsWriterClassName(), args);
-	}
+	}		
 
 	protected Object createInstance(String clzzName, final Collection<?> args) {
 		return ReflectionHelper.create(clzzName,args, null);

@@ -21,6 +21,8 @@
  */
 package org.jboss.bqt.client.api;
 
+import java.io.File;
+
 import org.jboss.bqt.framework.ExpectedTestResults;
 
 
@@ -32,6 +34,7 @@ public abstract class ExpectedResults extends ExpectedTestResults {
 	private String queryID;
 	
 	private String querySetID;
+	private File resultsFile;
 	
 	public ExpectedResults(String querySetID, String queryID) {
 		this.querySetID = querySetID;
@@ -45,17 +48,13 @@ public abstract class ExpectedResults extends ExpectedTestResults {
 	public String getQueryID() {
 		return queryID;
 	}	
-
-	/**
-	 * @return Returns the query.
-	 */
-	public abstract String getQuery();
 	
-	/**
-	 * Returns the execution time the query ran when the expected results were captured.
-	 * @return long is the execution time
-	 */
-	public abstract long getExecutionTime();
-
+	public File getExpectedResultsFile() {
+		return this.resultsFile;
+	}
+	
+	public void setExpectedResultsFile(File resultsFile) {
+		this.resultsFile = resultsFile;
+	}
 
 }

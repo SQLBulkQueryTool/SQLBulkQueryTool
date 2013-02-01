@@ -22,7 +22,9 @@
 
 package org.jboss.bqt.core.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,9 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.Test;
 
 /**
  * Tests primarily the various cloning scenarios available with PropertiesUtils

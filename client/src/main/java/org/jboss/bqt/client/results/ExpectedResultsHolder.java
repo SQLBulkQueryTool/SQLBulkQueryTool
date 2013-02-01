@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
  */
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.results;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.jboss.bqt.client.QueryTest;
 import org.jboss.bqt.client.api.ExpectedResults;
+import org.jboss.bqt.client.xml.TagNames;
+import org.jboss.bqt.client.xml.TagNames.Elements;
 import org.jboss.bqt.core.util.ExceptionUtil;
 
 /**
@@ -66,7 +68,6 @@ public class ExpectedResultsHolder extends ExpectedResults {
 	}
 	
 	
-	@Override
 	public long getExecutionTime() {
 		return executionTime;
 	}
@@ -79,7 +80,6 @@ public class ExpectedResultsHolder extends ExpectedResults {
 	/**
 	 * @return Returns the query.
 	 */
-	@Override
 	public String getQuery() {
 		return query;
 	}
@@ -168,21 +168,25 @@ public class ExpectedResultsHolder extends ExpectedResults {
 		StringBuffer buf = new StringBuffer();
 		buf.append("ResultsHolder... \n"); //$NON-NLS-1$
 		if (isResult()) {
-			for (int i = 0; i < this.identifiers.size(); i++) {
-				buf.append("["); //$NON-NLS-1$
-				buf.append(this.identifiers.get(i));
-				buf.append(" - "); //$NON-NLS-1$
-				buf.append(this.types.get(i));
-				buf.append("] "); //$NON-NLS-1$
-			}
-			buf.append("\n"); //$NON-NLS-1$
-			Iterator rowItr = this.rows.iterator();
-			int i = 1;
-			while (rowItr.hasNext()) {
-				buf.append(i++);
-				buf.append(": "); //$NON-NLS-1$
-				buf.append(rowItr.next());
+			if (this.identifiers != null) {
+				for (int i = 0; i < this.identifiers.size(); i++) {
+					buf.append("["); //$NON-NLS-1$
+					buf.append(this.identifiers.get(i));
+					buf.append(" - "); //$NON-NLS-1$
+					buf.append(this.types.get(i));
+					buf.append("] "); //$NON-NLS-1$
+				}
 				buf.append("\n"); //$NON-NLS-1$
+			}
+			if (rows != null) {
+				Iterator rowItr = this.rows.iterator();
+				int i = 1;
+				while (rowItr.hasNext()) {
+					buf.append(i++);
+					buf.append(": "); //$NON-NLS-1$
+					buf.append(rowItr.next());
+					buf.append("\n"); //$NON-NLS-1$
+				}
 			}
 		} else {
 			buf.append(getExceptionClassName())

@@ -32,6 +32,7 @@ import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -68,6 +69,7 @@ public class TestSQLQueryScenario {
 		System.setProperty("queryset.dirname", "empty_query_set");
 		System.setProperty("test.queries.dirname", "test_queries");
 		System.setProperty("expected.results.dirname", "expected_results");	
+		System.setProperty("scenario.name", "test_query_set");	
 	
 		//
 		System.setProperty("project.data.path", UnitTestUtil.getTestDataPath());
@@ -93,10 +95,6 @@ public class TestSQLQueryScenario {
 		
 		assertTrue(set.getQueryWriter() !=null);
 		
-		assertTrue(set.getExpectedResultsGenerator() == null);
-
-		assertTrue(set.getExpectedResultsReader("") == null);
-
 	}
 
 }

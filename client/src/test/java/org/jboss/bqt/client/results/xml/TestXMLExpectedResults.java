@@ -20,9 +20,12 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.results.xml;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Iterator;
@@ -30,17 +33,18 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.bqt.client.QueryTest;
-import org.jboss.bqt.client.TestProperties;
+import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.client.api.ExpectedResultsReader;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.client.api.ExpectedResultsWriter;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.client.results.xml.XMLCompareResults;
+import org.jboss.bqt.client.results.xml.XMLExpectedResultsReader;
 import org.jboss.bqt.core.exception.QueryTestFailedException;
 import org.jboss.bqt.core.util.UnitTestUtil;
 import org.jboss.bqt.framework.ConfigPropertyLoader;
 import org.jboss.bqt.framework.ConfigPropertyNames;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestResult;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,6 +56,12 @@ public class TestXMLExpectedResults {
 	public TestXMLExpectedResults() {
 
 	}
+	
+    @Before
+    public void setUp() throws Exception {
+        
+    	ConfigPropertyLoader.reset();
+    }
 
 	// ===================================================================
 	// ACTUAL TESTS
@@ -88,9 +98,6 @@ public class TestXMLExpectedResults {
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 
-//		_instance.setProperty(TestProperties.PROP_QUERY_FILES_DIR_LOC,
-//				new File("src/main/resources/").getAbsolutePath());
-
 		Iterator<String> it = set.getQuerySetIDs().iterator();
 		while (it.hasNext()) {
 			String querySetID = it.next();
@@ -100,9 +107,9 @@ public class TestXMLExpectedResults {
 				System.out.println("Failed, didn't load any queries ");
 			}
 
-			ExpectedResultsReader er = set.getExpectedResultsReader(querySetID);
-
-			ExpectedResultsWriter gr = set.getExpectedResultsGenerator();
+//			ExpectedResultsReader er = set.getExpectedResultsReaders(testCase);
+//
+//			ExpectedResultsWriter gr = set.getExpectedResultsGenerator();
 
 			Iterator<QueryTest> qIt = queries.iterator();
 			while (qIt.hasNext()) {
@@ -112,25 +119,16 @@ public class TestXMLExpectedResults {
 				TestCase testcase = new TestCase(qt);
 				testcase.setTestResult(testResult);
 				
-				testcase.setExpectedResults(set.getExpectedResults(qt));
-
 				testResult.setResultMode(set.getResultsMode());
 				testResult.setStatus(TestResult.RESULT_STATE.TEST_PRERUN);
-			
 							
-	//			org.jboss.bqt.framework.TestResult t = new org.jboss.bqt.framework.TestResult(q.getQuerySetID(), q.getQueryID());
-				// String qId = (String) qIt.next();
-				// String sql = (String) queries.get(qId);
-
-				// System.out.println("SetID #: " + cnt + "  Qid: " + qId +
-				// "   sql: " + sql);
-
-				File resultsFile = er.getResultsFile(qt);
-				if (resultsFile == null) {
-					System.out
-							.println("Failed to get results file for queryID "
-									+ qt.getQueryID());
-				}
+				List<ExpectedResultsReader> readers = set.getExpectedResultsReaders(testcase);
+				assertEquals(1, readers.size());
+								
+				ExpectedResults es = readers.get(0).getExpectedResults(qt);
+				
+				assertNotNull(es);
+				assertNotNull(es.getExpectedResultsFile());
 
 			}
 
@@ -165,11 +163,18 @@ public class TestXMLExpectedResults {
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
-		XMLExpectedResults er = new XMLExpectedResults(set, "test_queries1",_instance.getProperties());
+		XMLExpectedResultsReader er = new XMLExpectedResultsReader(set, "test_queries1",_instance.getProperties());
 		
 		QueryTest qt = new QueryTest(set.getQueryScenarioIdentifier(), "test_queries1", "Query1", null);
 		
-		assertFalse(set.getExpectedResults(qt).isExceptionExpected());
+		TestCase testcase = new TestCase(qt);
+		
+		List<ExpectedResultsReader> readers = set.getExpectedResultsReaders(testcase);
+		assertEquals(1, readers.size());
+		
+		ExpectedResults es = readers.get(0).getExpectedResults(qt);
+		
+		assertFalse(es.isExceptionExpected());
 	}
 	
 	@Test
@@ -197,11 +202,19 @@ public class TestXMLExpectedResults {
 
 		QueryScenario set = QueryScenario.createInstance("testscenario",p);
 		
-		XMLExpectedResults er = new XMLExpectedResults(set, "test_queries1",_instance.getProperties());
+		XMLExpectedResultsReader er = new XMLExpectedResultsReader(set, "test_queries1",_instance.getProperties());
 		
 		QueryTest qt = new QueryTest(set.getQueryScenarioIdentifier(), "test_queries1", "Query2", null);
 		
-		assertTrue(set.getExpectedResults(qt).isExceptionExpected());
+		TestCase testcase = new TestCase(qt);
+		
+		List<ExpectedResultsReader> readers = set.getExpectedResultsReaders(testcase);
+		assertEquals(1, readers.size());
+		
+		ExpectedResults es = readers.get(0).getExpectedResults(qt);
+		
+		assertTrue(es.isExceptionExpected());
+		
 	}
 	
     @Test( expected = QueryTestFailedException.class )
@@ -238,8 +251,12 @@ public class TestXMLExpectedResults {
 		TestCase testcase = new TestCase(qt);
 		testcase.setTestResult(testResult);
 		
-		testcase.setExpectedResults(set.getExpectedResults(qt));
-
+		
+		List<ExpectedResultsReader> readers = set.getExpectedResultsReaders(testcase);
+		assertEquals(1, readers.size());
+		
+		ExpectedResults es = readers.get(0).getExpectedResults(qt);
+		
 		testResult.setResultMode(set.getResultsMode());
 		testResult.setStatus(TestResult.RESULT_STATE.TEST_EXCEPTION);
 		testResult.setException(e);
@@ -247,7 +264,7 @@ public class TestXMLExpectedResults {
 		XMLCompareResults compare = XMLCompareResults.create(set.getProperties());
 		
 		// this should throw an exception
-		compare.compareResults(testcase, null, false);
+		compare.compareResults(testcase, es, null, false);
 
 	}
 	

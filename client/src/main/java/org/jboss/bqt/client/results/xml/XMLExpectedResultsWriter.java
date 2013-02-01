@@ -20,7 +20,7 @@
  * 02110-1301 USA.
  */
 
-package org.jboss.bqt.client.xml;
+package org.jboss.bqt.client.results.xml;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,13 +33,21 @@ import java.util.Properties;
 
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.api.ExpectedResults;
 import org.jboss.bqt.client.api.ExpectedResultsWriter;
 import org.jboss.bqt.client.api.QueryScenario;
-import org.jboss.bqt.core.exception.FrameworkRuntimeException;
+import org.jboss.bqt.client.results.ExpectedResultsHolder;
+import org.jboss.bqt.client.xml.TagNames;
+import org.jboss.bqt.client.xml.XMLQueryVisitationStrategy;
+import org.jboss.bqt.client.xml.TagNames.Attributes;
+import org.jboss.bqt.client.xml.TagNames.Elements;
+import org.jboss.bqt.core.exception.FrameworkException;
 import org.jboss.bqt.core.util.ExceptionUtil;
 import org.jboss.bqt.core.util.FileUtils;
 import org.jboss.bqt.core.xml.JdomHelper;
+import org.jboss.bqt.framework.AbstractQuery;
 import org.jboss.bqt.framework.TestCase;
+import org.jboss.bqt.framework.TransactionAPI;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
 import org.jdom.Document;
@@ -66,8 +74,10 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 	}
 
 	@Override
-	public void generateQueryResultFile(TestCase testcase,
-			ResultSet result) throws FrameworkRuntimeException {
+	public ExpectedResults generateExpectedResultFile(TestCase testcase,
+			TransactionAPI transaction) throws FrameworkException {
+		
+		ResultSet result = ((AbstractQuery) transaction).getResultSet();
 		
 		String querySetID = testcase.getTestResult().getQuerySetID();
 		String queryID = testcase.getTestResult().getQueryID();
@@ -80,15 +90,18 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		String filename = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), (QueryTest)testcase.getActualTest());
+		String filename = this.getQueryScenario().getFileType().getExpectedResultsFileName(this.getQueryScenario(), (QueryTest)testcase.getActualTest(), ".xml");
 		
 		File resultsFile = createNewResultsFile(querySetID, getGenerateDir(), filename);
+		
+		ExpectedResultsHolder rh = null;		
+
 		OutputStream outputStream;
 		try {
 			FileOutputStream fos = new FileOutputStream(resultsFile);
 			outputStream = new BufferedOutputStream(fos);
 		} catch (IOException e) {
-			throw new FrameworkRuntimeException(
+			throw new FrameworkException(
 					"Failed to open new results file: " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
@@ -105,18 +118,20 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 
 			// create a result attribute for the queryID
 			Attribute resultsIDAttribute = new Attribute(
-					TagNames.Attributes.NAME, queryID);
+					TagNames.Attributes.NAME, querySetID + "_" + queryID);
 
 			if (result != null) {
+				
+				rh = new ExpectedResultsHolder(TagNames.Elements.QUERY, (QueryTest) testcase.getActualTest() );
 				// produce a JDOM element from the results object
 				Element resultsElement = jstrat.produceResults(result);
 				// set the resultsIDAttribute on the results element
 				resultsElement.setAttribute(resultsIDAttribute);
 				
-				String t = "";
+				long time = (testcase.getTestResult().getEndTS() - testcase.getTestResult().getBeginTS());
 
 				Attribute timeIDAttribute = new Attribute(
-						TagNames.Attributes.EXECUTION_TIME, t);
+						TagNames.Attributes.EXECUTION_TIME, String.valueOf(time));
 
 				resultsElement.setAttribute(timeIDAttribute);
 
@@ -126,6 +141,7 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 				// debug:
 				// System.out.println("\n Result: " + printResultSet(result));
 			} else {
+				rh = new ExpectedResultsHolder(TagNames.Elements.EXCEPTION, (QueryTest) testcase.getActualTest() );
 				// create a JDOM element from the exception object with the
 				// results tag
 				Element exceptionElement = new Element(
@@ -141,6 +157,8 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 				rootElement.addContent(exceptionElement);
 
 			}
+			
+			rh.setExpectedResultsFile(resultsFile);
 
 			// Output xml
 			XMLOutputter outputter = new XMLOutputter(JdomHelper.getFormat(
@@ -148,16 +166,16 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 			outputter.output(new Document(rootElement), outputStream);
 
 		} catch (SQLException e) {
-			throw new FrameworkRuntimeException(
+			throw new FrameworkException(
 					"Failed to convert results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 		} catch (JDOMException e) {
-			throw new FrameworkRuntimeException(
+			throw new FrameworkException(
 					"Failed to convert results to JDOM: " + e.getMessage()); //$NON-NLS-1$
 		} catch (IOException e) {
-			throw new FrameworkRuntimeException(
+			throw new FrameworkException(
 					"Failed to output new results to " + resultsFile.getPath() + ": " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (Throwable e) {
-			throw new FrameworkRuntimeException(
+			throw new FrameworkException(
 					"Failed to convert results to JDOM: " + ExceptionUtil.getStackTrace(e)); //$NON-NLS-1$
 		} finally {
 			try {
@@ -165,6 +183,7 @@ public class XMLExpectedResultsWriter extends ExpectedResultsWriter{
 			} catch (IOException e) {
 			}
 		}
+		return rh;
 	}
 
 

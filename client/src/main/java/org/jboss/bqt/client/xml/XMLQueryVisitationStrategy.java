@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.bqt.client.ClientPlugin;
 import org.jboss.bqt.client.QuerySQL;
 import org.jboss.bqt.client.QueryTest;
+import org.jboss.bqt.client.results.ExpectedResultsHolder;
 import org.jboss.bqt.client.xml.QueryResults.ColumnInfo;
 import org.jboss.bqt.core.exception.TransactionRuntimeException;
 import org.jboss.bqt.core.util.ExceptionUtil;
@@ -54,6 +55,7 @@ import org.jboss.bqt.core.xml.SAXBuilderHelper;
 import org.jboss.bqt.jdbc.sql.lang.ElementSymbol;
 import org.jboss.bqt.jdbc.sql.lang.Select;
 import org.jdom.Attribute;
+import org.jdom.CDATA;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -296,7 +298,7 @@ public class XMLQueryVisitationStrategy {
                 expectedResults = new ExpectedResultsHolder( TagNames.Elements.QUERY_RESULTS, test );
   //               expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
-                if (execTime != null) expectedResults.setExecutionTime( Long.parseLong(execTime) );
+                if (execTime != null && execTime.trim().length() > 0) expectedResults.setExecutionTime( Long.parseLong(execTime) );
                 expectedResults.setIdentifiers( queryResults.getFieldIdents() );
                 expectedResults.setTypes( queryResults.getTypes() );
                 if ( queryResults.getRecordCount() > 0 ) {
@@ -307,7 +309,6 @@ public class XMLQueryVisitationStrategy {
                 // We've got an exception
                 //
                 expectedResults = new ExpectedResultsHolder( TagNames.Elements.EXCEPTION,  test );
- //                expectedResults.setQueryID( resultName );
                 expectedResults.setQuery(query);
 
                 final Element exceptionElement = resultElement.getChild(TagNames.Elements.EXCEPTION);
@@ -427,7 +428,10 @@ public class XMLQueryVisitationStrategy {
  
         Element messageElement = new Element(TagNames.Elements.MESSAGE);       
         
-        messageElement.setText(StringUtils.remove( ExceptionUtil.getExceptionMessage(ex), '\r'));  
+        messageElement.addContent(
+        		new CDATA(ExceptionUtil.getExceptionMessage(ex)));
+        		
+ //       		StringUtils.remove( ExceptionUtil.getExceptionMessage(ex), '\r'));  
         		
         exceptionElement.addContent(messageElement);
 

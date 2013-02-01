@@ -63,6 +63,30 @@ public class QueryTest extends ActualTest {
 		return this.queryScenarioID;
 	}
 	
+	
+	
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		
+		if (obj instanceof QueryTest) {
+			QueryTest that = (QueryTest) obj;
+			if (! this.getQueryScenarioID().equals(that.getQueryScenarioID())) return false;
+			if (! this.getQuerySetID().equals(that.getQuerySetID())) return false;
+			if (! this.getQueryID().equals(that.getQueryID())) return false;
+			
+			return true;
+		}
+		
+		
+		return false;
+	}
+
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

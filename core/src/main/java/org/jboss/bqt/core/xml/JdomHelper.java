@@ -22,12 +22,14 @@
 
 package org.jboss.bqt.core.xml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
@@ -1092,6 +1094,12 @@ public class JdomHelper {
 		}
 		XMLOutputter outputter = new XMLOutputter(getFormat(indent, newlines));
 		outputter.output(doc, writer);
+	}
+	
+	public static void write(String content, String fileName) throws IOException, JDOMException {
+		BufferedReader br = new BufferedReader(new StringReader(content));
+		Document d = buildDocument(br);
+		write(d, fileName);
 	}
 
 	/**

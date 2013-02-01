@@ -168,6 +168,11 @@ then
     ARGS="${ARGS} -Dsupport.pre1.0.scenario=${SUPPORT_PRE10_SCENARIO}"
 fi
 
+if [ ! -z "${TEIID_QUERYPLAN}" ] 
+then
+    ARGS="${ARGS} -Dbqt.query.plan=${TEIID_QUERYPLAN}"
+fi
+
 
 if [ ! -x "${ROOTDIR}/log" ]; then
     echo "Create ${ROOTDIR}/log directory"
