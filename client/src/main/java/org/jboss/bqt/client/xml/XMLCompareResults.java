@@ -403,6 +403,9 @@ public class XMLCompareResults {
 		String[] expectedTokens = StringUtils.split(expectedStr, newline);
 		String[] gotTokens = StringUtils.split(gotStr, newline);
 		
+		if (expectedTokens.length != gotTokens.length)
+			return false;
+		
 		for (int i = 0; i < expectedTokens.length; i++) {
 			String expected = expectedTokens[i];
 			String got = gotTokens[i];
