@@ -410,6 +410,9 @@ public class XMLCompareResults {
 	private static boolean compareStrTokens(String expectedStr, String gotStr) {
 		String[] expectedTokens = StringUtils.split(expectedStr, newline);
 		String[] gotTokens = StringUtils.split(gotStr, newline);
+        
+        if (expectedTokens.length != gotTokens.length)
+            return false;  
 		
 		for (int i = 0; i < expectedTokens.length; i++) {
 			String expected = expectedTokens[i];
