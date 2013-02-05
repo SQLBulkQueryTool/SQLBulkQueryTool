@@ -39,9 +39,3 @@ See https://github.com/SQLBulkQueryTool/SQLBulkQueryTool/wiki
 3.  mvn clean install -Pdistro      --> build the bqt-distro-*.zip distribution kit
 
 or run:  mvn clean install -Pintegration,distro perform everything
-
-
- 
-1.          Create a new folder under the /tests/scenarios folder
-2.          Within the new folder, create one scenario properties file for each scenario to run in the group
-3.          When executing ./run.sh  pass in the folder that contains the scenario files
