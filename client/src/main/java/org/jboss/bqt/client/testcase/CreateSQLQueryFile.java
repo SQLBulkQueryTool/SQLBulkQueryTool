@@ -103,7 +103,7 @@ public class CreateSQLQueryFile implements TestCaseLifeCycle {
 			// need to set this so the underlying query execution handles an
 			// error properly.
 			
-			DatabaseMetaDataReader reader = new DatabaseMetaDataReader( ( (AbstractQuery) trans).getConnection());
+			DatabaseMetaDataReader reader = new DatabaseMetaDataReader( ( (AbstractQuery) trans).getConnection(), scenario.getProperties());
 						
 			List<String> querystrings = reader.getQueries();
 			

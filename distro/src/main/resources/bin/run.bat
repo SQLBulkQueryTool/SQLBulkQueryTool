@@ -69,6 +69,9 @@ ARGS=%ARGS% -Dconfig=%CONFIG%
 ARGS=%ARGS% -Dhost.name=%HOST%
 ARGS=%ARGS% -Dhost.port=%PORT%
 
+rem *** Uncomment to enable query plans ***
+rem ARGS=%ARGS% -Dbqt.query.plan=true
+
 
 ARGS=%ARGS% -Dexectimemin=%EXECTIMEMIN%
 ARGS=%ARGS% -Dexceedpercent=%EXCEEDPERCENT%

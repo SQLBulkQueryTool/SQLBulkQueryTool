@@ -90,5 +90,13 @@ public interface ConfigPropertyNames {
 		public static final String AUTO_WRAP_AUTO = "DETECT"; //$NON-NLS-1$
 
 	}
+	
+	public interface DATABASE_METADATA_OPTIONS {
+		public static final String CATALOG_PATTERN = "catalog_pattern"; //$NON-NLS-1$	    
+		public static final String SCHEMA_PATTERN = "schema_pattern"; //$NON-NLS-1$
+		public static final String TABLENAME_PATTERN = "tablename_pattern"; //$NON-NLS-1$
+		public static final String TABLE_TYPES = "table_pattern"; //$NON-NLS-1$
+		
+	}
 
 }

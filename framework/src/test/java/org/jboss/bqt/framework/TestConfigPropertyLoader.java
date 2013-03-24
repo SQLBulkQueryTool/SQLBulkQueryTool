@@ -25,6 +25,7 @@ package org.jboss.bqt.framework;
 import static org.junit.Assert.*;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -134,6 +135,50 @@ public class TestConfigPropertyLoader {
 		assertEquals("adminpw", _instance.getProperty("conn.password")); //$NON-NLS-1$ //$NON-NLS-2$
     	
     }
+    
+    @Test
+    public void testMetadataConfigProperties() throws Exception {
+    	System.setProperty(ConfigPropertyNames.CONFIG_FILE, "configtest.properties");
+ 
+		ConfigPropertyLoader _instance = ConfigPropertyLoader.getInstance();
+		assertNotNull(_instance);
+
+		assertEquals("testmode", _instance.getProperty("bqt.result.mode")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("querysetdirname", _instance.getProperty("bqt.queryset.dirname")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("OFF", _instance.getProperty("bqt.transaction.option")); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		//bqt.expectedresults.loc=${queryset.artifacts.dir}/${queryset.dir}/${expected.results.dir}
+		assertEquals("/queryset/artifacts/dir/querysetdirname/expectedresultsdir", _instance.getProperty("bqt.expectedresults.loc")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		//bqt.queryfiles.loc=${queryset.artifacts.dir}/${queryset.dir}/${test.queries.dir}
+		assertEquals("/queryset/artifacts/dir/querysetdirname/testqueriesdir", _instance.getProperty("bqt.queryfiles.loc")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		assertEquals("myscenariofile.properties", _instance.getProperty("bqt.scenario.file")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		assertEquals("/output/dir", _instance.getProperty("bqt.output.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/testmode/querysetdirname/expectedresultsdir", _instance.getProperty("bqt.generate.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("/output/dir/myscenariofile/testmode", _instance.getProperty("bqt.compare.dir")); //$NON-NLS-1$ //$NON-NLS-2$		
+		assertEquals("/output/dir/myscenariofile/testmode/querysetdirname/testqueriesdir", _instance.getProperty("bqt.sql.dir")); //$NON-NLS-1$ //$NON-NLS-2$	
+		assertEquals("/output/dir/myscenariofile/errors_for_testmode", _instance.getProperty("bqt.errors.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		assertEquals("myconntype", _instance.getProperty("conn.type")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("org.jdbc.oracle.OracleDriver", _instance.getProperty("conn.driver")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("jdbc:teiid:VDB@mm://localhost:31000", _instance.getProperty("conn.url")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("admin", _instance.getProperty("conn.user")); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("adminpw", _instance.getProperty("conn.password")); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		assertEquals("bqt%", _instance.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.CATALOG_PATTERN)); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("schema%", _instance.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.SCHEMA_PATTERN)); //$NON-NLS-1$ //$NON-NLS-2$
+		assertEquals("mytables%", _instance.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.TABLENAME_PATTERN)); //$NON-NLS-1$ //$NON-NLS-2$
+
+		String ttypes =  _instance.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.TABLE_TYPES);
+		String[] table_types = StringUtils.split(ttypes, ","); //$NON-NLS-1$
+		assertEquals(new String[] {"TABLE","VIEW","SYSTEM"}, table_types); //$NON-NLS-1$ //$NON-NLS-2$
+
+		
+		
+    }
+
     
     
  
