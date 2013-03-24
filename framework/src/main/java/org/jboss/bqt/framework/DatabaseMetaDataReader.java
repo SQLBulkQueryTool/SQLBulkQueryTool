@@ -8,19 +8,37 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-public class DatabaseMetaDataReader {
+import org.apache.commons.lang.StringUtils;
+
+public class DatabaseMetaDataReader {	
 
 	private Connection connection;
+	
+	private String catalog_pattern = "%";
+	private String schema_pattern = "%";
+	private String table_pattern = "%";
+	private String[] table_types = new String[] {"TABLE","VIEW"};
+	
 
 	private boolean selectstar = false;
 	private boolean selectcolumns = true;
 
 	private List<String> queries = null;
 
-	public DatabaseMetaDataReader(Connection connection) {
+	public DatabaseMetaDataReader(Connection connection, Properties properties) {
 		this.connection = connection;
+		
+		if (properties != null) {
+			catalog_pattern = properties.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.CATALOG_PATTERN, "%");
+			schema_pattern = properties.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.SCHEMA_PATTERN, "%");
+			table_pattern = properties.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.TABLENAME_PATTERN, "%");
+			String tt = properties.getProperty(ConfigPropertyNames.DATABASE_METADATA_OPTIONS.TABLE_TYPES, "TABLE,VIEW");
+			
+			table_types = StringUtils.split(tt, ","); //$NON-NLS-1$
+		}
 	}
 
 	public void createSelectStar(boolean selectstar) {
@@ -42,7 +60,7 @@ public class DatabaseMetaDataReader {
 
 			DatabaseMetaData dbmd = connection.getMetaData();
 
-			rs = dbmd.getTables("%", "%", "%", new String[] {"TABLE","VIEW"});
+			rs = dbmd.getTables(this.catalog_pattern, this.schema_pattern, this.table_pattern, this.table_types);
 			queries = loadQueries(rs, dbmd);
 
 			FrameworkPlugin.LOGGER.debug("DatabaseMetadataReader:  processed loading queries " + queries.size());

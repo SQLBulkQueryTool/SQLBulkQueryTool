@@ -46,7 +46,7 @@ import org.jboss.bqt.core.util.ReflectionHelper;
 import org.jboss.bqt.framework.TestCase;
 import org.jboss.bqt.framework.TestCaseLifeCycle;
 import org.jboss.bqt.framework.TransactionAPI;
-import org.teiid.core.util.ArgCheck;
+import org.jboss.bqt.core.util.ArgCheck;
 
 /**
  * The QueryScenario manages all the information required to run one scenario of
