@@ -226,6 +226,7 @@ public abstract class AbstractQuery implements TransactionAPI {
 			beginTS = -1;
 
 			this.internalException = e;
+			this.connStrategy.shutdown();
 			throw new QueryTestFailedException(e);
 		}
 		this.testCase.getTestResult().setBeginTS(beginTS);
