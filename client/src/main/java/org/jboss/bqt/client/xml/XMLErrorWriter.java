@@ -97,7 +97,7 @@ public class XMLErrorWriter extends ErrorWriter {
 			// configID, queryID, Integer.toString(clientID));
 			//           CombinedTestClient.log("\t" + this.clientID + ": Writing error file with actual results: " + errorFileName); //$NON-NLS-1$ //$NON-NLS-2$
 			File errorFile = new File(getErrorDirectory(), errorFileName);
-			ClientPlugin.LOGGER.warn("**** E 1 Generate Error File");
+			ClientPlugin.LOGGER.warn("**** Generate Error File: " + errorFile.getAbsolutePath());
 
 			generateErrorResults(testResult,
 					 (String) null, errorFile, (ResultSet) null, (File) null, error);

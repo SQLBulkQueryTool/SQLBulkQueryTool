@@ -365,7 +365,7 @@ public class TestResultsSummary {
 //				removeChars(stat.getExceptionMsg(),
 //						new char[] { '\r', '\n' });
 
-				this.failed_queries.add(stat.getQueryID() + "~" + msg);
+				this.failed_queries.add(stat.getQuerySetID() + "." + stat.getQueryID() + "~" + msg);
 				break;
 			case TestResult.RESULT_STATE.TEST_SUCCESS:
 				++pass;

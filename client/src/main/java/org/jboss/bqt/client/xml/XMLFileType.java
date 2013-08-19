@@ -141,7 +141,7 @@ public class XMLFileType implements FileType {
 	 * @return String error file name
 	 */
 	public String getErrorFileName(QueryScenario scenario, TestResult testResult) {
-		return testResult.getQuerySetID() + "_" + testResult.getQueryID() + ".err";
+		return   testResult.getQuerySetID() + "_" + testResult.getQueryID() + ".err";
 
 	}
 	
