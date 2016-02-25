@@ -51,6 +51,13 @@ if [ -r "$RUN_CONF" ]; then
    . "$RUN_CONF"
 fi
 
+# Convert paths for Windows Java if Cygwin is used
+if [ "$(uname -o)" == "Cygwin" ]; then
+    SCENARIODIR=`cygpath -w ${SCENARIODIR}`
+    QUERYSETDIR=`cygpath -w ${QUERYSETDIR}`
+    OUTPUTDIR=`cygpath -w ${OUTPUTDIR}`
+fi
+
 echo "SCENARIODIR: ${SCENARIODIR}"
 #--------------------
 
@@ -181,6 +188,11 @@ fi
 
 
 CP="${ROOTDIR}:${ROOTDIR}/config/*:${ROOTDIR}/lib/*"
+
+# Convert classpath for Windows Java if Cygwin is used
+if [ "$(uname -o)" == "Cygwin" ]; then
+    CP=$(cygpath -pw $CP)
+fi
 
 LOGLEVEL=info
 
