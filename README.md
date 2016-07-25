@@ -1,3 +1,13 @@
+======================
+****  DEPRECATED *****
+======================
+
+SQLBulkQueryTool is now being deprecated and will not be supported.  A version of this can now be
+found at:  https://github.com/teiid/whipper.git.   You can find issue tracker at
+https://issues.jboss.org/browse/TEIIDWHIP
+ 
+
+
 SQLBulkQueryTool
 ================
 
