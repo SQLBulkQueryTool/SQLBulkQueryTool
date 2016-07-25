@@ -24,7 +24,7 @@ rem $Id$
 @if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
-  set "DIRNAME=%~dp0%"
+  set "DIRNAME=%~dp0%.."
 ) else (
   set DIRNAME=.\
 )
@@ -40,7 +40,7 @@ set HOST=localhost
 set PORT=31000
 
 set OUTPUTDIR=%DIRNAME%\results
-set CONFIG=%DIRNAME%\..\config\test.properties
+set CONFIG=%DIRNAME%\config\test.properties
 
 rem set USERNAME=
 rem set PASSWORD=
@@ -61,24 +61,24 @@ set RMODE=%2
 
 ) 
 
-ARGS=-Dscenario.file=%S_DIR%
-ARGS=%ARGS% -Dqueryset.artifacts.dir=%QUERYSETDIR%
-ARGS=%ARGS% -Dresult.mode=%RMODE%
-ARGS=%ARGS% -Doutput.dir=%OUTPUTDIR%
-ARGS=%ARGS% -Dconfig=%CONFIG%
-ARGS=%ARGS% -Dhost.name=%HOST%
-ARGS=%ARGS% -Dhost.port=%PORT%
+set ARGS=-Dscenario.file=%S_DIR%
+set ARGS=%ARGS% -Dqueryset.artifacts.dir=%QUERYSETDIR%
+set ARGS=%ARGS% -Dresult.mode=%RMODE%
+set ARGS=%ARGS% -Doutput.dir=%OUTPUTDIR%
+set ARGS=%ARGS% -Dconfig=%CONFIG%
+set ARGS=%ARGS% -Dhost.name=%HOST%
+set ARGS=%ARGS% -Dhost.port=%PORT%
 
 rem *** Uncomment to enable query plans ***
 rem ARGS=%ARGS% -Dbqt.query.plan=true
 
 
-ARGS=%ARGS% -Dexectimemin=%EXECTIMEMIN%
-ARGS=%ARGS% -Dexceedpercent=%EXCEEDPERCENT%
+set ARGS=%ARGS% -Dexectimemin=%EXECTIMEMIN%
+set ARGS=%ARGS% -Dexceedpercent=%EXCEEDPERCENT%
 
 rem If not set, the default to scenario or global properties
 if not "x%USERNAME%" == "x" (
-  set  ARGS=%ARGS -Dusername=%USERNAME%
+  set  ARGS=%ARGS% -Dusername=%USERNAME%
 )
 
 rem If not set, the default to scenario or global properties
